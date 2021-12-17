@@ -1,0 +1,44 @@
+---
+- hosts: localhost
+  roles:
+    - role: fish
+      tags: ["fish"]
+    - role: dot-dirs
+      tags: ["dot-dirs"]
+    - role: ssh
+      tags: ["ssh"]
+    - role: npm
+      tags: ["npm", "asdf"]
+    - role: terminfo
+      tags: ["terminfo"]
+    - role: homebrew
+      tags: ["homebrew"]
+      when: ansible_system == "Darwin"
+    - role: macos
+      tags: ["macos"]
+      when: ansible_system == "Darwin"
+    - role: nvim
+      tags: ["nvim"]
+    - role: hammerspoon
+      tags: ["hammerspoon"]
+      when: ansible_system == "Darwin"
+    - role: macos-navigation
+      tags: ["macos-navigation"]
+      when: ansible_system == "Darwin"
+    - role: fonts
+      tags: ["fonts"]
+      when: ansible_system == "Darwin"
+    - role: macos-dictionaries
+      tags: ["dictionaries"]
+      when: ansible_system == "Darwin"
+    - role: docker
+      tags: ["docker"]
+    - role: java
+      tags: ["java"]
+    - role: cli-tools
+      tags: ["cli-tools"]
+    - role: alfred
+      tags: ["alfred"]
+      when: ansible_system == "Darwin"
+    - role: ripgrep
+      tags: ["ripgrep"]

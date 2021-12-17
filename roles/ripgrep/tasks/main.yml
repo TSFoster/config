@@ -1,0 +1,15 @@
+---
+- name: Install ripgrep
+  community.general.homebrew:
+    name: ripgrep
+    state: present
+- name: Add ripgreprc
+  ansible.builtin.copy:
+    src: ripgreprc
+    dest: "{{ config_dir }}/"
+- name: Set location of ripgreprc
+  ansible.builtin.command:
+    cmd: fish -c 'set --query --universal --export RIPGREP_CONFIG_PATH; and exit 1; set --universal --export RIPGREP_CONFIG_PATH $config/ripgreprc; exit 0'
+  register: set_ripgrep_config_path
+  failed_when: set_ripgrep_config_path.rc > 1
+  changed_when: set_ripgrep_config_path.rc == 0

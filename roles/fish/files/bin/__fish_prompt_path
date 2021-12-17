@@ -1,0 +1,36 @@
+#!/usr/bin/env fish
+
+if contains -- '-h' $argv; or contains -- '--help' $argv
+  echo "
+    Prints path-related information useful for prompts.
+
+    Usage: "(basename (status filename))" OUTPUT [FISH_PID]
+
+    All information will be written to OUTPUT (default: /dev/stdout).
+    If given, FISH_PID will be sent WINCH signal when output completed.
+
+    Output:
+        Line 1: the dirname for the git root (in /s/h/o/r/t format), if one exists (blank otherwise)
+        Line 2: the basename of the git root, if one exists (blank otherwise)
+        Line 3: the dirname for the rest of the PWD (in /s/h/o/r/t format) (blank if in git root or child of git root)
+        Line 4: the basename for the rest of the PWD (blank if in git root)
+  "
+  exit 0
+end
+
+set projectRoot (command git rev-parse --show-toplevel 2> /dev/null)
+
+set output /dev/stdout
+set --query argv[1]
+and set output $argv[1]
+
+begin
+  prompt_base_and_dir "$projectRoot"
+  prompt_base_and_dir ''(string replace "$projectRoot" '' $PWD)
+end > $output
+
+set --query argv[2]
+and sleep 0.1
+and kill -WINCH $argv[2] 2> /dev/null
+
+exit 0

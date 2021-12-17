@@ -1,0 +1,18 @@
+---
+- name: Create pac server
+  ansible.builtin.template:
+    src: pac.j2
+    dest: ~/.local/bin/pac
+    mode: "+x"
+  when: ansible_system == "Darwin"
+- name: Create Launch Daemon
+  ansible.builtin.template:
+    src: io.tsf.pac.plist.j2
+    dest: ~/Library/LaunchAgents/io.tsf.pac.plist
+  when: ansible_system == "Darwin"
+- name: Load Launch Daemon
+  community.general.launchd:
+    name: io.tsf.pac
+    state: stopped
+    enabled: yes
+  when: ansible_system == "Darwin"

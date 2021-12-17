@@ -1,0 +1,32 @@
+# --------- INTERACTIVE OR NON-INTERACTIVE ---------
+
+
+
+
+
+# ---------------- INTERACTIVE ONLY ----------------
+
+
+status is-interactive; or exit 0
+
+
+# TOOL SETUP
+
+op completion fish | source
+[ -f ~/.config/tabtab/__tabtab.fish ]; and source ~/.config/tabtab/__tabtab.fish
+atuin init fish --disable-up-arrow | source
+
+
+# EDITOR
+
+# This overwrites the universal variables in this shell session only
+if [ "$NVIM" ]
+set --global --export EDITOR nvr --remote-tab-wait
+abbr --add --global e nvr
+abbr --add --global man viman
+abbr --add --global v "$EDITOR"
+end
+
+# ASDF
+
+set -gx --prepend PATH $ASDF_DATA_DIR/shims

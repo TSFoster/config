@@ -1,0 +1,201 @@
+-- HYPER KEY
+
+-- Definitions
+
+local hyper = {"cmd", "alt", "ctrl", "shift"}
+--[[ DISABLED WHILE APPLE KEYBOARD UNUSED
+local hyperFor = {"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","1","2","3","4","5","6","7","8","9","0","-","=","§","`",",",".","/",";","'","\\","[","]","space","tab","delete","return","left","right","up","down"}
+
+
+-- Bindings
+
+local modalHotkey = hs.hotkey.modal.new({}, "F17")
+
+for k1, key in pairs(hyperFor) do
+  modalHotkey:bind({}, key, nil, function()
+      modalHotkey.triggered = true
+      hs.eventtap.keyStroke(hyper, key)
+  end)
+end
+
+local pressedF18 = function()
+  modalHotkey.triggered = false
+  modalHotkey:enter()
+end
+
+local releasedF18 = function()
+  modalHotkey:exit()
+  -- Send Cmd + space if no other keys were pressed.
+  if not modalHotkey.triggered then
+    hs.eventtap.keyStroke({"cmd"}, "space")
+  end
+end
+
+-- Bind the Hyper key to F18
+local f18 = hs.hotkey.bind({}, "F18", pressedF18, releasedF18)
+
+--]]
+
+-- MENU ICON TOGGLE
+
+hs.menuIcon(false)
+hs.hotkey.bind(hyper, "7", function() hs.menuIcon(not hs.menuIcon()) end)
+
+
+-- CAFFEINE
+
+do
+  local caffeineMenubar = hs.menubar.new():removeFromMenuBar()
+  local delayPeriod = hs.timer.minutes(10)
+  local offSwitch = nil
+  local menubarUpdater = nil
+
+  local function resetTimer()
+    if offSwitch ~= nil then
+      offSwitch:stop()
+      offSwitch = nil
+    end
+    if menubarUpdater ~= nil then
+      menubarUpdater:stop()
+      menubarUpdater = nil
+    end
+  end
+
+
+
+  local function setCaffeine(shouldCaffeinate)
+    if shouldCaffeinate then
+      caffeineMenubar:returnToMenuBar()
+      resetTimer()
+      hs.caffeinate.set("displayIdle", true, true)
+      updateMenubarTitle()
+    else
+      caffeineMenubar:removeFromMenuBar()
+      hs.caffeinate.set("displayIdle", false, false)
+      resetTimer()
+    end
+  end
+
+  local function turnOff()
+    setCaffeine(false)
+  end
+
+
+  local function toggle()
+    if offSwitch ~= nil then
+      setCaffeine(true)
+    else
+      setCaffeine(not hs.caffeinate.get("displayIdle"))
+    end
+  end
+
+
+  local function extend()
+    if not caffeineMenubar:isInMenubar() then
+      setCaffeine(true)
+    end
+    if offSwitch == nil then
+      offSwitch = hs.timer.doAfter(delayPeriod, turnOff)
+    else
+      offSwitch:setNextTrigger(offSwitch:nextTrigger()+delayPeriod)
+    end
+    updateMenubarTitle()
+    menubarUpdater = hs.timer.doEvery(60, updateMenubarTitle)
+  end
+
+
+  function updateMenubarTitle()
+    if caffeineMenubar:isInMenubar() then
+      if offSwitch ~= nil then
+        minsLeft = math.ceil (offSwitch:nextTrigger()/60)
+        if minsLeft >= 60 then
+          remaining = math.floor (minsLeft/60) .. "h" .. (minsLeft % 60) .. "m"
+        else
+          remaining = minsLeft .. "m"
+        end
+      else
+        remaining = ""
+      end
+      caffeineMenubar:setTitle("⦿" .. remaining)
+    end
+  end
+
+
+  caffeineMenubar:setClickCallback(turnOff)
+  setCaffeine(hs.caffeinate.get("displayIdle"))
+
+  hs.hotkey.bind(hyper, "8", toggle)
+  hs.hotkey.bind(hyper, "9", extend)
+end
+
+
+-- TYPE CLIPBOARD
+
+hs.hotkey.bind(hyper, "v", function() hs.eventtap.keyStrokes(hs.pasteboard.getContents()) end)
+
+
+-- MENUBAR NOTIFICATIONS
+
+local function addMenubarChecker(config)
+  local icon = hs.menubar.new():removeFromMenuBar()
+  local function setIcon()
+    if config.shouldDisplay() then
+      icon:returnToMenuBar():setTitle(config.icon):setClickCallback(config.onClick)
+    else
+      icon:removeFromMenuBar()
+    end
+  end
+  if config.path then hs.pathwatcher.new(config.path, setIcon):start() end
+  if config.seconds then hs.timer.doEvery(config.seconds, setIcon) end
+  setIcon()
+end
+
+addMenubarChecker{
+  icon = "↓",
+  path = "~/Downloads",
+  seconds = 60,
+  onClick = function()
+    hs.open "~/Downloads"
+    hs.application.launchOrFocus "Finder"
+  end,
+  shouldDisplay = function()
+    for x in hs.fs.dir "~/Downloads" do
+      if x and x ~= "." and x ~= ".." and x ~= ".DS_Store" and x ~= ".localized" then
+        return true
+      end
+    end
+    return false
+  end,
+}
+
+addMenubarChecker{
+  icon = "↘︎",
+  seconds = 30,
+  onClick = function()
+    hs.execute("{{ ansible_env.HOME }}/.local/bin/mailbox-count Drafts --unread --activate")
+    hs.application.launchOrFocus "Mail"
+  end,
+  shouldDisplay = function()
+    local count = tonumber(string.gsub(hs.execute("{{ ansible_env.HOME }}/.local/bin/mailbox-count Drafts"), "%D", ""), 10)
+    return count and count > 0
+  end,
+}
+
+addMenubarChecker{
+  icon = "↑",
+  seconds = 30,
+  onClick = function()
+    hs.execute("{{ ansible_env.HOME }}/.local/bin/mailbox-count Updates --unread --activate")
+    hs.application.launchOrFocus "Mail"
+  end,
+  shouldDisplay = function()
+    local count = tonumber(string.gsub(hs.execute("{{ ansible_env.HOME }}/.local/bin/mailbox-count Updates --unread"), "%D", ""), 10)
+    return count and count > 0
+  end,
+}
+
+
+-- CONFIG RELOAD
+
+hs.alert.show "Config loaded"
+hs.urlevent.bind("reload", hs.reload)

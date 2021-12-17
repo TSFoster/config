@@ -1,0 +1,49 @@
+---
+- name: Install python neovim module # TODO Check present in default-node-packages?
+  ansible.builtin.pip:
+    name: neovim
+    state: present
+- name: Install ruby neovim module # TODO Check present in default-ruby-packages?
+  community.general.gem:
+    name: neovim
+    state: present
+  environment:
+    PATH: "{{ homebrew_prefix }}/opt/ruby/bin:{{ ansible_env.PATH }}"
+- name: Install npm neovim module # TODO Check present in default-node-packages?
+  community.general.npm:
+    name: neovim
+    global: yes
+    state: present
+- name: Install neovim-remote # TODO Check present in default-python-packages?
+  ansible.builtin.pip:
+    name: neovim-remote
+    state: present
+  tags:
+    - nvr
+- name: Copy files
+  ansible.builtin.copy:
+    src: ./
+    dest: "{{ config_dir }}/nvim/"
+  tags:
+    - nvim-custom
+- name: Add nvr completion in fish
+  ansible.builtin.command:
+    creates: "{{ config_dir }}/fish/completions/nvr.fish"
+    cmd: "{{ homebrew_brew_bin_path }}/fish -c 'curl https://raw.githubusercontent.com/mhinz/neovim-remote/master/contrib/completion.fish > {{ config_dir }}/fish/completions/nvr.fish'"
+  tags:
+    - nvr
+- name: Install nvim modules # TODO re-generate helptags
+  ansible.builtin.include_tasks:
+    file: nvim-package.yml
+    apply:
+      tags:
+        - nvim-modules
+  loop: "{{ nvim_modules + (lookup('vars', 'nvim_modules_' + ansible_system) | default([])) }}"
+  tags:
+    - nvim-modules
+- name: Add github credentials to netrc
+  ansible.builtin.lineinfile:
+    path: ~/.netrc
+    create: yes
+    regexp: "^machine api.github.com"
+    line: "machine api.github.com login {{ git_credentials_github_user }} password {{ git_credentials_github_token }}"

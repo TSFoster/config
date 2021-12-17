@@ -1,0 +1,19 @@
+---
+- name: Make .ssh dir
+  ansible.builtin.file:
+    path: ~/.ssh
+    state: directory
+- name: Get SSH keys
+  ansible.builtin.shell:
+    cmd: "op get document {{ item.0 }}{{ item.1 }} > ~/.ssh/{{ item.0 }}{{ item.1 }}"
+    creates: "~/.ssh/{{ item.0 }}{{ item.1 }}"
+  loop: "{{ ssh_keys | product(['','.pub']) | list }}"
+- name: Add id_rsa.pub to authorized_keys
+  ansible.posix.authorized_key:
+    user: "{{ ansible_env.USER }}"
+    state: present
+    key: "{{ lookup('file', '~/.ssh/{{ ssh_keys | first }}.pub') }}"
+- name: Copy SSH config
+  ansible.builtin.template:
+    src: "config.j2"
+    dest: "~/.ssh/config"

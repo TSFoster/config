@@ -1,0 +1,21 @@
+---
+- name: Check whether xterm-256color-italic installed
+  ansible.builtin.command:
+    cmd: infocmp xterm-256color-italic
+  register: xterm_256color_italic_installed
+  ignore_errors: yes
+  changed_when: no
+- name: Install xterm-256color-italic
+  ansible.builtin.command:
+    cmd: tic ~/.config/meta/roles/terminfo/files/xterm-256color-italic.terminfo
+  when: xterm_256color_italic_installed is failed
+- name: Check whether screen-256color-italic installed
+  ansible.builtin.command:
+    cmd: infocmp screen-256color-italic
+  register: screen_256color_italic_installed
+  ignore_errors: yes
+  changed_when: no
+- name: Install screen-256color-italic
+  ansible.builtin.command:
+    cmd: tic ~/.config/meta/roles/terminfo/files/screen-256color-italic.terminfo
+  when: screen_256color_italic_installed is failed

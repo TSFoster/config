@@ -1,0 +1,49 @@
+#!/bin/sh
+
+set -e
+
+[ "$(uname -s)" != 'Darwin' ] && echo 'This is currently only intended for macOS' >&2 && exit 1
+
+! [ -t 0 ] && echo 'It looks like your are running this through a pipe. You must clone the repo and call ./bootstrap directly' >&2 && exit 1
+
+# make sure we're one dir above this file
+CDPATH= cd -- "$(dirname -- "$0")"/..
+
+if [ "$(basename $0)" != bootstrap ] || [ "$(git rev-parse --show-toplevel 2>/dev/null)" != "$PWD" ] || [ "$(git remote get-url origin 2>/dev/null)" != 'git@github.com:TSFoster/config.git' ]; then
+  echo "Something's wrong with how this file is being executed. Please clone the repo and call ./bootstrap directly" >&2
+  exit 1
+fi
+
+# if brew isn't in path, let's check default install location before trying to install it
+BREW_LOCATION=$(command -v brew || ([ "$(uname -m)" = arm64 ] && echo /opt/homebrew/bin/brew || echo /usr/local/bin/brew))
+
+! [ -x "$BREW_LOCATION" ] && echo "Can't find homebrew. Installing" >&2 && /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+! [ -x "$BREW_LOCATION" ] && echo "Still can't find homebrew. Aborting" >&2 && exit 1
+
+eval "$($BREW_LOCATION shellenv)"
+
+! command -v asdf >/dev/null && echo "Can't find asdf. Installing" >&2 && brew install asdf
+! asdf plugin list | grep -q '^python$' && echo "Installing asdf python plugin" >&2 && asdf plugin install python
+! asdf list python 3 >/dev/null && echo "Installing python 3 via asdf" >&2 && asdf install python latest:3
+
+! command -v ansible-playbook >/dev/null && echo "Can't find ansible. Installing" >&2 && $(asdf which pip3) install ansible
+
+! command -v op >/dev/null && echo "Can't find 1password-cli. Installing" >&2 && brew install 1password-cli
+
+if ! [ -f ~/.config/op/config ]; then
+  echo '1password-cli not set up. Setting up' >&2
+  read -p 'Enter 1Password username: ' OP_USER
+  echo '' >&2
+  eval $(op signin my $OP_USER)
+else
+  echo 'Checking signed in to 1Password\n' >&2
+  eval $(op signin)
+fi
+
+if ! [ -f vault_pass ]; then
+  echo "Can't find vault password. Retrieving" >&2
+  op item get --fields password 'Config vault' >vault_pass
+fi
+
+echo "Running playbook" >&2 && ansible-playbook -i "localhost ansible_python_interpreter=$(asdf which python3)," --vault-pass-file vault_pass main.yml $@

@@ -1,0 +1,14 @@
+---
+- name: Install Alfred
+  community.general.homebrew_cask:
+    name: alfred
+    state: present
+- name: Setup Alfred repo
+  ansible.builtin.git:
+    repo: git@github.com:TSFoster/alfred.git
+    dest: "{{ alfred_dir }}"
+- name: Set config dir
+  community.general.osx_defaults:
+    domain: com.runningwithcrayons.Alfred-Preferences
+    key: syncfolder
+    value: "{{ alfred_dir }}/"

@@ -1,0 +1,58 @@
+---
+- name: Create ~/.local directory structure
+  ansible.builtin.file:
+    state: directory
+    dest: "{{ ansible_env.HOME }}/.local/{{ item }}"
+  loop:
+    - bin
+    - cache
+    - lib
+    - share
+    - state
+- name: Add bin files
+  ansible.builtin.copy:
+    src: mailbox-count
+    dest: "~/.local/bin/"
+    mode: "u+rwx"
+- name: Add aerospace config
+  ansible.builtin.copy:
+    src: aerospace.toml
+    dest: "{{ config_dir }}/aerospace/aerospace.toml"
+  when: ansible_system == "Darwin"
+- name: Add ghostty config
+  ansible.builtin.copy:
+    src: ghostty.toml
+    dest: "{{ config_dir }}/ghostty/config"
+- name: Add gh config
+  block:
+    - name: Make directory
+      ansible.builtin.file:
+        path: "{{ config_dir }}/gh"
+        state: directory
+    - name: Copy config.yml
+      ansible.builtin.copy:
+        src: gh-config.yml
+        dest: "{{ config_dir }}/gh/config.yml"
+- name: Add yazi config
+  ansible.builtin.copy:
+    src: yazi
+    dest: "{{ config_dir }}/"
+- name: Add git config
+  block:
+    - name: Copy config
+      ansible.builtin.copy:
+        src: git
+        dest: "{{ config_dir }}/"
+    - name: Add git credentials
+      ansible.builtin.template:
+        src: credentials.gitconfig.j2
+        dest: "{{ config_dir }}/git/credentials.gitconfig"
+- name: Add editorconfig
+  ansible.builtin.copy:
+    src: editorconfig
+    dest: ~/.editorconfig
+- name: Add warpd config
+  ansible.builtin.copy:
+    src: warpd
+    dest: "{{ config_dir }}/warpd/config"
+    mode: "u+rw"

@@ -1,0 +1,13 @@
+---
+- name: Clone dictionaries
+  ansible.builtin.git:
+    repo: "git@github.com:afischer/osx-dictionaries.git"
+    dest: ~/workspace/osx-dictionaries
+- name: Copy dictionaries
+  ansible.builtin.copy:
+    remote_src: yes
+    src: "~/workspace/osx-dictionaries/{{ item }}"
+    dest: "~/Library/Dictionaries/"
+  loop:
+    - danish/dan-eng.dictionary
+    - english/Oxford_English_Collocation_Dictionary.dictionary

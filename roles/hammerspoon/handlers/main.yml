@@ -1,0 +1,4 @@
+---
+- name: Reload Hammerspoon
+  ansible.builtin.command:
+    cmd: open -g hammerspoon://reload

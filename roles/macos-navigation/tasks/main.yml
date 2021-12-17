@@ -1,0 +1,5 @@
+---
+- name: Copy Vimari config
+  ansible.builtin.copy:
+    src: userSettings.json
+    dest: "~/Library/Containers/net.televator.Vimari.SafariExtension/Data/Library/Application Support/"

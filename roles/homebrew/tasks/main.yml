@@ -1,0 +1,41 @@
+---
+- name: Set up homebrew taps
+  community.general.homebrew_tap:
+    tap: "{{ item }}"
+    state: present
+  loop: "{{ homebrew_taps }}"
+- name: Install homebrew packages
+  community.general.homebrew:
+    name: "{{ item.name }}"
+    state: present
+    install_options: "{{ item.install_options | default(omit) }}"
+  loop: "{{ homebrew_packages }}"
+- name: Install homebrew casks
+  community.general.homebrew_cask:
+    name: "{{ item }}"
+    state: present
+    install_options: "appdir={{ homebrew_cask_appdir }}"
+    sudo_password: "{{ ansible_become_password }}"
+  loop: "{{ homebrew_casks }}"
+  when: ansible_system == "Darwin"
+- name: Install mas
+  community.general.homebrew:
+    name: mas
+    state: present
+  when: ansible_system == "Darwin"
+  tags:
+    - mas
+- name: Install MAS apps
+  block:
+    - name: Try to install apps
+      community.general.mas:
+        id: "{{ item }}"
+        state: present
+      loop: "{{ mas_apps }}"
+  rescue:
+    - name: Skip installing apps from MAS
+      ansible.builtin.debug:
+        msg: "Skipping installing Mac App Store apps. Sign in to the App Store and try again"
+  when: ansible_system == "Darwin"
+  tags:
+    - mas

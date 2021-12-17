@@ -1,0 +1,141 @@
+---
+- name: Install fish
+  community.general.homebrew:
+    name: fish
+    state: present
+- name: Add fish to available shells
+  become: yes
+  ansible.builtin.lineinfile:
+    path: /etc/shells
+    line: "{{ homebrew_brew_bin_path }}/fish"
+    state: present
+- name: Change user shell to fish
+  become: yes
+  ansible.builtin.user:
+    name: "{{ the_user }}"
+    shell: "{{ homebrew_brew_bin_path }}/fish"
+- name: Add .hushlogin
+  ansible.builtin.file:
+    path: "~/.hushlogin"
+    state: touch
+    modification_time: preserve
+    access_time: preserve
+- name: Create fish_variables
+  ansible.builtin.file:
+    path: "{{ config_dir }}/fish/fish_variables"
+    state: touch
+    modification_time: preserve
+    access_time: preserve
+  tags:
+    - vars_debug
+- name: Set universal variables and abbreviations
+  ansible.builtin.lineinfile:
+    path: "{{ config_dir }}/fish/fish_variables"
+    create: yes
+    regexp: "^SETUVAR (--export )?(--path )?{% if item.abbr | default(false, true) %}_fish_abbr_{% endif %}{{ item.name }}:"
+    line: >-
+      SETUVAR{{ ' ' }}
+      {%- if item.abbr | default(false, true) -%}
+        _fish_abbr_
+      {%- else -%}
+        {% if item.export | default(false, true) %}--export {% endif -%}
+        {% if item.path | default(false, true) %}--path {% endif -%}
+      {% endif -%}
+      {{ item.name }}:
+      {{- item.value_multiple | default([item.value])
+        | join('\x1e')
+        | replace(' ', '\x20')
+        | replace('%', '\x25')
+        | replace('(', '\x28')
+        | replace(')', '\x29')
+        | replace('-', '\x2d')
+        | replace('.', '\x2e')
+        | replace('<', '\x3c')
+        | replace('=', '\x3d')
+        | replace('>', '\x3e')
+        | replace('{', '\x7b')
+        | replace('}', '\x7d')
+        | replace('~', '\x7e')
+      }}
+  loop: "{{ universal_variables }}"
+  tags:
+    - vars_debug
+- name: Copy fish config
+  block:
+    - name: Copy dirs
+      ansible.builtin.copy:
+        src: "{{ item }}/"
+        dest: "{{ config_dir }}/fish/{{ item }}/"
+        mode: preserve
+      loop:
+        - bin
+        - functions
+        - completions
+    - name: Make config.fish
+      ansible.builtin.template:
+        src: "config.fish.j2"
+        dest: "{{ config_dir }}/fish/config.fish"
+- name: Make conf.d dir
+  ansible.builtin.file:
+    path: "{{ config_dir }}/fish/conf.d"
+    state: directory
+- name: Make themes dir
+  ansible.builtin.file:
+    path: "{{ config_dir }}/fish/themes"
+    state: directory
+- name: Get homebrew config
+  ansible.builtin.command:
+    creates: "{{ config_dir }}/fish/conf.d/_0homebrew.fish"
+    cmd: "{{ homebrew_brew_bin_path }}/fish -c '{{ homebrew_brew_bin_path }}/brew shellenv > {{ config_dir }}/fish/conf.d/_0homebrew.fish'"
+- name: Add hugo completion # TODO add this to hugo role instead
+  ansible.builtin.command:
+    creates: "{{ config_dir }}/fish/completions/hugo.fish"
+    cmd: "{{ homebrew_brew_bin_path }}/fish -c '{{ homebrew_brew_bin_path }}/hugo completion fish > {{ config_dir }}/fish/completions/hugo.fish'"
+- name: Add asdf completion # TODO add this to hugo role instead
+  ansible.builtin.command:
+    creates: "{{ config_dir }}/fish/completions/asdf.fish"
+    cmd: "{{ homebrew_brew_bin_path }}/fish -c '{{ homebrew_brew_bin_path }}/asdf completion fish > {{ config_dir }}/fish/completions/asdf.fish'"
+- name: Check fisher installed
+  ansible.builtin.command:
+    cmd: 'fish -c "functions -q fisher; and echo installed; exit 0"'
+  register: which_fisher
+  changed_when: no
+  tags:
+    - fisher
+- name: Install fisher
+  ansible.builtin.command:
+    cmd: "fish -c 'curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher'"
+  when: which_fisher.stdout.find('installed') == -1
+  tags:
+    - fisher
+- name: Get list of plugins
+  ansible.builtin.command:
+    cmd: "fish -c 'fisher list'"
+  register: fisher_list
+  changed_when: no
+  tags:
+    - fisher
+- name: Install fisher plugins
+  ansible.builtin.command:
+    cmd: "fish -c 'fisher install {{ item }}'"
+  when: fisher_list.stdout.find(item) == -1
+  loop: "{{ fisher_plugins }}"
+  tags:
+    - fisher
+- name: Install thefuck
+  community.general.homebrew:
+    name: thefuck
+    state: present
+- name: Install thefuck for fish
+  ansible.builtin.command:
+    creates: "{{ config_dir }}/fish/functions/fuck.fish"
+    cmd: fish -c 'thefuck --alias > {{ config_dir }}/fish/functions/fuck.fish'
+- name: Install atuin
+  community.general.homebrew:
+    name: atuin
+    state: present
+- name: Add atuin config
+  ansible.builtin.copy:
+    src: "atuin"
+    dest: "{{ config_dir }}/atuin/"
+    mode: preserve

@@ -1,0 +1,178 @@
+---
+fisher_plugins:
+  - TSFoster/posix-source
+  - TSFoster/docker-tools
+  - TSFoster/fish-elm-completion
+  - fisherman/getopts
+  - catppuccin/fish
+  - jethrokuan/fzf
+  - topdroplabs/docker-fish-completion
+_uv:
+  xdg_data: "{{ ansible_env.HOME }}/.local/share"
+  fd_default: --exclude node_modules --exclude .git --exclude elm-stuff --exclude bower_components --exclude target --exclude .DS_Store --exclude .sass-cache --hidden
+  iCloud: "{{ ansible_env.HOME }}/Library/Mobile Documents/com~apple~CloudDocs"
+  isMac: "{{ ansible_system == 'Darwin' }}"
+  editor: "abduco -A nvim-(random) nvim"
+universal_variables:
+  - name: PAGER
+    value: less # TODO nvr/nvim +Man!
+    export: yes
+  - name: ABDUCO_CMD
+    value: nvim
+    export: yes
+  - name: XDG_CONFIG_HOME
+    value: "{{ config_dir }}"
+    export: yes
+  - name: XDG_DATA_HOME
+    value: "{{ _uv.xdg_data }}"
+    export: yes
+  - name: XDG_CACHE_HOME
+    value: "{{ ansible_env.HOME }}/.local/cache"
+    export: yes
+  - name: XDG_STATE_HOME
+    value: "{{ ansible_env.HOME }}/.local/state"
+    export: yes
+  - name: GOPATH
+    value: "{{ _uv.xdg_data }}/go"
+    path: yes
+    export: yes
+  - name: fish_user_paths
+    value_multiple:
+      - ./bin
+      - ./node_modules/.bin
+      - /usr/local/bin
+      - /usr/local/sbin
+      - "{{ ansible_env.HOME }}/.local/bin"
+      - "{{ ansible_env.HOME }}/.cargo/bin"
+      - "{{ _uv.xdg_data }}/go/bin"
+      - "{{ homebrew_cask_appdir }}/opt/openjdk/bin"
+      - /Applications/Setapp/Soulver.app/Contents/MacOS/CLI
+    export: yes
+  - name: HOMEBREW_CASK_OPTS
+    value: "{{ _uv.isMac | ternary('--appdir=' + homebrew_cask_appdir, omit) }}"
+    export: yes
+  - name: FD_DEFAULT_FLAGS
+    value: "{{ _uv.fd_default }}"
+    export: yes
+  - name: FZF_DEFAULT_COMMAND
+    value: "fd --type file {{ _uv.fd_default }}"
+    export: yes
+  - name: ASDF_DATA_DIR
+    value: "{{ ansible_env.HOME }}/.asdf"
+    export: yes
+  - name: ASDF_PYTHON_DEFAULT_PACKAGES_FILE
+    value: "{{ config_dir }}/asdf/default-python-packages"
+    export: yes
+  - name: ASDF_GEM_DEFAULT_PACKAGES_FILE
+    value: "{{ config_dir }}/asdf/default-gems"
+    export: yes
+  - name: ASDF_NPM_DEFAULT_PACKAGES_FILE
+    value: "{{ config_dir }}/asdf/default-npm-packages"
+    export: yes
+  - name: EDITOR
+    value: "{{ _uv.editor }}"
+    export: yes
+  - name: config
+    export: yes
+    value: "{{ config_dir }}"
+  - name: data
+    export: yes
+    value: "{{ _uv.xdg_data }}"
+  - name: workspace
+    export: yes
+    value: "{{ ansible_env.HOME }}/workspace"
+  - name: OS
+    value: "{{ _uv.isMac | ternary('Mac', 'Other') }}"
+  - name: iCloud
+    export: yes
+    value: "{{ _uv.isMac | ternary(_uv.iCloud, omit) }}"
+  - name: documents
+    export: yes
+    value: "{{ _uv.isMac | ternary(_uv.iCloud + '/Documents', omit) }}"
+  - name: work
+    export: yes
+    value: "{{ _uv.isMac | ternary(_uv.iCloud + '/Documents/Work', omit) }}"
+  - name: clients
+    export: yes
+    value: "{{ _uv.isMac | ternary(_uv.iCloud + '/Documents/Work/Clients', omit) }}"
+  - name: abd
+    value: abduco
+    abbr: yes
+  - name: an
+    value: ansible
+    abbr: yes
+  - name: ap
+    value: ansible-playbook
+    abbr: yes
+  - name: d
+    value: docker
+    abbr: yes
+  - name: dm
+    value: docker-machine
+    abbr: yes
+  - name: dsw
+    value: docker swarm
+    abbr: yes
+  - name: ds
+    value: docker service
+    abbr: yes
+  - name: dc
+    value: docker compose
+    abbr: yes
+  - name: g
+    value: git
+    abbr: yes
+  - name: gca
+    value: git commit --amend
+    abbr: yes
+  - name: gcane
+    value: git commit --amend --no-edit
+    abbr: yes
+  - name: gd
+    value: git diff
+    abbr: yes
+  - name: gdc
+    value: git diff --cached
+    abbr: yes
+  - name: gst
+    value: git stash
+    abbr: yes
+  - name: gsp
+    value: git stash pop
+    abbr: yes
+  - name: gs
+    value: git status
+    abbr: yes
+  - name: gh
+    value: op plugin run -- gh
+    abbr: yes
+  - name: glab
+    value: op plugin run -- glab
+    abbr: yes
+  - name: doctl
+    value: op plugin run -- doctl
+    abbr: yes
+  - name: l
+    value: ls
+    abbr: yes
+  - name: la
+    value: ls -A
+    abbr: yes
+  - name: ll
+    value: ls -l
+    abbr: yes
+  - name: psg
+    value: psgrep
+    abbr: yes
+  - name: ssh
+    value: "env TERM=xterm-256color ssh"
+    abbr: yes
+  - name: words
+    value: "grep < /usr/share/dict/words"
+    abbr: yes
+  - name: lw
+    value: "ls -l (which"
+    abbr: yes
+  - name: v
+    value: "{{ _uv.editor }}"
+    abbr: yes

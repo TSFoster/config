@@ -1,0 +1,287 @@
+---
+ssh_keys:
+  - id_rsa # First is used for authorized_keys
+  - id_rsa_millk
+
+ansible_become_password: "{{ vault_ansible_become_password }}"
+
+the_user: "{{ ansible_env.USER }}"
+
+config_dir: "{{ ansible_env.XDG_CONFIG_DIR | default(ansible_env.HOME + '/.config') }}"
+
+homebrew_prefix: "{{ (ansible_machine == 'arm64') | ternary('/opt/homebrew', '/usr/local') }}"
+homebrew_brew_bin_path: "{{ homebrew_prefix }}/bin"
+homebrew_cask_appdir: /Applications
+
+homebrew_taps:
+  - homebrew/cask-versions
+
+homebrew_packages:
+  - name: abduco
+  - name: asdf
+  - name: bat
+  - name: cloc
+  - name: closure-compiler
+  - name: container-diff
+  - name: dhall-json
+  - name: dive
+  - name: docker-machine-driver-vultr
+  - name: doctl
+  - name: efm-langserver
+  - name: exercism
+  - name: fd
+  - name: felixkratz/formulae/borders
+  - name: ffmpeg
+  - name: fish
+  - name: fswatch
+  - name: fx
+  - name: fzf
+  - name: gawk
+  - name: gh
+  - name: gifski
+  - name: gist
+  - name: git
+  - name: glab
+  - name: gnupg
+  - name: go
+  - name: gperf
+  - name: httpie
+  - name: http-prompt
+  - name: hugo
+  - name: imagemagick
+  - name: jq
+  - name: libusb
+  - name: libuv
+  - name: lorem
+  - name: mkcert
+  - name: mosh
+  - name: ncdu
+  - name: neovim
+  - name: neovim-remote
+  - name: nikitabobko/tap/aerospace
+  - name: nmap
+  - name: pandoc
+  - name: par
+  - name: php
+  - name: podman
+  - name: postgresql
+  - name: potrace
+  - name: pv
+  - name: qrencode
+  - name: rename
+  - name: rlwrap
+  - name: rustup-init
+  - name: shellcheck
+  - name: skopeo
+  - name: sqlite
+  - name: supabase/tap/supabase
+  - name: svn
+  - name: the_silver_searcher
+  - name: telnet
+  - name: terminal-notifier
+  - name: tidy-html5
+  - name: tig
+  - name: trash
+  - name: vultr
+  - name: watchexec
+  - name: webp
+  - name: wget
+  - name: wget2
+  - name: wrk
+  - name: yamllint
+  - name: yarn
+  - name: zbar
+  - name: zored/homebrew-brew/docker-machine-ipconfig
+
+homebrew_casks: # TODO separate fonts
+  - font-aileron
+  - font-alfa-slab-one
+  - font-atkinson-hyperlegible
+  - font-bagel-fat-one
+  - font-charter
+  - font-cooper-hewitt
+  - font-courier-prime
+  - font-courier-prime-code
+  - font-courier-prime-medium-and-semi-bold
+  - font-courier-prime-sans
+  - font-fira-code
+  - font-fira-mono
+  - font-fira-sans
+  - font-fira-sans-condensed
+  - font-fira-sans-extra-condensed
+  - font-geist
+  - font-geist-mono
+  - font-ibm-plex
+  - font-ibm-plex-mono
+  - font-ibm-plex-sans
+  - font-ibm-plex-serif
+  - font-league-spartan
+  - font-luxurious-script
+  - font-modak
+  - font-monaspace
+  - font-montserrat
+  - font-nunito
+  - font-open-sans
+  - font-patrick-hand
+  - font-permanent-marker
+  - font-raleway
+  - font-rem
+  - font-roboto
+  - font-roboto-mono
+  - font-roboto-serif
+  - font-roboto-slab
+  - font-shantell-sans
+  - font-source-code-pro
+  - font-source-sans-3
+  - font-source-serif-4
+  - font-staatliches
+  - font-yeseva-one
+  - 1password
+  - 1password-cli
+  - 8bitdo-firmware-updater
+  - 8bitdo-ultimate-software
+  - affinity-publisher
+  - amitv87-pip # https://github.com/amitv87/PiP
+  - alfred
+  - bookmacster
+  - calibre
+  - choosy
+  - couleurs
+  - docker
+  - firefox-developer-edition
+  - google-chrome-dev
+  - ghostty
+  - hammerspoon
+  - hazel
+  - homerow
+  - imageoptim
+  - iterm2
+  - jordanbaird-ice
+  - karabiner-elements
+  - keybase
+  - keyboard-maestro
+  - openinterminal
+  - opera-developer
+  - podman-desktop
+  - setapp
+  - sf-symbols
+  - steam
+  - swiftdefaultappsprefpane
+  - syntax-highlight
+  - thingsmacsandboxhelper
+  - transmission-remote-gui
+  - utm
+  - vyprvpn
+  - yattee
+  - zoom
+
+mas_apps:
+  - 1365531024 # 1Blocker
+  - 824183456 # Affinity Photo
+  - 824171161 # Affinity Designer
+  - 1435957248 # Drafts
+  - 1445910651 # Dynamo
+  - 414568915 # Key Codes
+  - 441258766 # Magnet
+  - 1303222628 # Paprika Recipe Manager 3
+  - 639968404 # Parcel
+  - 1529448980 # Reeder 5
+  - 693112260 # Sim Daltonism
+  - 904280696 # Things
+  - 1384080005 # Tweetbot
+  - 1480933944 # Vimari
+
+npm_plugins:
+  - alfred-fkill
+  - curlconverter
+  - dockerfile-language-server-nodejs
+  - firebase-tools
+  - hostile
+  - neovim
+  - netlify-cli
+  - react-devtools
+  - vercel
+  - "@openai/codex"
+
+git_credentials_github_user: "{{ vault_git_credentials_github_user }}"
+git_credentials_github_token: "{{ vault_git_credentials_github_token }}"
+git_credentials_gitlab_token: "{{ vault_git_credentials_gitlab_token }}"
+
+proxy_domains: "{{ vault_proxy_domains }}"
+
+nvim_modules:
+  - url: https://github.com/neoclide/coc.nvim
+    do: yarn install --frozen-lockfile
+  - url: https://github.com/nvim-lua/plenary.nvim
+  - url: https://github.com/greggh/claude-code.nvim
+  - url: https://github.com/johnseth97/codex.nvim
+  - url: https://github.com/tpope/vim-unimpaired
+  - url: https://github.com/catppuccin/nvim
+  - url: https://github.com/fcpg/vim-kickfix
+  - url: https://github.com/tpope/vim-commentary
+  - url: https://github.com/tpope/vim-fugitive
+  - url: https://github.com/tpope/vim-repeat
+  - url: https://github.com/junegunn/gv.vim
+  - url: https://github.com/mbbill/undotree
+  - url: https://github.com/mogelbrod/vim-jsonpath
+  - url: https://github.com/shumphrey/fugitive-gitlab.vim
+  - url: https://github.com/tpope/vim-rhubarb
+  - url: https://github.com/tpope/vim-eunuch
+  - url: https://github.com/tpope/vim-abolish
+  - url: https://github.com/bkad/CamelCaseMotion
+  - url: https://github.com/wellle/targets.vim
+  - url: https://github.com/glts/vim-textobj-comment
+  - url: https://github.com/kana/vim-textobj-entire
+  - url: https://github.com/kana/vim-textobj-indent
+  - url: https://github.com/kana/vim-textobj-line
+  - url: https://github.com/kana/vim-textobj-syntax # TODO this is being underutilised (iy/ay)
+  - url: https://github.com/kana/vim-textobj-user
+  - url: https://github.com/jceb/vim-textobj-uri
+  - url: https://github.com/tpope/vim-speeddating
+  - url: https://github.com/tpope/vim-surround
+  - url: https://github.com/tommcdo/vim-lion
+  - url: https://github.com/tpope/vim-characterize
+  - url: https://github.com/jeetsukumaran/vim-indentwise
+  - url: https://github.com/editorconfig/editorconfig-vim
+  - url: https://github.com/majutsushi/tagbar
+  - url: https://github.com/machakann/vim-swap
+  - url: https://github.com/christoomey/vim-sort-motion
+  - url: https://github.com/tpope/vim-scriptease # TODO remove? I am using less and less vimscript
+  - url: https://github.com/AndrewRadev/switch.vim # TODO this is being underutilised. Think about elm
+  - url: https://github.com/AndrewRadev/splitjoin.vim # TODO this is being underutilised
+  - url: https://github.com/tpope/vim-projectionist # TODO this is being underutilised
+  - url: https://github.com/justinmk/vim-dirvish # TODO this is being underutilised
+  - url: https://github.com/bounceme/remote-viewer
+  - url: https://github.com/kristijanhusak/vim-dirvish-git
+    #  - url: https://github.com/fsharpasharp/vim-dirvinist TODO add when vim-projectionist is not being underutilised
+  - url: https://github.com/tpope/vim-dispatch # TODO this is being underutilised
+  - url: https://github.com/TSFoster/vim-dispatch-neovim
+  - url: https://github.com/tpope/vim-dotenv
+    start: no
+  - url: https://github.com/amadeus/vim-convert-color-to
+  - url: https://github.com/ap/vim-css-color
+  - url: https://github.com/chrisbra/csv.vim
+    start: no
+  - url: https://github.com/mattn/emmet-vim
+    start: no
+  - url: https://github.com/justinmk/vim-sneak
+    pack: trialling
+  - url: https://github.com/neovim/nvim-lspconfig # TODO use
+  - url: https://github.com/jbgutierrez/vim-partial # TODO add definitions
+    pack: trialling
+  - url: https://github.com/wellle/visual-split.vim
+    pack: trialling
+  - url: https://github.com/honza/vim-snippets # TODO make own collection of snippets instead (crib from this?)
+    pack: trialling
+  - url: https://github.com/sheerun/vim-polyglot # TODO remove?
+    pack: trialling
+  - url: https://github.com/tpope/vim-dadbod # TODO this is being underutilised
+    pack: trialling
+  - url: https://github.com/nvim-treesitter/nvim-treesitter
+  - url: https://github.com/nvim-treesitter/nvim-treesitter-context
+  - url: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
+  - url: https://github.com/nvim-treesitter/nvim-treesitter-refactor
+
+nvim_modules_darwin:
+  - url: https://github.com/rizzatti/dash.vim
+    start: no

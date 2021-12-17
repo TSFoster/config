@@ -1,0 +1,2 @@
+---
+alfred_dir: "{{ config_dir }}/alfred"

@@ -1,0 +1,22 @@
+---
+- name: Install OpenJDK
+  community.general.homebrew:
+    name: openjdk
+    state: present
+- name: Symlink JDK
+  ansible.builtin.file:
+    src: /opt/homebrew/opt/openjdk/libexec/openjdk.jdk
+    dest: /Library/Java/JavaVirtualMachines/openjdk.jdk
+    state: link
+  become: yes
+  when: ansible_system == "Darwin"
+- name: Check svn extension exists
+  ansible.builtin.stat:
+    path: /opt/homebrew/lib/libsvnjavahl-1.dylib
+  register: result
+  when: ansible_system == "Darwin"
+- name: Symlink svn extension
+  ansible.builtin.file:
+    src: /opt/homebrew/lib/libsvnjavahl-1.dylib
+    dest: /Library/Java/Extensions/libsvnjavahl-1.dylib
+  when: ansible_system == "Darwin" and result.stat.exists

@@ -1,0 +1,3 @@
+#!/bin/sh
+CDPATH= cd -- "$(dirname -- "$0")"
+./bootstrap --tags nvim-modules --extra-vars update_nvim_packages=true
