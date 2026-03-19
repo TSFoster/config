@@ -6,11 +6,10 @@
   changed_when: no
 - name: Install global packages
   community.general.npm:
-    name: "{{ item }}"
+    name: "{{ npm_plugins }}"
     global: yes
     state: present
     executable: "{{ npm_location.stdout }}"
-  loop: "{{ npm_plugins }}"
 - name: Check default npm packages
   ansible.builtin.lineinfile:
     path: "{{ config_dir }}/asdf/default-npm-packages"
