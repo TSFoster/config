@@ -58,7 +58,6 @@ homebrew_packages:
   - name: ncdu
   - name: neovim
   - name: neovim-remote
-  - name: nikitabobko/tap/aerospace
   - name: nmap
   - name: pandoc
   - name: par

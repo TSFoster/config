@@ -14,11 +14,6 @@
     src: mailbox-count
     dest: "~/.local/bin/"
     mode: "u+rwx"
-- name: Add aerospace config
-  ansible.builtin.copy:
-    src: aerospace.toml
-    dest: "{{ config_dir }}/aerospace/aerospace.toml"
-  when: ansible_system == "Darwin"
 - name: Add ghostty config
   ansible.builtin.copy:
     src: ghostty.toml
