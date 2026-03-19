@@ -46,4 +46,6 @@ if ! [ -f vault_pass ]; then
   op item get --fields password 'Config vault' >vault_pass
 fi
 
+echo "Installing Ansible collections" >&2 && ansible-galaxy collection install -r collections/requirements.yml
+
 echo "Running playbook" >&2 && ansible-playbook -i "localhost ansible_python_interpreter=$(asdf which python3)," --vault-pass-file vault_pass main.yml $@
