@@ -172,11 +172,11 @@ addMenubarChecker{
   icon = "↘︎",
   seconds = 30,
   onClick = function()
-    hs.execute("{{ ansible_env.HOME }}/.local/bin/mailbox-count Drafts --unread --activate")
+    hs.execute("{{ ansible_facts['env']['HOME'] }}/.local/bin/mailbox-count Drafts --unread --activate")
     hs.application.launchOrFocus "Mail"
   end,
   shouldDisplay = function()
-    local count = tonumber(string.gsub(hs.execute("{{ ansible_env.HOME }}/.local/bin/mailbox-count Drafts"), "%D", ""), 10)
+    local count = tonumber(string.gsub(hs.execute("{{ ansible_facts['env']['HOME'] }}/.local/bin/mailbox-count Drafts"), "%D", ""), 10)
     return count and count > 0
   end,
 }
@@ -185,11 +185,11 @@ addMenubarChecker{
   icon = "↑",
   seconds = 30,
   onClick = function()
-    hs.execute("{{ ansible_env.HOME }}/.local/bin/mailbox-count Updates --unread --activate")
+    hs.execute("{{ ansible_facts['env']['HOME'] }}/.local/bin/mailbox-count Updates --unread --activate")
     hs.application.launchOrFocus "Mail"
   end,
   shouldDisplay = function()
-    local count = tonumber(string.gsub(hs.execute("{{ ansible_env.HOME }}/.local/bin/mailbox-count Updates --unread"), "%D", ""), 10)
+    local count = tonumber(string.gsub(hs.execute("{{ ansible_facts['env']['HOME'] }}/.local/bin/mailbox-count Updates --unread"), "%D", ""), 10)
     return count and count > 0
   end,
 }

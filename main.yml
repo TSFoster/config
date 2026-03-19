@@ -13,24 +13,24 @@
       tags: ["terminfo"]
     - role: homebrew
       tags: ["homebrew"]
-      when: ansible_system == "Darwin"
+      when: ansible_facts["system"] == "Darwin"
     - role: macos
       tags: ["macos"]
-      when: ansible_system == "Darwin"
+      when: ansible_facts["system"] == "Darwin"
     - role: nvim
       tags: ["nvim"]
     - role: hammerspoon
       tags: ["hammerspoon"]
-      when: ansible_system == "Darwin"
+      when: ansible_facts["system"] == "Darwin"
     - role: macos-navigation
       tags: ["macos-navigation"]
-      when: ansible_system == "Darwin"
+      when: ansible_facts["system"] == "Darwin"
     - role: fonts
       tags: ["fonts"]
-      when: ansible_system == "Darwin"
+      when: ansible_facts["system"] == "Darwin"
     - role: macos-dictionaries
       tags: ["dictionaries"]
-      when: ansible_system == "Darwin"
+      when: ansible_facts["system"] == "Darwin"
     - role: docker
       tags: ["docker"]
     - role: java
@@ -39,6 +39,6 @@
       tags: ["cli-tools"]
     - role: alfred
       tags: ["alfred"]
-      when: ansible_system == "Darwin"
+      when: ansible_facts["system"] == "Darwin"
     - role: ripgrep
       tags: ["ripgrep"]

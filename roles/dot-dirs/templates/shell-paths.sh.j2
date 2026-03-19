@@ -1,4 +1,4 @@
-export ASDF_DATA_DIR="{{ ansible_env.HOME }}/.asdf"
+export ASDF_DATA_DIR="{{ ansible_facts['env']['HOME'] }}/.asdf"
 
 if [ -x "{{ homebrew_brew_bin_path }}/brew" ]; then
   eval "$({{ homebrew_brew_bin_path }}/brew shellenv)"

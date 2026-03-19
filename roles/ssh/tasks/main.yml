@@ -10,7 +10,7 @@
   loop: "{{ ssh_keys | product(['','.pub']) | list }}"
 - name: Add id_rsa.pub to authorized_keys
   ansible.posix.authorized_key:
-    user: "{{ ansible_env.USER }}"
+    user: "{{ ansible_facts['env']['USER'] }}"
     state: present
     key: "{{ lookup('file', '~/.ssh/{{ ssh_keys | first }}.pub') }}"
 - name: Copy SSH config

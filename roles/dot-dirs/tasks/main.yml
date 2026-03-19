@@ -2,7 +2,7 @@
 - name: Create ~/.local directory structure
   ansible.builtin.file:
     state: directory
-    dest: "{{ ansible_env.HOME }}/.local/{{ item }}"
+    dest: "{{ ansible_facts['env']['HOME'] }}/.local/{{ item }}"
   loop:
     - bin
     - cache

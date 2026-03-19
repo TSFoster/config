@@ -1,2 +1,2 @@
 Host *
-	IdentityAgent "~/{{ (ansible_system == 'Darwin') | ternary('Library/Group Containers/2BUA8C4S2C.com.1password/t', '.1password') }}/agent.sock"
+	IdentityAgent "~/{{ (ansible_facts['system'] == 'Darwin') | ternary('Library/Group Containers/2BUA8C4S2C.com.1password/t', '.1password') }}/agent.sock"

@@ -5,11 +5,11 @@ ssh_keys:
 
 ansible_become_password: "{{ vault_ansible_become_password }}"
 
-the_user: "{{ ansible_env.USER }}"
+the_user: "{{ ansible_facts['env']['USER'] }}"
 
-config_dir: "{{ ansible_env.XDG_CONFIG_DIR | default(ansible_env.HOME + '/.config') }}"
+config_dir: "{{ ansible_facts['env'].get('XDG_CONFIG_DIR', ansible_facts['env']['HOME'] + '/.config') }}"
 
-homebrew_prefix: "{{ (ansible_machine == 'arm64') | ternary('/opt/homebrew', '/usr/local') }}"
+homebrew_prefix: "{{ (ansible_facts['machine'] == 'arm64') | ternary('/opt/homebrew', '/usr/local') }}"
 homebrew_brew_bin_path: "{{ homebrew_prefix }}/bin"
 homebrew_cask_appdir: /Applications
 
@@ -18,9 +18,9 @@ shell_path_entries:
   - ./node_modules/.bin
   - /usr/local/bin
   - /usr/local/sbin
-  - "{{ ansible_env.HOME }}/.local/bin"
-  - "{{ ansible_env.HOME }}/.cargo/bin"
-  - "{{ ansible_env.HOME }}/.local/share/go/bin"
+  - "{{ ansible_facts['env']['HOME'] }}/.local/bin"
+  - "{{ ansible_facts['env']['HOME'] }}/.cargo/bin"
+  - "{{ ansible_facts['env']['HOME'] }}/.local/share/go/bin"
   - "{{ homebrew_cask_appdir }}/opt/openjdk/bin"
   - /Applications/Setapp/Soulver.app/Contents/MacOS/CLI
 

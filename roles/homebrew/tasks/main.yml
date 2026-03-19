@@ -17,12 +17,12 @@
     install_options: "appdir={{ homebrew_cask_appdir }}"
     sudo_password: "{{ ansible_become_password }}"
   loop: "{{ homebrew_casks }}"
-  when: ansible_system == "Darwin"
+  when: ansible_facts["system"] == "Darwin"
 - name: Install mas
   community.general.homebrew:
     name: mas
     state: present
-  when: ansible_system == "Darwin"
+  when: ansible_facts["system"] == "Darwin"
   tags:
     - mas
 - name: Install MAS apps
@@ -36,6 +36,6 @@
     - name: Skip installing apps from MAS
       ansible.builtin.debug:
         msg: "Skipping installing Mac App Store apps. Sign in to the App Store and try again"
-  when: ansible_system == "Darwin"
+  when: ansible_facts["system"] == "Darwin"
   tags:
     - mas

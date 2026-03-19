@@ -8,7 +8,7 @@
     name: neovim
     state: present
   environment:
-    PATH: "{{ homebrew_prefix }}/opt/ruby/bin:{{ ansible_env.PATH }}"
+    PATH: "{{ homebrew_prefix }}/opt/ruby/bin:{{ ansible_facts['env']['PATH'] }}"
 - name: Install npm neovim module # TODO Check present in default-node-packages?
   community.general.npm:
     name: neovim
@@ -38,7 +38,7 @@
     apply:
       tags:
         - nvim-modules
-  loop: "{{ nvim_modules + (lookup('vars', 'nvim_modules_' + ansible_system) | default([])) }}"
+  loop: "{{ nvim_modules + (lookup('vars', 'nvim_modules_' + ansible_facts['system']) | default([])) }}"
   tags:
     - nvim-modules
 - name: Add github credentials to netrc

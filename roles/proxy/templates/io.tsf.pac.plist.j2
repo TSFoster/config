@@ -7,7 +7,7 @@
     <key>Label</key>
     <string>io.tsf.pac</string>
     <key>Program</key>
-    <string>{{ ansible_env.HOME }}/.local/bin/pac</string>
+    <string>{{ ansible_facts['env']['HOME'] }}/.local/bin/pac</string>
     <key>Sockets</key>
     <dict>
       <key>Listeners</key>
