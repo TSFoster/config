@@ -27,7 +27,7 @@ eval "$($BREW_LOCATION shellenv)"
 ! asdf plugin list | grep -q '^python$' && echo "Installing asdf python plugin" >&2 && asdf plugin install python
 ! asdf list python 3 >/dev/null && echo "Installing python 3 via asdf" >&2 && asdf install python latest:3
 
-! command -v ansible-playbook >/dev/null && echo "Can't find ansible. Installing" >&2 && $(asdf which pip3) install ansible
+! asdf which ansible-playbook >/dev/null 2>&1 && echo "Can't find ansible in asdf python. Installing" >&2 && $(asdf which pip3) install ansible
 
 ! command -v op >/dev/null && echo "Can't find 1password-cli. Installing" >&2 && brew install 1password-cli
 
@@ -46,6 +46,6 @@ if ! [ -f vault_pass ]; then
   op item get --fields password 'Config vault' >vault_pass
 fi
 
-echo "Installing Ansible collections" >&2 && ansible-galaxy collection install -r collections/requirements.yml
+echo "Installing Ansible collections" >&2 && asdf exec ansible-galaxy collection install -r collections/requirements.yml
 
-echo "Running playbook" >&2 && ansible-playbook -i "localhost ansible_python_interpreter=$(asdf which python3)," --vault-pass-file vault_pass main.yml $@
+echo "Running playbook" >&2 && asdf exec ansible-playbook -i "localhost ansible_python_interpreter=$(asdf which python3)," --vault-pass-file vault_pass main.yml $@
