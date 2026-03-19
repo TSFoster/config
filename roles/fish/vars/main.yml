@@ -37,16 +37,7 @@ universal_variables:
     path: yes
     export: yes
   - name: fish_user_paths
-    value_multiple:
-      - ./bin
-      - ./node_modules/.bin
-      - /usr/local/bin
-      - /usr/local/sbin
-      - "{{ ansible_env.HOME }}/.local/bin"
-      - "{{ ansible_env.HOME }}/.cargo/bin"
-      - "{{ _uv.xdg_data }}/go/bin"
-      - "{{ homebrew_cask_appdir }}/opt/openjdk/bin"
-      - /Applications/Setapp/Soulver.app/Contents/MacOS/CLI
+    value_multiple: "{{ shell_path_entries }}"
     export: yes
   - name: HOMEBREW_CASK_OPTS
     value: "{{ _uv.isMac | ternary('--appdir=' + homebrew_cask_appdir, omit) }}"

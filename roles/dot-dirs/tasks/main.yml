@@ -46,6 +46,14 @@
   ansible.builtin.copy:
     src: editorconfig
     dest: ~/.editorconfig
+- name: Add zprofile
+  ansible.builtin.template:
+    src: zprofile.j2
+    dest: ~/.zprofile
+- name: Add bash_profile
+  ansible.builtin.template:
+    src: bash_profile.j2
+    dest: ~/.bash_profile
 - name: Add warpd config
   ansible.builtin.copy:
     src: warpd

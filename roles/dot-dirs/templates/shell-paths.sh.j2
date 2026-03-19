@@ -1,0 +1,19 @@
+export ASDF_DATA_DIR="{{ ansible_env.HOME }}/.asdf"
+
+if [ -x "{{ homebrew_brew_bin_path }}/brew" ]; then
+  eval "$({{ homebrew_brew_bin_path }}/brew shellenv)"
+fi
+
+path_prepend() {
+  case ":$PATH:" in
+    *":$1:"*) ;;
+    *) PATH="$1${PATH:+:$PATH}" ;;
+  esac
+}
+
+{% for entry in (shell_path_entries + ['$ASDF_DATA_DIR/shims']) | reverse %}
+path_prepend "{{ entry }}"
+{% endfor %}
+
+unset -f path_prepend
+export PATH
