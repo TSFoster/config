@@ -156,9 +156,6 @@ universal_variables:
   - name: psg
     value: psgrep
     abbr: yes
-  - name: ssh
-    value: "env TERM=xterm-256color ssh"
-    abbr: yes
   - name: words
     value: "grep < /usr/share/dict/words"
     abbr: yes

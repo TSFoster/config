@@ -167,7 +167,6 @@ homebrew_casks: # TODO separate fonts
   - hazel
   - homerow
   - imageoptim
-  - iterm2
   - jordanbaird-ice
   - karabiner-elements
   - keybase
