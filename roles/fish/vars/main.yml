@@ -13,6 +13,7 @@ _uv:
   iCloud: "{{ ansible_facts['env']['HOME'] }}/Library/Mobile Documents/com~apple~CloudDocs"
   isMac: "{{ ansible_facts['system'] == 'Darwin' }}"
   editor: "abduco -A nvim-(random) nvim"
+  shell_path_entries: "{{ shell_path_entries + (lookup('vars', 'shell_path_entries_' + (ansible_facts['system'] | lower)) | default([])) }}"
 universal_variables:
   - name: PAGER
     value: less # TODO nvr/nvim +Man!
@@ -37,7 +38,7 @@ universal_variables:
     path: yes
     export: yes
   - name: fish_user_paths
-    value_multiple: "{{ shell_path_entries }}"
+    value_multiple: "{{ _uv.shell_path_entries }}"
     export: yes
   - name: HOMEBREW_CASK_OPTS
     value: "{{ _uv.isMac | ternary('--appdir=' + homebrew_cask_appdir, omit) }}"

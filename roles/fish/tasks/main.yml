@@ -86,7 +86,7 @@
 - name: Get homebrew config
   ansible.builtin.command:
     creates: "{{ config_dir }}/fish/conf.d/_0homebrew.fish"
-    cmd: "{{ homebrew_brew_bin_path }}/fish -c '{{ homebrew_brew_bin_path }}/brew shellenv > {{ config_dir }}/fish/conf.d/_0homebrew.fish'"
+    cmd: "{{ homebrew_brew_bin_path }}/fish -c '{{ homebrew_brew_bin_path }}/brew shellenv fish > {{ config_dir }}/fish/conf.d/_0homebrew.fish'"
 - name: Add hugo completion # TODO add this to hugo role instead
   ansible.builtin.command:
     creates: "{{ config_dir }}/fish/completions/hugo.fish"

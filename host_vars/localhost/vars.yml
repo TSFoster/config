@@ -21,6 +21,8 @@ shell_path_entries:
   - "{{ ansible_facts['env']['HOME'] }}/.local/bin"
   - "{{ ansible_facts['env']['HOME'] }}/.cargo/bin"
   - "{{ ansible_facts['env']['HOME'] }}/.local/share/go/bin"
+
+shell_path_entries_darwin:
   - "{{ homebrew_cask_appdir }}/opt/openjdk/bin"
   - /Applications/Setapp/Soulver.app/Contents/MacOS/CLI
 
