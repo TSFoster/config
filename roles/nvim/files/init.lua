@@ -321,9 +321,6 @@ keymap.set("n", ">L", function() while true do cmd.silent("lnewer") end end, { d
 
 keymap.set("i", "<C-c>", "<ESC>", { desc = "Ensure InsertLeave is triggered with <C-c>" })
 
--- Important mapping for using abduco within abduco nvim
-keymap.set("t", "<M-z>", "<C-z>", { desc = "Background key" })
-
 -- Overrides builtin gh (select mode), but I never use that
 keymap.set("n", "gh", "ciw<C-r>=printf('0x%x', <C-r>\")<CR><Esc>", { silent = true, desc = "Convert bases" })
 

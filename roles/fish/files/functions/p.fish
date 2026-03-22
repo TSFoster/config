@@ -161,7 +161,7 @@ function p
     echo $projectDir
   else
     pushd $projectDir
-    abduco -A nvim-$projectName nvim
+    zmx attach nvim-$projectName nvim
     popd
   end
 
