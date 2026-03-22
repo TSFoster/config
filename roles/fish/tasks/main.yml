@@ -87,14 +87,6 @@
   ansible.builtin.command:
     creates: "{{ config_dir }}/fish/conf.d/_0homebrew.fish"
     cmd: "{{ homebrew_brew_bin_path }}/fish -c '{{ homebrew_brew_bin_path }}/brew shellenv fish > {{ config_dir }}/fish/conf.d/_0homebrew.fish'"
-- name: Add hugo completion # TODO add this to hugo role instead
-  ansible.builtin.command:
-    creates: "{{ config_dir }}/fish/completions/hugo.fish"
-    cmd: "{{ homebrew_brew_bin_path }}/fish -c '{{ homebrew_brew_bin_path }}/hugo completion fish > {{ config_dir }}/fish/completions/hugo.fish'"
-- name: Add asdf completion # TODO add this to hugo role instead
-  ansible.builtin.command:
-    creates: "{{ config_dir }}/fish/completions/asdf.fish"
-    cmd: "{{ homebrew_brew_bin_path }}/fish -c '{{ homebrew_brew_bin_path }}/asdf completion fish > {{ config_dir }}/fish/completions/asdf.fish'"
 - name: Check fisher installed
   ansible.builtin.command:
     cmd: 'fish -c "functions -q fisher; and echo installed; exit 0"'
