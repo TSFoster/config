@@ -1,0 +1,48 @@
+# Managed by Ansible. Keep PATH setup in sync with the shells role.
+
+{% include 'shell-env.sh.j2' %}
+
+if [ -x "{{ homebrew_brew_bin_path }}/brew" ]; then
+  eval "$({{ homebrew_brew_bin_path }}/brew shellenv zsh)"
+fi
+
+path_append() {
+  case ":$PATH:" in
+    *":$1:"*) ;;
+    *) PATH="${PATH:+$PATH:}$1" ;;
+  esac
+}
+
+path_remove() {
+  _new_path=
+  _old_ifs=$IFS
+  IFS=:
+  for _path_item in $PATH; do
+    if [ -n "$_path_item" ] && [ "$_path_item" != "$1" ]; then
+      _new_path="${_new_path:+$_new_path:}$_path_item"
+    fi
+  done
+  IFS=$_old_ifs
+  PATH=$_new_path
+  unset _new_path _old_ifs _path_item
+}
+
+{% for entry in _uv.shell_path_entries %}
+path_append "{{ entry }}"
+{% endfor %}
+
+if [ -f "{{ homebrew_prefix }}/opt/asdf/libexec/asdf.sh" ]; then
+  . "{{ homebrew_prefix }}/opt/asdf/libexec/asdf.sh"
+
+  _asdf_bin="${ASDF_DIR}/bin"
+  _asdf_shims="${ASDF_DATA_DIR}/shims"
+  path_remove "$_asdf_bin"
+  path_remove "$_asdf_shims"
+  path_append "$_asdf_bin"
+  path_append "$_asdf_shims"
+  unset _asdf_bin _asdf_shims
+fi
+
+unset -f path_append
+unset -f path_remove
+export PATH

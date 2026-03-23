@@ -29,4 +29,4 @@ end
 
 # ASDF
 
-set -gx --prepend PATH $ASDF_DATA_DIR/shims
+test -f "{{ homebrew_prefix }}/opt/asdf/libexec/asdf.fish"; and source "{{ homebrew_prefix }}/opt/asdf/libexec/asdf.fish"

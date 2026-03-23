@@ -4,7 +4,9 @@ font-family = "Triplicate A Code"
 font-size = 12
 font-thicken = true
 font-thicken-strength = 180
+{% if ansible_facts["system"] == "Darwin" %}
 macos-option-as-alt = right
+{% endif %}
 shell-integration-features = ssh-terminfo,ssh-env
 tab-inherit-working-directory = false
 theme = Catppuccin Latte

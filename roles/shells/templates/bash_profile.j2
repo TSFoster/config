@@ -1,0 +1,14 @@
+# Managed by Ansible. Keep PATH setup in sync with the shells role.
+
+{% include 'shell-env.sh.j2' %}
+
+{% set shell_paths_brew_shell = 'bash' %}
+{% include 'shell-paths.sh.j2' %}
+
+if [ -f "{{ homebrew_prefix }}/opt/asdf/libexec/asdf.sh" ]; then
+  . "{{ homebrew_prefix }}/opt/asdf/libexec/asdf.sh"
+fi
+
+if [ -f "{{ homebrew_prefix }}/etc/bash_completion.d/asdf.bash" ]; then
+  . "{{ homebrew_prefix }}/etc/bash_completion.d/asdf.bash"
+fi

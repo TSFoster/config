@@ -7,6 +7,17 @@ fisher_plugins:
   - catppuccin/fish
   - jethrokuan/fzf
   - topdroplabs/docker-fish-completion
+shell_path_entries:
+  - ./bin
+  - ./node_modules/.bin
+  - /usr/local/bin
+  - /usr/local/sbin
+  - "{{ ansible_facts['env']['HOME'] }}/.local/bin"
+  - "{{ ansible_facts['env']['HOME'] }}/.cargo/bin"
+  - "{{ ansible_facts['env']['HOME'] }}/.local/share/go/bin"
+shell_path_entries_darwin:
+  - "{{ homebrew_cask_appdir }}/opt/openjdk/bin"
+  - /Applications/Setapp/Soulver.app/Contents/MacOS/CLI
 _uv:
   xdg_data: "{{ ansible_facts['env']['HOME'] }}/.local/share"
   fd_default: --exclude node_modules --exclude .git --exclude elm-stuff --exclude bower_components --exclude target --exclude .DS_Store --exclude .sass-cache --hidden
@@ -14,7 +25,7 @@ _uv:
   isMac: "{{ ansible_facts['system'] == 'Darwin' }}"
   editor: "zmx attach nvim-(random) nvim"
   shell_path_entries: "{{ shell_path_entries + (lookup('vars', 'shell_path_entries_' + (ansible_facts['system'] | lower)) | default([])) }}"
-universal_variables:
+shell_variables:
   - name: PAGER
     value: less # TODO nvr/nvim +Man!
     export: yes
@@ -32,10 +43,6 @@ universal_variables:
     export: yes
   - name: GOPATH
     value: "{{ _uv.xdg_data }}/go"
-    path: yes
-    export: yes
-  - name: fish_user_paths
-    value_multiple: "{{ _uv.shell_path_entries }}"
     export: yes
   - name: HOMEBREW_CASK_OPTS
     value: "{{ _uv.isMac | ternary('--appdir=' + homebrew_cask_appdir, omit) }}"
@@ -84,78 +91,66 @@ universal_variables:
   - name: clients
     export: yes
     value: "{{ _uv.isMac | ternary(_uv.iCloud + '/Documents/Work/Clients', omit) }}"
+fish_universal_variables:
+  - name: fish_user_paths
+    value_multiple: "{{ _uv.shell_path_entries }}"
+    export: yes
+    path: yes
+shell_abbreviations:
   - name: an
     value: ansible
-    abbr: yes
   - name: ap
     value: ansible-playbook
-    abbr: yes
   - name: d
     value: docker
-    abbr: yes
   - name: dm
     value: docker-machine
-    abbr: yes
   - name: dsw
     value: docker swarm
-    abbr: yes
   - name: ds
     value: docker service
-    abbr: yes
   - name: dc
     value: docker compose
-    abbr: yes
   - name: g
     value: git
-    abbr: yes
   - name: gca
     value: git commit --amend
-    abbr: yes
   - name: gcane
     value: git commit --amend --no-edit
-    abbr: yes
   - name: gd
     value: git diff
-    abbr: yes
   - name: gdc
     value: git diff --cached
-    abbr: yes
   - name: gst
     value: git stash
-    abbr: yes
   - name: gsp
     value: git stash pop
-    abbr: yes
   - name: gs
     value: git status
-    abbr: yes
   - name: gh
     value: op plugin run -- gh
-    abbr: yes
   - name: glab
     value: op plugin run -- glab
-    abbr: yes
   - name: doctl
     value: op plugin run -- doctl
-    abbr: yes
   - name: l
     value: ls
-    abbr: yes
   - name: la
     value: ls -A
-    abbr: yes
   - name: ll
     value: ls -l
-    abbr: yes
   - name: psg
     value: psgrep
-    abbr: yes
   - name: words
     value: "grep < /usr/share/dict/words"
-    abbr: yes
   - name: lw
     value: "ls -l (which"
-    abbr: yes
+    shell_alias: no
   - name: v
     value: "{{ _uv.editor }}"
-    abbr: yes
+  - name: man
+    value: viman
+    shell_alias: no
+  - name: e
+    value: "{{ _uv.editor }}"
+    shell_alias: no

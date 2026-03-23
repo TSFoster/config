@@ -1,8 +1,8 @@
 ---
 - hosts: localhost
   roles:
-    - role: fish
-      tags: ["fish"]
+    - role: shells
+      tags: ["shells"]
     - role: dot-dirs
       tags: ["dot-dirs"]
     - role: ssh

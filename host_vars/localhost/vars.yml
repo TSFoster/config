@@ -13,19 +13,6 @@ homebrew_prefix: "{{ (ansible_facts['machine'] == 'arm64') | ternary('/opt/homeb
 homebrew_brew_bin_path: "{{ homebrew_prefix }}/bin"
 homebrew_cask_appdir: /Applications
 
-shell_path_entries:
-  - ./bin
-  - ./node_modules/.bin
-  - /usr/local/bin
-  - /usr/local/sbin
-  - "{{ ansible_facts['env']['HOME'] }}/.local/bin"
-  - "{{ ansible_facts['env']['HOME'] }}/.cargo/bin"
-  - "{{ ansible_facts['env']['HOME'] }}/.local/share/go/bin"
-
-shell_path_entries_darwin:
-  - "{{ homebrew_cask_appdir }}/opt/openjdk/bin"
-  - /Applications/Setapp/Soulver.app/Contents/MacOS/CLI
-
 homebrew_taps:
   - homebrew/cask-versions
 

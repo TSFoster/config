@@ -1,0 +1,7 @@
+{% for item in shell_variables %}
+{% if item.export | default(false, true) %}export {% endif %}{{ item.name }}={{ item.value | to_json }}
+{% endfor %}
+
+{% for item in shell_abbreviations if item.shell_alias | default(true) %}
+alias {{ item.name }}={{ item.value | to_json }}
+{% endfor %}

@@ -20,6 +20,14 @@
     state: touch
     modification_time: preserve
     access_time: preserve
+- name: Add zprofile
+  ansible.builtin.template:
+    src: zprofile.j2
+    dest: ~/.zprofile
+- name: Add bash_profile
+  ansible.builtin.template:
+    src: bash_profile.j2
+    dest: ~/.bash_profile
 - name: Create fish_variables
   ansible.builtin.file:
     path: "{{ config_dir }}/fish/fish_variables"
@@ -28,19 +36,15 @@
     access_time: preserve
   tags:
     - vars_debug
-- name: Set universal variables and abbreviations
+- name: Set fish universal shell variables
   ansible.builtin.lineinfile:
     path: "{{ config_dir }}/fish/fish_variables"
     create: yes
-    regexp: "^SETUVAR (--export )?(--path )?{% if item.abbr | default(false, true) %}_fish_abbr_{% endif %}{{ item.name }}:"
+    regexp: "^SETUVAR (--export )?(--path )?{{ item.name }}:"
     line: >-
       SETUVAR{{ ' ' }}
-      {%- if item.abbr | default(false, true) -%}
-        _fish_abbr_
-      {%- else -%}
-        {% if item.export | default(false, true) %}--export {% endif -%}
-        {% if item.path | default(false, true) %}--path {% endif -%}
-      {% endif -%}
+      {% if item.export | default(false, true) %}--export {% endif -%}
+      {% if item.path | default(false, true) %}--path {% endif -%}
       {{ item.name }}:
       {{- item.value_multiple | default([item.value])
         | join('\x1e')
@@ -57,7 +61,32 @@
         | replace('}', '\x7d')
         | replace('~', '\x7e')
       }}
-  loop: "{{ universal_variables }}"
+  loop: "{{ shell_variables + fish_universal_variables }}"
+  tags:
+    - vars_debug
+- name: Set fish abbreviations
+  ansible.builtin.lineinfile:
+    path: "{{ config_dir }}/fish/fish_variables"
+    create: yes
+    regexp: "^SETUVAR _fish_abbr_{{ item.name }}:"
+    line: >-
+      SETUVAR _fish_abbr_{{ item.name }}:
+      {{- [item.value]
+        | join('\x1e')
+        | replace(' ', '\x20')
+        | replace('%', '\x25')
+        | replace('(', '\x28')
+        | replace(')', '\x29')
+        | replace('-', '\x2d')
+        | replace('.', '\x2e')
+        | replace('<', '\x3c')
+        | replace('=', '\x3d')
+        | replace('>', '\x3e')
+        | replace('{', '\x7b')
+        | replace('}', '\x7d')
+        | replace('~', '\x7e')
+      }}
+  loop: "{{ shell_abbreviations }}"
   tags:
     - vars_debug
 - name: Copy fish config
