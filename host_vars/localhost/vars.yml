@@ -1,7 +1,5 @@
 ---
-ssh_keys:
-  - id_rsa # First is used for authorized_keys
-  - id_rsa_millk
+ssh_keys: "{{ vault_ssh_keys }}"
 
 ansible_become_password: "{{ vault_ansible_become_password }}"
 
