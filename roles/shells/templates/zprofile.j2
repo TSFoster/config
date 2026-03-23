@@ -31,6 +31,12 @@ path_remove() {
 path_append "{{ entry }}"
 {% endfor %}
 
+if [ -o interactive ]; then
+{% for entry in _uv.shell_path_entries_interactive %}
+  path_append "./{{ entry }}"
+{% endfor %}
+fi
+
 if [ -f "{{ homebrew_prefix }}/opt/asdf/libexec/asdf.sh" ]; then
   . "{{ homebrew_prefix }}/opt/asdf/libexec/asdf.sh"
 

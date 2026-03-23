@@ -13,5 +13,18 @@ path_prepend() {
 path_prepend "{{ entry }}"
 {% endfor %}
 
-unset -f path_prepend
+path_remove() {
+  _new_path=
+  _old_ifs=$IFS
+  IFS=:
+  for _path_item in $PATH; do
+    if [ -n "$_path_item" ] && [ "$_path_item" != "$1" ]; then
+      _new_path="${_new_path:+$_new_path:}$_path_item"
+    fi
+  done
+  IFS=$_old_ifs
+  PATH=$_new_path
+  unset _new_path _old_ifs _path_item
+}
+
 export PATH

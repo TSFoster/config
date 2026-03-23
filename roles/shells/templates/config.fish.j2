@@ -9,6 +9,10 @@
 
 status is-interactive; or exit 0
 
+{% for entry in _uv.shell_path_entries_interactive %}
+contains -- "./{{ entry }}" $PATH; or set -gxp PATH "./{{ entry }}"
+{% endfor %}
+
 
 # TOOL SETUP
 

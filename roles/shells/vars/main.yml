@@ -7,9 +7,10 @@ fisher_plugins:
   - catppuccin/fish
   - jethrokuan/fzf
   - topdroplabs/docker-fish-completion
+shell_path_entries_interactive:
+  - bin
+  - node_modules/.bin
 shell_path_entries:
-  - ./bin
-  - ./node_modules/.bin
   - /usr/local/bin
   - /usr/local/sbin
   - "{{ ansible_facts['env']['HOME'] }}/.local/bin"
@@ -25,6 +26,7 @@ _uv:
   isMac: "{{ ansible_facts['system'] == 'Darwin' }}"
   editor: "zmx attach nvim-(random) nvim"
   shell_path_entries: "{{ shell_path_entries + (lookup('vars', 'shell_path_entries_' + (ansible_facts['system'] | lower)) | default([])) }}"
+  shell_path_entries_interactive: "{{ shell_path_entries_interactive }}"
 shell_variables:
   - name: PAGER
     value: less # TODO nvr/nvim +Man!
