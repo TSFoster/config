@@ -12,7 +12,11 @@
   ansible.posix.authorized_key:
     user: "{{ ansible_facts['env']['USER'] }}"
     state: present
-    key: "{{ lookup('file', '~/.ssh/{{ ssh_keys | first }}.pub') }}"
+    key: "{{ lookup('file', '~/.ssh/' ~ (ssh_keys | first) ~ '.pub') }}"
+- name: Make .ssh/config.d dir
+  ansible.builtin.file:
+    path: ~/.ssh/config.d
+    state: directory
 - name: Copy SSH config
   ansible.builtin.template:
     src: "config.j2"

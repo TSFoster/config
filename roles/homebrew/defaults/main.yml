@@ -1,0 +1,178 @@
+---
+homebrew_cask_appdir: /Applications
+
+homebrew_taps:
+  - homebrew/cask-versions
+
+homebrew_packages:
+  - name: asdf
+  - name: bat
+  - name: cloc
+  - name: closure-compiler
+  - name: container-diff
+  - name: dhall-json
+  - name: dive
+  - name: docker-machine-driver-vultr
+  - name: doctl
+  - name: efm-langserver
+  - name: exercism
+  - name: fd
+  - name: felixkratz/formulae/borders
+  - name: ffmpeg
+  - name: fish
+  - name: fswatch
+  - name: fx
+  - name: fzf
+  - name: gawk
+  - name: gh
+  - name: gifski
+  - name: gist
+  - name: git
+  - name: glab
+  - name: gnupg
+  - name: go
+  - name: gperf
+  - name: httpie
+  - name: http-prompt
+  - name: hugo
+  - name: imagemagick
+  - name: jq
+  - name: libusb
+  - name: libuv
+  - name: lorem
+  - name: mkcert
+  - name: mosh
+  - name: ncdu
+  - name: neovim
+  - name: neovim-remote
+  - name: nmap
+  - name: neurosnap/tap/zmx
+  - name: pandoc
+  - name: par
+  - name: php
+  - name: podman
+  - name: postgresql
+  - name: potrace
+  - name: pv
+  - name: qrencode
+  - name: rename
+  - name: rlwrap
+  - name: rustup-init
+  - name: shellcheck
+  - name: skopeo
+  - name: sqlite
+  - name: supabase/tap/supabase
+  - name: svn
+  - name: the_silver_searcher
+  - name: telnet
+  - name: terminal-notifier
+  - name: tidy-html5
+  - name: tig
+  - name: trash
+  - name: vultr
+  - name: watchexec
+  - name: webp
+  - name: wget
+  - name: wget2
+  - name: wrk
+  - name: yamllint
+  - name: yarn
+  - name: zbar
+  - name: zored/homebrew-brew/docker-machine-ipconfig
+
+homebrew_casks: # TODO separate fonts
+  - font-aileron
+  - font-alfa-slab-one
+  - font-atkinson-hyperlegible
+  - font-bagel-fat-one
+  - font-charter
+  - font-cooper-hewitt
+  - font-courier-prime
+  - font-courier-prime-code
+  - font-courier-prime-medium-and-semi-bold
+  - font-courier-prime-sans
+  - font-fira-code
+  - font-fira-mono
+  - font-fira-sans
+  - font-fira-sans-condensed
+  - font-fira-sans-extra-condensed
+  - font-geist
+  - font-geist-mono
+  - font-ibm-plex
+  - font-ibm-plex-mono
+  - font-ibm-plex-sans
+  - font-ibm-plex-serif
+  - font-league-spartan
+  - font-luxurious-script
+  - font-modak
+  - font-monaspace
+  - font-montserrat
+  - font-nunito
+  - font-open-sans
+  - font-patrick-hand
+  - font-permanent-marker
+  - font-raleway
+  - font-rem
+  - font-roboto
+  - font-roboto-mono
+  - font-roboto-serif
+  - font-roboto-slab
+  - font-shantell-sans
+  - font-source-code-pro
+  - font-source-sans-3
+  - font-source-serif-4
+  - font-staatliches
+  - font-yeseva-one
+  - 1password
+  - 1password-cli
+  - 8bitdo-firmware-updater
+  - 8bitdo-ultimate-software
+  - affinity-publisher
+  - amitv87-pip # https://github.com/amitv87/PiP
+  - alfred
+  - bookmacster
+  - calibre
+  - choosy
+  - couleurs
+  - docker
+  - firefox-developer-edition
+  - google-chrome-dev
+  - ghostty
+  - hammerspoon
+  - hazel
+  - homerow
+  - imageoptim
+  - jordanbaird-ice
+  - karabiner-elements
+  - keybase
+  - keyboard-maestro
+  - openinterminal
+  - opera-developer
+  - podman-desktop
+  - setapp
+  - sf-symbols
+  - steam
+  - swiftdefaultappsprefpane
+  - syntax-highlight
+  - thingsmacsandboxhelper
+  - transmission-remote-gui
+  - utm
+  - vyprvpn
+  - yattee
+  - zoom
+
+mas_apps:
+  - 1365531024 # 1Blocker
+  - 824183456 # Affinity Photo
+  - 824171161 # Affinity Designer
+  - 1435957248 # Drafts
+  - 1445910651 # Dynamo
+  - 414568915 # Key Codes
+  - 441258766 # Magnet
+  - 1303222628 # Paprika Recipe Manager 3
+  - 639968404 # Parcel
+  - 1529448980 # Reeder 5
+  - 693112260 # Sim Daltonism
+  - 904280696 # Things
+  - 1384080005 # Tweetbot
+  - 1480933944 # Vimari

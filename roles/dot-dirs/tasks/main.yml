@@ -20,15 +20,9 @@
     src: ghostty.toml.j2
     dest: "{{ config_dir }}/ghostty/config"
 - name: Add gh config
-  block:
-    - name: Make directory
-      ansible.builtin.file:
-        path: "{{ config_dir }}/gh"
-        state: directory
-    - name: Copy config.yml
-      ansible.builtin.copy:
-        src: gh-config.yml
-        dest: "{{ config_dir }}/gh/config.yml"
+  ansible.builtin.copy:
+    src: gh
+    dest: "{{ config_dir }}/"
 - name: Add yazi config
   ansible.builtin.copy:
     src: yazi

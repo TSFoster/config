@@ -48,4 +48,4 @@ fi
 
 echo "Installing Ansible collections" >&2 && asdf exec ansible-galaxy collection install -r collections/requirements.yml
 
-echo "Running playbook" >&2 && asdf exec ansible-playbook -i "localhost ansible_python_interpreter=$(asdf which python3)," --vault-pass-file vault_pass main.yml $@
+echo "Running playbook" >&2 && asdf exec ansible-playbook -i "localhost ansible_python_interpreter=$(asdf which python3)," main.yml $@
