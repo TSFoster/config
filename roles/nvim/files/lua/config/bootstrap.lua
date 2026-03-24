@@ -15,6 +15,8 @@ end
 local path_package = vim.fn.stdpath("data") .. "/site"
 local mini_path = path_package .. "/pack/deps/start/mini.nvim"
 
+vim.opt.rtp:append(path_package)
+
 if not vim.uv.fs_stat(mini_path) then
   vim.fn.mkdir(path_package .. "/pack/deps/start", "p")
 

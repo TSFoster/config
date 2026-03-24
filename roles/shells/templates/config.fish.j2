@@ -34,3 +34,20 @@ end
 # ASDF
 
 test -f "{{ homebrew_prefix }}/opt/asdf/libexec/asdf.fish"; and source "{{ homebrew_prefix }}/opt/asdf/libexec/asdf.fish"
+if set -q ASDF_DIR
+set -l _asdf_bin "$ASDF_DIR/bin"
+set -l _asdf_shims "$HOME/.asdf/shims"
+if set -q ASDF_DATA_DIR
+set _asdf_shims "$ASDF_DATA_DIR/shims"
+end
+
+while contains -- "$_asdf_bin" $PATH
+set -e PATH[(contains --index -- "$_asdf_bin" $PATH)]
+end
+while contains -- "$_asdf_shims" $PATH
+set -e PATH[(contains --index -- "$_asdf_shims" $PATH)]
+end
+
+set -p PATH "$_asdf_bin"
+set -p PATH "$_asdf_shims"
+end

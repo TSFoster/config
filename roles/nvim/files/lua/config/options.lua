@@ -38,6 +38,42 @@ opt.showmode = false
 
 g.mapleader = " "
 
+vim.filetype.add({
+  extension = {
+    gotmpl = "gotmpl",
+    hbs = "handlebars",
+    mdx = "markdown.mdx",
+  },
+  filename = {
+    ["go.work"] = "gowork",
+  },
+  pattern = {
+    [".*/%.gitlab%-ci%.yaml"] = "yaml.gitlab",
+    [".*/%.gitlab%-ci%.yml"] = "yaml.gitlab",
+    [".*/docker%-compose%.yaml"] = "yaml.docker-compose",
+    [".*/docker%-compose%.yml"] = "yaml.docker-compose",
+    [".*/compose%.yaml"] = "yaml.docker-compose",
+    [".*/compose%.yml"] = "yaml.docker-compose",
+    [".*/templates/.*%.blade%.php"] = "blade",
+    [".*/playbooks/.*%.yaml"] = "yaml.ansible",
+    [".*/playbooks/.*%.yml"] = "yaml.ansible",
+    [".*/roles/[^/]+/tasks/.*%.yaml"] = "yaml.ansible",
+    [".*/roles/[^/]+/tasks/.*%.yml"] = "yaml.ansible",
+    [".*/roles/[^/]+/handlers/.*%.yaml"] = "yaml.ansible",
+    [".*/roles/[^/]+/handlers/.*%.yml"] = "yaml.ansible",
+    [".*/roles/[^/]+/defaults/.*%.yaml"] = "yaml.ansible",
+    [".*/roles/[^/]+/defaults/.*%.yml"] = "yaml.ansible",
+    [".*/roles/[^/]+/vars/.*%.yaml"] = "yaml.ansible",
+    [".*/roles/[^/]+/vars/.*%.yml"] = "yaml.ansible",
+    [".*/ansible/.*%.yaml"] = "yaml.ansible",
+    [".*/ansible/.*%.yml"] = "yaml.ansible",
+    [".*/charts/[^/]+/values[^/]*%.yaml"] = "yaml.helm-values",
+    [".*/charts/[^/]+/values[^/]*%.yml"] = "yaml.helm-values",
+    [".*/helm/[^/]+/values[^/]*%.yaml"] = "yaml.helm-values",
+    [".*/helm/[^/]+/values[^/]*%.yml"] = "yaml.helm-values",
+  },
+})
+
 g.python3_host_prog = "~/.asdf/shims/python3"
 g.node_host_prog = "~/.asdf/installs/nodejs/22.2.0/bin/neovim-node-host"
 g.ruby_host_prog = "~/.asdf/shims/neovim-ruby-host"

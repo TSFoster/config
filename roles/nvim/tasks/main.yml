@@ -1,7 +1,7 @@
 ---
 - name: Install python neovim module # TODO Check present in default-node-packages?
   ansible.builtin.pip:
-    name: neovim
+    name: pynvim
     state: present
 - name: Install ruby neovim module # TODO Check present in default-ruby-packages?
   community.general.gem:
@@ -73,7 +73,7 @@
     src: ./
     dest: "{{ config_dir }}/nvim/"
   tags:
-    - nvim-custom
+    - nvim-files
 - name: Add nvr completion in fish
   ansible.builtin.command:
     creates: "{{ config_dir }}/fish/completions/nvr.fish"
