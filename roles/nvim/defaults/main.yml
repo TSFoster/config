@@ -1,0 +1,20 @@
+---
+nvim_lsp_npm_packages:
+  - "@ansible/ansible-language-server"
+  - bash-language-server
+  - dockerfile-language-server-nodejs
+  - "@olrtg/emmet-language-server"
+  - pyright
+  - typescript-language-server
+  - vscode-langservers-extracted
+  - yaml-language-server
+
+nvim_lsp_homebrew_packages_darwin:
+  - deno
+  - gopls
+  - lua-language-server
+  - marksman
+  - rust-analyzer
+
+nvim_lsp_gem_packages:
+  - solargraph

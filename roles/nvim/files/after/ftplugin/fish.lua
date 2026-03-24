@@ -1,2 +1,2 @@
--- This has to be in after/ to override vim-polyglot’s broken keywordprg
-opt_local.keywordprg = ":Keywordprg"
+-- This has to be in after/ so the Fish-specific keywordprg wins
+vim.opt_local.keywordprg = ":Keywordprg"

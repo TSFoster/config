@@ -14,6 +14,54 @@
     name: neovim
     global: yes
     state: present
+- name: Find npm
+  ansible.builtin.command:
+    cmd: asdf which npm
+  register: nvim_npm_location
+  changed_when: no
+- name: Install npm language servers for Neovim
+  community.general.npm:
+    name: "{{ item }}"
+    global: yes
+    state: present
+    executable: "{{ nvim_npm_location.stdout }}"
+  loop: "{{ nvim_lsp_npm_packages }}"
+  tags:
+    - nvim-lsp
+- name: Check default npm packages for Neovim language servers
+  ansible.builtin.lineinfile:
+    path: "{{ config_dir }}/asdf/default-npm-packages"
+    line: "{{ item }}"
+    state: present
+    create: yes
+  loop: "{{ nvim_lsp_npm_packages }}"
+  tags:
+    - nvim-lsp
+- name: Install Homebrew language servers for Neovim
+  community.general.homebrew:
+    name: "{{ nvim_lsp_homebrew_packages_darwin }}"
+    state: present
+  when: ansible_facts["system"] == "Darwin"
+  tags:
+    - nvim-lsp
+- name: Install gem language servers for Neovim
+  community.general.gem:
+    name: "{{ item }}"
+    state: present
+  environment:
+    PATH: "{{ homebrew_prefix }}/opt/ruby/bin:{{ ansible_facts['env']['PATH'] }}"
+  loop: "{{ nvim_lsp_gem_packages }}"
+  tags:
+    - nvim-lsp
+- name: Check default gems for Neovim language servers
+  ansible.builtin.lineinfile:
+    path: "{{ config_dir }}/asdf/default-gems"
+    line: "{{ item }}"
+    state: present
+    create: yes
+  loop: "{{ nvim_lsp_gem_packages }}"
+  tags:
+    - nvim-lsp
 - name: Install neovim-remote # TODO Check present in default-python-packages?
   ansible.builtin.pip:
     name: neovim-remote
@@ -32,18 +80,3 @@
     cmd: "{{ homebrew_brew_bin_path }}/fish -c 'curl https://raw.githubusercontent.com/mhinz/neovim-remote/master/contrib/completion.fish > {{ config_dir }}/fish/completions/nvr.fish'"
   tags:
     - nvr
-- name: Install nvim modules # TODO re-generate helptags
-  ansible.builtin.include_tasks:
-    file: nvim-package.yml
-    apply:
-      tags:
-        - nvim-modules
-  loop: "{{ nvim_modules + (lookup('vars', 'nvim_modules_' + ansible_facts['system']) | default([])) }}"
-  tags:
-    - nvim-modules
-- name: Add github credentials to netrc
-  ansible.builtin.lineinfile:
-    path: ~/.netrc
-    create: yes
-    regexp: "^machine api.github.com"
-    line: "machine api.github.com login {{ git_credentials_github_user }} password {{ git_credentials_github_token }}"

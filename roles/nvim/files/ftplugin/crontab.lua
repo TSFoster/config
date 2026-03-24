@@ -1,6 +1,8 @@
-if b.did_ftplugin_user then return true end
+if vim.b.did_ftplugin_user then
+  return true
+end
 
-o.backup = false
-o.writebackup = false
+vim.opt_local.backup = false
+vim.opt_local.writebackup = false
 
-b.did_ftplugin_user = true
+vim.b.did_ftplugin_user = true

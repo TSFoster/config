@@ -1,6 +1,8 @@
-if b.did_ftplugin_user then return true end
+if vim.b.did_ftplugin_user then
+  return true
+end
 
-o.spell = true
-o.bufhidden = "delete"
+vim.opt_local.spell = true
+vim.opt_local.bufhidden = "delete"
 
-b.did_ftplugin_user = true
+vim.b.did_ftplugin_user = true

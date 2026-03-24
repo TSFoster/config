@@ -1,5 +1,7 @@
-if b.did_ftplugin_user then return true end
+if vim.b.did_ftplugin_user then
+  return true
+end
 
-fn["buffer#init_pager"]()
+vim.fn["buffer#init_pager"]()
 
-b.did_ftplugin_user = true
+vim.b.did_ftplugin_user = true
