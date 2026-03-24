@@ -19,8 +19,12 @@ vim.g.Undotree_CustomMap = function()
 end
 
 keymap.set("n", "yoS", fn["toggle#inccommand"], { desc = "Cycle through inccommand options" })
-keymap.set("n", "da<Space>", util.mk_fn(util.cursor_preserve_cmd, "%s/ \\+$//e"),
-  { desc = "Delete all trailing whitespace" })
+keymap.set(
+  "n",
+  "da<Space>",
+  util.mk_fn(util.cursor_preserve_cmd, "%s/ \\+$//e"),
+  { desc = "Delete all trailing whitespace" }
+)
 
 keymap.set("i", "jj", "<Esc>", { desc = "Return to normal mode via home row" })
 keymap.set("i", "jkj", "j<Esc>", { desc = "Return to normal mode via home row after typing j" })
@@ -108,8 +112,12 @@ keymap.set("n", "<Leader>gpf", util.mk_fn(cmd.Git, { "push --force", bang = true
 keymap.set("n", "<Leader>gpl", util.mk_fn(cmd.Git, "pull"), { desc = "Git pull" })
 keymap.set("n", "<Leader>gco", util.mk_fn(cmd.Git, "commit"), { desc = "Git commit" })
 keymap.set("n", "<Leader>gca", util.mk_fn(cmd.Git, "commit --amend"), { desc = "Amend git commit" })
-keymap.set("n", "<Leader>gcA", util.mk_fn(cmd.Git, "commit --amend --no-edit"),
-  { desc = "Amend git commit without edit" })
+keymap.set(
+  "n",
+  "<Leader>gcA",
+  util.mk_fn(cmd.Git, "commit --amend --no-edit"),
+  { desc = "Amend git commit without edit" }
+)
 keymap.set("n", "<Leader>gre", function()
   cmd.Git("rebase -i HEAD~" .. v.count1)
 end, { desc = "Rebase git" })
@@ -119,8 +127,17 @@ keymap.set({ "x", "o" }, "a,", "<Plug>(swap-textobject-a)", { remap = true, desc
 
 local telescope_builtin = util.safe_require("telescope.builtin")
 local function fd_command(kind)
-  local command = { "fd", "--color=never", "--exclude=node_modules", "--exclude=.git", "--exclude=elm-stuff",
-    "--exclude=bower_components", "--exclude=target", "--exclude=.DS_Store", "--hidden" }
+  local command = {
+    "fd",
+    "--color=never",
+    "--exclude=node_modules",
+    "--exclude=.git",
+    "--exclude=elm-stuff",
+    "--exclude=bower_components",
+    "--exclude=target",
+    "--exclude=.DS_Store",
+    "--hidden",
+  }
   if kind == "directory" then
     table.insert(command, "--type")
     table.insert(command, "directory")
@@ -213,8 +230,8 @@ keymap.set("n", "<Leader>A", ":silent! grepadd<Space>", { desc = "Add to quickfi
 keymap.set("n", "<Leader><Leader>a", ":silent! lgrep<Space>", { desc = "Populate location list with grep" })
 keymap.set("n", "<Leader><Leader>A", ":silent! lgrepadd<Space>", { desc = "Add to location list with grep" })
 keymap.set("n", "<Leader>pu", function()
-  vim.cmd("DepsUpdate")
-end, { desc = "Update mini.deps plugins" })
+  vim.pack.update()
+end, { desc = "Update vim.pack plugins" })
 
 keymap.set("n", "Y", "y$", { remap = true, desc = "Make Y work more like D and C" })
 
@@ -388,7 +405,12 @@ keymap.set("n", "<Leader>nN", cmd.tabnew, { desc = "Open new buffer in new tab" 
 
 keymap.set("n", "<Leader>tj", util.mk_fn(cmd, "botright horizontal terminal"), { desc = "Open terminal session below" })
 keymap.set("n", "<Leader>tk", util.mk_fn(cmd, "topleft horizontal terminal"), { desc = "Open terminal session above" })
-keymap.set("n", "<Leader>tl", util.mk_fn(cmd, "botright vertical terminal"), { desc = "Open terminal session to right" })
+keymap.set(
+  "n",
+  "<Leader>tl",
+  util.mk_fn(cmd, "botright vertical terminal"),
+  { desc = "Open terminal session to right" }
+)
 keymap.set("n", "<Leader>th", util.mk_fn(cmd, "topleft vertical terminal"), { desc = "Open terminal session to left" })
 keymap.set("n", "<Leader>tT", util.mk_fn(cmd, "tab terminal"), { desc = "Open terminal session in new tab" })
 keymap.set("n", "<Leader>tt", cmd.terminal, { desc = "Open terminal session in window" })
@@ -419,6 +441,9 @@ keymap.set("n", "]ol", util.mk_fn(fn["toggle#locationList"], 0), { desc = "Hide 
 keymap.set("", "[<BS>", "<Plug>(IndentWiseBlockScopeBoundaryBegin)", { desc = "Move to beginning of block" })
 keymap.set("", "]<BS>", "<Plug>(IndentWiseBlockScopeBoundaryEnd)", { desc = "Move to end of block" })
 
-if (fn.isdirectory("/Applications/Setapp/Dash.app") == 1 or fn.isdirectory("/Applications/Dash.app") == 1) and not vim.env.SSH_CLIENT then
+if
+  (fn.isdirectory("/Applications/Setapp/Dash.app") == 1 or fn.isdirectory("/Applications/Dash.app") == 1)
+  and not vim.env.SSH_CLIENT
+then
   keymap.set("n", "gK", "<Plug>DashSearch", { desc = "Search using Dash" })
 end

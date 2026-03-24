@@ -8,60 +8,46 @@ local function gh(repo, opts)
   end
 
   return vim.tbl_extend("force", {
-    source = repo,
+    src = "https://github.com/" .. repo,
   }, opts or {})
 end
 
 local path_package = vim.fn.stdpath("data") .. "/site"
-local mini_path = path_package .. "/pack/deps/start/mini.nvim"
 
-vim.opt.rtp:append(path_package)
-
-if not vim.uv.fs_stat(mini_path) then
-  vim.fn.mkdir(path_package .. "/pack/deps/start", "p")
-
-  local clone = vim.system({
-    "git",
-    "clone",
-    "--filter=blob:none",
-    "https://github.com/nvim-mini/mini.nvim",
-    mini_path,
-  }):wait()
-
-  if clone.code ~= 0 then
-    error("Failed to bootstrap mini.nvim:\n" .. (clone.stderr or clone.stdout or ""))
-  end
+if not vim.tbl_contains(vim.opt.packpath:get(), path_package) then
+  vim.opt.packpath:append(path_package)
 end
-
-vim.opt.rtp:prepend(mini_path)
-
-require("mini.deps").setup({
-  path = {
-    package = path_package,
-  },
-})
-
-local add = MiniDeps.add
 
 local function ts_update()
   pcall(vim.cmd, "TSUpdateSync")
 end
 
+vim.api.nvim_create_autocmd("PackChanged", {
+  callback = function(ev)
+    local spec = ev.data and ev.data.spec
+    if not spec or spec.name ~= "nvim-treesitter" then
+      return
+    end
+
+    if ev.data.kind ~= "install" and ev.data.kind ~= "update" then
+      return
+    end
+
+    vim.cmd.packadd("nvim-treesitter")
+    ts_update()
+  end,
+})
+
 local specs = {
-  gh("nvim-mini/mini.nvim", { name = "mini.nvim", checkout = "stable" }),
+  gh("nvim-mini/mini.nvim", { name = "mini.nvim", version = "stable" }),
   gh("nvim-lua/plenary.nvim"),
   gh("catppuccin/nvim", { name = "catppuccin" }),
   gh("nvim-telescope/telescope.nvim"),
   gh("lewis6991/gitsigns.nvim"),
   gh("stevearc/conform.nvim"),
   gh("neovim/nvim-lspconfig"),
-  gh("Saghen/blink.cmp", { checkout = "v1.9.1" }),
-  gh("nvim-treesitter/nvim-treesitter", {
-    hooks = {
-      post_install = ts_update,
-      post_checkout = ts_update,
-    },
-  }),
+  gh("Saghen/blink.cmp", { version = "v1.9.1" }),
+  gh("nvim-treesitter/nvim-treesitter"),
   gh("nvim-treesitter/nvim-treesitter-context"),
   gh("nvim-treesitter/nvim-treesitter-textobjects"),
   gh("greggh/claude-code.nvim"),
@@ -99,6 +85,6 @@ if vim.fn.has("mac") == 1 and (vim.fn.isdirectory("/Applications/Setapp/Dash.app
   table.insert(specs, gh("rizzatti/dash.vim"))
 end
 
-for _, spec in ipairs(specs) do
-  add(spec)
-end
+vim.pack.add(specs, {
+  confirm = false,
+})
