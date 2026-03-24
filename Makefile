@@ -3,7 +3,7 @@
 PLAYBOOK := main.yml
 INVENTORY := localhost ansible_python_interpreter=$$(asdf which python3),
 ANSIBLE := asdf exec ansible-playbook -i "$(INVENTORY)"
-GALAXY := asdf exec ansible-galaxy collection install -r collections/requirements.yml
+GALAXY := asdf exec ansible-galaxy collection install --upgrade -r collections/requirements.yml
 TAGS ?=
 EXTRA_ARGS ?=
 
