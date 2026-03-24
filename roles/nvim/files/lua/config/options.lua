@@ -75,7 +75,7 @@ vim.filetype.add({
 })
 
 g.python3_host_prog = "~/.asdf/shims/python3"
-g.node_host_prog = "~/.asdf/installs/nodejs/22.2.0/bin/neovim-node-host"
+g.node_host_prog = "~/.asdf/shims/neovim-node-host"
 g.ruby_host_prog = "~/.asdf/shims/neovim-ruby-host"
 g.loaded_perl_provider = 0
 
