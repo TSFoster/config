@@ -6,6 +6,10 @@ local fn = vim.fn
 local keymap = vim.keymap
 local v = vim.v
 
+if vim.env.ZMX_SESSION then
+  keymap.set({ "n", "v", "x", "s", "o", "i", "l", "c" }, "<C-z>", "<Nop>", { desc = "Disable suspend in ZMX session" })
+end
+
 keymap.set("n", "<Leader>jp", fn["jsonpath#echo"], { desc = "Print JSON path" })
 keymap.set("n", "<Leader>jg", fn["jsonpath#goto"], { desc = "Go to JSON path" })
 
