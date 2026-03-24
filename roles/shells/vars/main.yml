@@ -52,6 +52,9 @@ shell_variables:
   - name: FD_DEFAULT_FLAGS
     value: "{{ _uv.fd_default }}"
     export: yes
+  - name: RIPGREP_CONFIG_PATH
+    value: "{{ config_dir }}/ripgreprc"
+    export: yes
   - name: FZF_DEFAULT_COMMAND
     value: "fd --type file {{ _uv.fd_default }}"
     export: yes

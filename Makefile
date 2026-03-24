@@ -7,7 +7,7 @@ GALAXY := asdf exec ansible-galaxy collection install --upgrade -r collections/r
 TAGS ?=
 EXTRA_ARGS ?=
 
-.PHONY: help bootstrap collections install run check syntax nvim-deps shells dot-dirs ssh npm homebrew macos nvim nvim-files hammerspoon macos-navigation fonts dictionaries docker java cli-tools alfred ripgrep
+.PHONY: help bootstrap collections install run check syntax nvim-deps shells dot-dirs ssh npm homebrew macos nvim nvim-files hammerspoon macos-navigation fonts dictionaries docker java cli-tools alfred
 
 help:
 	@printf '%s\n' \
@@ -43,5 +43,5 @@ syntax:
 nvim-deps:
 	nvim --headless "+DepsUpdate!" +qa
 
-shells dot-dirs ssh npm homebrew macos nvim nvim-files hammerspoon macos-navigation fonts dictionaries docker java cli-tools alfred ripgrep:
+shells dot-dirs ssh npm homebrew macos nvim nvim-files hammerspoon macos-navigation fonts dictionaries docker java cli-tools alfred:
 	$(MAKE) run TAGS=$@ EXTRA_ARGS="$(EXTRA_ARGS)"

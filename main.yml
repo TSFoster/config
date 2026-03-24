@@ -38,5 +38,3 @@
     - role: alfred
       tags: ["alfred"]
       when: ansible_facts["system"] == "Darwin"
-    - role: ripgrep
-      tags: ["ripgrep"]
