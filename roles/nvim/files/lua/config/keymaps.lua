@@ -184,6 +184,7 @@ keymap.set("n", "<Leader>ta", telescope("tags"), { desc = "Tags" })
 keymap.set("n", "<Leader>b", telescope("buffers"), { desc = "Buffers" })
 keymap.set("n", "<Leader>B", telescope("current_buffer_fuzzy_find"), { desc = "Search lines in current buffer" })
 keymap.set("n", "<Leader>l", telescope("live_grep"), { desc = "Telescope live grep" })
+keymap.set("n", "<Leader><Leader><Leader>", telescope("builtin"), { desc = "Telescope builtins" })
 
 keymap.set("n", "yot", function()
   if not telescope_builtin then
