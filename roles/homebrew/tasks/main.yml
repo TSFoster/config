@@ -1,9 +1,4 @@
 ---
-- name: Set up homebrew taps
-  community.general.homebrew_tap:
-    tap: "{{ item }}"
-    state: present
-  loop: "{{ homebrew_taps }}"
 - name: Install homebrew packages
   community.general.homebrew:
     name: "{{ homebrew_packages | map(attribute='name') | list }}"
@@ -23,6 +18,9 @@
   tags:
     - mas
 - name: Install MAS apps
+  when: ansible_facts["system"] == "Darwin"
+  tags:
+    - mas
   block:
     - name: Try to install apps
       community.general.mas:
@@ -33,6 +31,3 @@
     - name: Skip installing apps from MAS
       ansible.builtin.debug:
         msg: "Skipping installing Mac App Store apps. Sign in to the App Store and try again"
-  when: ansible_facts["system"] == "Darwin"
-  tags:
-    - mas

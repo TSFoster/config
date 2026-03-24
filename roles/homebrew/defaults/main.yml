@@ -1,9 +1,6 @@
 ---
 homebrew_cask_appdir: /Applications
 
-homebrew_taps:
-  - homebrew/cask-versions
-
 homebrew_packages:
   - name: asdf
   - name: bat
@@ -56,6 +53,7 @@ homebrew_packages:
   - name: pv
   - name: qrencode
   - name: rename
+  - name: ripgrep
   - name: rlwrap
   - name: rustup-init
   - name: shellcheck
@@ -78,7 +76,6 @@ homebrew_packages:
   - name: yamllint
   - name: yarn
   - name: zbar
-  - name: zored/homebrew-brew/docker-machine-ipconfig
 
 homebrew_casks: # TODO separate fonts
   - font-aileron
@@ -135,8 +132,8 @@ homebrew_casks: # TODO separate fonts
   - choosy
   - couleurs
   - docker
-  - firefox-developer-edition
-  - google-chrome-dev
+  - firefox@developer-edition
+  - google-chrome@dev
   - ghostty
   - hammerspoon
   - hazel
