@@ -8,7 +8,7 @@
     - role: ssh
       tags: ["ssh"]
     - role: npm
-      tags: ["npm", "asdf"]
+      tags: ["npm"]
     - role: homebrew
       tags: ["homebrew"]
       when: ansible_facts["system"] == "Darwin"
