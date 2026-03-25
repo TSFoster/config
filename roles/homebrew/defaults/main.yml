@@ -158,7 +158,7 @@ homebrew_casks: # TODO separate fonts
   - yattee
   - zoom
 
-mas_apps:
+homebrew_mas_apps:
   - 1365531024 # 1Blocker
   - 824183456 # Affinity Photo
   - 824171161 # Affinity Designer

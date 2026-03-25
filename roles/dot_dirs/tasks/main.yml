@@ -3,6 +3,7 @@
   ansible.builtin.file:
     state: directory
     dest: "{{ ansible_facts['env']['HOME'] }}/.local/{{ item }}"
+    mode: "0755"
   loop:
     - bin
     - cache
@@ -19,32 +20,39 @@
   ansible.builtin.template:
     src: ghostty.toml.j2
     dest: "{{ config_dir }}/ghostty/config"
+    mode: "0644"
 - name: Add gh config
   ansible.builtin.copy:
     src: gh
     dest: "{{ config_dir }}/"
+    mode: preserve
 - name: Add ripgrep config
   ansible.builtin.copy:
     src: ripgreprc
     dest: "{{ config_dir }}/"
+    mode: "0644"
 - name: Add yazi config
   ansible.builtin.copy:
     src: yazi
     dest: "{{ config_dir }}/"
+    mode: preserve
 - name: Add git config
   block:
     - name: Copy config
       ansible.builtin.copy:
         src: git
         dest: "{{ config_dir }}/"
+        mode: preserve
     - name: Add git credentials
       ansible.builtin.template:
         src: credentials.gitconfig.j2
         dest: "{{ config_dir }}/git/credentials.gitconfig"
+        mode: "0600"
 - name: Add editorconfig
   ansible.builtin.copy:
     src: editorconfig
     dest: ~/.editorconfig
+    mode: "0644"
 - name: Add warpd config
   ansible.builtin.copy:
     src: warpd

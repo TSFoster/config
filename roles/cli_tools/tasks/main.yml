@@ -2,5 +2,5 @@
 - name: Install curlconverter
   community.general.npm:
     name: curlconverter
-    global: yes
+    global: true
     state: present

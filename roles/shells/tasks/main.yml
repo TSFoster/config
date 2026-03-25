@@ -4,13 +4,13 @@
     name: fish
     state: present
 - name: Add fish to available shells
-  become: yes
+  become: true
   ansible.builtin.lineinfile:
     path: /etc/shells
     line: "{{ homebrew_brew_bin_path }}/fish"
     state: present
 - name: Change user shell to fish
-  become: yes
+  become: true
   ansible.builtin.user:
     name: "{{ the_user }}"
     shell: "{{ homebrew_brew_bin_path }}/fish"
@@ -20,26 +20,31 @@
     state: touch
     modification_time: preserve
     access_time: preserve
+    mode: "0644"
 - name: Add zprofile
   ansible.builtin.template:
     src: zprofile.j2
     dest: ~/.zprofile
+    mode: "0644"
 - name: Add bash_profile
   ansible.builtin.template:
     src: bash_profile.j2
     dest: ~/.bash_profile
+    mode: "0644"
 - name: Create fish_variables
   ansible.builtin.file:
     path: "{{ config_dir }}/fish/fish_variables"
     state: touch
     modification_time: preserve
     access_time: preserve
+    mode: "0644"
   tags:
     - vars_debug
 - name: Set fish universal shell variables
   ansible.builtin.lineinfile:
     path: "{{ config_dir }}/fish/fish_variables"
-    create: yes
+    create: true
+    mode: "0644"
     regexp: "^SETUVAR (--export )?(--path )?{{ item.name }}:"
     line: >-
       SETUVAR{{ ' ' }}
@@ -61,13 +66,14 @@
         | replace('}', '\x7d')
         | replace('~', '\x7e')
       }}
-  loop: "{{ shell_variables + fish_universal_variables }}"
+  loop: "{{ shells_variables + shells_fish_universal_variables }}"
   tags:
     - vars_debug
 - name: Set fish abbreviations
   ansible.builtin.lineinfile:
     path: "{{ config_dir }}/fish/fish_variables"
-    create: yes
+    create: true
+    mode: "0644"
     regexp: "^SETUVAR _fish_abbr_{{ item.name }}:"
     line: >-
       SETUVAR _fish_abbr_{{ item.name }}:
@@ -86,7 +92,7 @@
         | replace('}', '\x7d')
         | replace('~', '\x7e')
       }}
-  loop: "{{ shell_abbreviations }}"
+  loop: "{{ shells_abbreviations }}"
   tags:
     - vars_debug
 - name: Copy fish config
@@ -104,14 +110,17 @@
       ansible.builtin.template:
         src: "config.fish.j2"
         dest: "{{ config_dir }}/fish/config.fish"
+        mode: "0644"
 - name: Make conf.d dir
   ansible.builtin.file:
     path: "{{ config_dir }}/fish/conf.d"
     state: directory
+    mode: "0755"
 - name: Make themes dir
   ansible.builtin.file:
     path: "{{ config_dir }}/fish/themes"
     state: directory
+    mode: "0755"
 - name: Get homebrew config
   ansible.builtin.command:
     creates: "{{ config_dir }}/fish/conf.d/_0homebrew.fish"
@@ -119,28 +128,30 @@
 - name: Check fisher installed
   ansible.builtin.command:
     cmd: 'fish -c "functions -q fisher; and echo installed; exit 0"'
-  register: which_fisher
-  changed_when: no
+  register: shells_which_fisher
+  changed_when: false
   tags:
     - fisher
 - name: Install fisher
   ansible.builtin.command:
     cmd: "fish -c 'curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher'"
-  when: which_fisher.stdout.find('installed') == -1
+  changed_when: true
+  when: shells_which_fisher.stdout.find('installed') == -1
   tags:
     - fisher
 - name: Get list of plugins
   ansible.builtin.command:
     cmd: "fish -c 'fisher list'"
-  register: fisher_list
-  changed_when: no
+  register: shells_fisher_list
+  changed_when: false
   tags:
     - fisher
 - name: Install fisher plugins
   ansible.builtin.command:
     cmd: "fish -c 'fisher install {{ item }}'"
-  when: fisher_list.stdout.find(item) == -1
-  loop: "{{ fisher_plugins }}"
+  changed_when: true
+  when: shells_fisher_list.stdout.find(item) == -1
+  loop: "{{ shells_fisher_plugins }}"
   tags:
     - fisher
 - name: Install thefuck

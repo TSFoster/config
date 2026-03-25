@@ -2,7 +2,7 @@
 - name: Install global packages
   community.general.npm:
     name: "{{ item }}"
-    global: yes
+    global: true
     state: present
   loop: "{{ npm_plugins }}"
 - name: Check default npm packages
@@ -10,5 +10,6 @@
     path: "{{ config_dir }}/asdf/default-npm-packages"
     line: "{{ item }}"
     state: present
-    create: yes
+    create: true
+    mode: "0644"
   loop: "{{ npm_plugins }}"

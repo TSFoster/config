@@ -6,7 +6,7 @@
         domain: com.apple.dock
         key: expose-group-apps
         type: bool
-        value: yes
+        value: true
         state: present
     - name: Remove persistent apps
       community.general.osx_defaults:
@@ -20,21 +20,21 @@
         domain: com.apple.dock
         key: show-process-indicators
         type: bool
-        value: no
+        value: false
         state: present
     - name: Don’t show recent apps in Dock
       community.general.osx_defaults:
         domain: com.apple.dock
         key: show-recents
         type: bool
-        value: no
+        value: false
         state: present
     - name: Auto-hide dock
       community.general.osx_defaults:
         domain: com.apple.dock
         key: autohide
         type: bool
-        value: yes
+        value: true
         state: present
 - name: Configure Safari
   block:
@@ -43,14 +43,14 @@
         domain: com.apple.Safari
         key: AlwaysRestoreSessionAtLaunch
         type: bool
-        value: yes
+        value: true
         state: present
     - name: Don’t open safe downloads
       community.general.osx_defaults:
         domain: com.apple.Safari
         key: AutoOpenSafeDownloads
         type: bool
-        value: no
+        value: false
         state: present
     - name: Set search engine to DuckDuckGo
       community.general.osx_defaults:
@@ -64,14 +64,14 @@
         domain: com.apple.Safari
         key: ShowBackgroundImageInFavorites
         type: bool
-        value: no
+        value: false
         state: present
     - name: Show full URL
       community.general.osx_defaults:
         domain: com.apple.Safari
         key: ShowFullURLInSmartSearchField
         type: bool
-        value: yes
+        value: true
         state: present
     - name: Always open tabs
       community.general.osx_defaults:
@@ -80,21 +80,3 @@
         type: int
         value: 2
         state: present
-- name: Link airport in /usr/local/bin
-  ansible.builtin.file:
-    src: /System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport
-    dest: /usr/local/bin/airport
-    state: link
-  become: yes
-- name: Disable window animations
-  community.general.osx_defaults:
-    key: NSAutomaticWindowAnimationsEnabled
-    type: bool
-    value: no
-    state: present
-- name: Disable window animations
-  community.general.osx_defaults:
-    key: NSAutomaticWindowAnimationsEnabled
-    type: bool
-    value: no
-    state: present

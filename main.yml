@@ -1,9 +1,10 @@
 ---
-- hosts: localhost
+- name: Configure localhost
+  hosts: localhost
   roles:
     - role: shells
       tags: ["shells"]
-    - role: dot-dirs
+    - role: dot_dirs
       tags: ["dot-dirs"]
     - role: ssh
       tags: ["ssh"]
@@ -20,20 +21,20 @@
     - role: hammerspoon
       tags: ["hammerspoon"]
       when: ansible_facts["system"] == "Darwin"
-    - role: macos-navigation
+    - role: macos_navigation
       tags: ["macos-navigation"]
       when: ansible_facts["system"] == "Darwin"
     - role: fonts
       tags: ["fonts"]
       when: ansible_facts["system"] == "Darwin"
-    - role: macos-dictionaries
+    - role: macos_dictionaries
       tags: ["dictionaries"]
       when: ansible_facts["system"] == "Darwin"
     - role: docker
       tags: ["docker"]
     - role: java
       tags: ["java"]
-    - role: cli-tools
+    - role: cli_tools
       tags: ["cli-tools"]
     - role: alfred
       tags: ["alfred"]

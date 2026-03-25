@@ -9,7 +9,7 @@ path_prepend() {
   esac
 }
 
-{% for entry in _uv.shell_path_entries | reverse %}
+{% for entry in shells_uv.shell_path_entries | reverse %}
 path_prepend "{{ entry }}"
 {% endfor %}
 

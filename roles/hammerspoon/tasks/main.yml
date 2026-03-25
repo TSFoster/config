@@ -7,6 +7,7 @@
   ansible.builtin.template:
     src: init.lua.j2
     dest: "{{ config_dir }}/hammerspoon/init.lua"
+    mode: "0644"
   notify: Reload Hammerspoon
 - name: Set init.lua location
   community.general.osx_defaults:

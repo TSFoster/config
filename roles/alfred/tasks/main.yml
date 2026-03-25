@@ -7,6 +7,8 @@
   ansible.builtin.git:
     repo: git@github.com:TSFoster/alfred.git
     dest: "{{ alfred_dir }}"
+    version: 0d1b829f7a6feb3a1e4bef2f42cda08c4eb8a98b
+    update: false
 - name: Set config dir
   community.general.osx_defaults:
     domain: com.runningwithcrayons.Alfred-Preferences

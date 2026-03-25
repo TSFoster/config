@@ -2,10 +2,10 @@
 - name: Install machine-share
   community.general.npm:
     name: machine-share
-    global: yes
+    global: true
     state: present
 - name: Install hostile
   community.general.npm:
     name: hostile
-    global: yes
+    global: true
     state: present

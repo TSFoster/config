@@ -1,5 +1,5 @@
 ---
-fisher_plugins:
+shells_fisher_plugins:
   - TSFoster/posix-source
   - TSFoster/docker-tools
   - TSFoster/fish-elm-completion
@@ -7,101 +7,102 @@ fisher_plugins:
   - catppuccin/fish
   - jethrokuan/fzf
   - topdroplabs/docker-fish-completion
-shell_path_entries_interactive:
+shells_path_entries_interactive:
   - bin
   - node_modules/.bin
-shell_path_entries:
+shells_path_entries:
   - /usr/local/bin
   - /usr/local/sbin
   - "{{ ansible_facts['env']['HOME'] }}/.local/bin"
   - "{{ ansible_facts['env']['HOME'] }}/.cargo/bin"
   - "{{ ansible_facts['env']['HOME'] }}/.local/share/go/bin"
-shell_path_entries_darwin:
+shells_path_entries_darwin:
   - "{{ homebrew_cask_appdir }}/opt/openjdk/bin"
   - /Applications/Setapp/Soulver.app/Contents/MacOS/CLI
-_uv:
+shells_uv:
   xdg_data: "{{ ansible_facts['env']['HOME'] }}/.local/share"
-  fd_default: --exclude node_modules --exclude .git --exclude elm-stuff --exclude bower_components --exclude target --exclude .DS_Store --exclude .sass-cache --hidden
+  fd_default: --exclude node_modules --exclude .git --exclude elm-stuff --exclude bower_components --exclude target --exclude .DS_Store --exclude .sass-cache
+    --hidden
   iCloud: "{{ ansible_facts['env']['HOME'] }}/Library/Mobile Documents/com~apple~CloudDocs"
   isMac: "{{ ansible_facts['system'] == 'Darwin' }}"
   editor: "zmx attach nvim-(random) nvim"
-  shell_path_entries: "{{ shell_path_entries + (lookup('vars', 'shell_path_entries_' + (ansible_facts['system'] | lower)) | default([])) }}"
-  shell_path_entries_interactive: "{{ shell_path_entries_interactive }}"
-shell_variables:
+  shell_path_entries: "{{ shells_path_entries + (lookup('vars', 'shells_path_entries_' + (ansible_facts['system'] | lower)) | default([])) }}"
+  shell_path_entries_interactive: "{{ shells_path_entries_interactive }}"
+shells_variables:
   - name: PAGER
     value: less # TODO nvr/nvim +Man!
-    export: yes
+    export: true
   - name: XDG_CONFIG_HOME
     value: "{{ config_dir }}"
-    export: yes
+    export: true
   - name: XDG_DATA_HOME
-    value: "{{ _uv.xdg_data }}"
-    export: yes
+    value: "{{ shells_uv.xdg_data }}"
+    export: true
   - name: XDG_CACHE_HOME
     value: "{{ ansible_facts['env']['HOME'] }}/.local/cache"
-    export: yes
+    export: true
   - name: XDG_STATE_HOME
     value: "{{ ansible_facts['env']['HOME'] }}/.local/state"
-    export: yes
+    export: true
   - name: GOPATH
-    value: "{{ _uv.xdg_data }}/go"
-    export: yes
+    value: "{{ shells_uv.xdg_data }}/go"
+    export: true
   - name: HOMEBREW_CASK_OPTS
-    value: "{{ _uv.isMac | ternary('--appdir=' + homebrew_cask_appdir, omit) }}"
-    export: yes
+    value: "{{ shells_uv.isMac | ternary('--appdir=' + homebrew_cask_appdir, omit) }}"
+    export: true
   - name: FD_DEFAULT_FLAGS
-    value: "{{ _uv.fd_default }}"
-    export: yes
+    value: "{{ shells_uv.fd_default }}"
+    export: true
   - name: RIPGREP_CONFIG_PATH
     value: "{{ config_dir }}/ripgreprc"
-    export: yes
+    export: true
   - name: FZF_DEFAULT_COMMAND
-    value: "fd --type file {{ _uv.fd_default }}"
-    export: yes
+    value: "fd --type file {{ shells_uv.fd_default }}"
+    export: true
   - name: ASDF_DATA_DIR
     value: "{{ ansible_facts['env']['HOME'] }}/.asdf"
-    export: yes
+    export: true
   - name: ASDF_PYTHON_DEFAULT_PACKAGES_FILE
     value: "{{ config_dir }}/asdf/default-python-packages"
-    export: yes
+    export: true
   - name: ASDF_GEM_DEFAULT_PACKAGES_FILE
     value: "{{ config_dir }}/asdf/default-gems"
-    export: yes
+    export: true
   - name: ASDF_NPM_DEFAULT_PACKAGES_FILE
     value: "{{ config_dir }}/asdf/default-npm-packages"
-    export: yes
+    export: true
   - name: EDITOR
-    value: "{{ _uv.editor }}"
-    export: yes
+    value: "{{ shells_uv.editor }}"
+    export: true
   - name: config
-    export: yes
+    export: true
     value: "{{ config_dir }}"
   - name: data
-    export: yes
-    value: "{{ _uv.xdg_data }}"
+    export: true
+    value: "{{ shells_uv.xdg_data }}"
   - name: workspace
-    export: yes
+    export: true
     value: "{{ ansible_facts['env']['HOME'] }}/workspace"
   - name: OS
-    value: "{{ _uv.isMac | ternary('Mac', 'Other') }}"
+    value: "{{ shells_uv.isMac | ternary('Mac', 'Other') }}"
   - name: iCloud
-    export: yes
-    value: "{{ _uv.isMac | ternary(_uv.iCloud, omit) }}"
+    export: true
+    value: "{{ shells_uv.isMac | ternary(shells_uv.iCloud, omit) }}"
   - name: documents
-    export: yes
-    value: "{{ _uv.isMac | ternary(_uv.iCloud + '/Documents', omit) }}"
+    export: true
+    value: "{{ shells_uv.isMac | ternary(shells_uv.iCloud + '/Documents', omit) }}"
   - name: work
-    export: yes
-    value: "{{ _uv.isMac | ternary(_uv.iCloud + '/Documents/Work', omit) }}"
+    export: true
+    value: "{{ shells_uv.isMac | ternary(shells_uv.iCloud + '/Documents/Work', omit) }}"
   - name: clients
-    export: yes
-    value: "{{ _uv.isMac | ternary(_uv.iCloud + '/Documents/Work/Clients', omit) }}"
-fish_universal_variables:
+    export: true
+    value: "{{ shells_uv.isMac | ternary(shells_uv.iCloud + '/Documents/Work/Clients', omit) }}"
+shells_fish_universal_variables:
   - name: fish_user_paths
-    value_multiple: "{{ _uv.shell_path_entries }}"
-    export: yes
-    path: yes
-shell_abbreviations:
+    value_multiple: "{{ shells_uv.shell_path_entries }}"
+    export: true
+    path: true
+shells_abbreviations:
   - name: an
     value: ansible
   - name: ap
@@ -150,12 +151,12 @@ shell_abbreviations:
     value: "grep < /usr/share/dict/words"
   - name: lw
     value: "ls -l (which"
-    shell_alias: no
+    shell_alias: false
   - name: v
-    value: "{{ _uv.editor }}"
+    value: "{{ shells_uv.editor }}"
   - name: man
     value: viman
-    shell_alias: no
+    shell_alias: false
   - name: e
-    value: "{{ _uv.editor }}"
-    shell_alias: no
+    value: "{{ shells_uv.editor }}"
+    shell_alias: false

@@ -27,12 +27,12 @@ path_remove() {
   unset _new_path _old_ifs _path_item
 }
 
-{% for entry in _uv.shell_path_entries %}
+{% for entry in shells_uv.shell_path_entries %}
 path_append "{{ entry }}"
 {% endfor %}
 
 if [[ -o interactive ]]; then
-{% for entry in _uv.shell_path_entries_interactive %}
+{% for entry in shells_uv.shell_path_entries_interactive %}
   path_append "./{{ entry }}"
 {% endfor %}
 fi

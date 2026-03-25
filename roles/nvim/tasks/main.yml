@@ -12,17 +12,17 @@
 - name: Install npm neovim module # TODO Check present in default-node-packages?
   community.general.npm:
     name: neovim
-    global: yes
+    global: true
     state: present
 - name: Find npm
   ansible.builtin.command:
     cmd: asdf which npm
   register: nvim_npm_location
-  changed_when: no
+  changed_when: false
 - name: Install npm language servers for Neovim
   community.general.npm:
     name: "{{ item }}"
-    global: yes
+    global: true
     state: present
     executable: "{{ nvim_npm_location.stdout }}"
   loop: "{{ nvim_lsp_npm_packages }}"
@@ -33,7 +33,8 @@
     path: "{{ config_dir }}/asdf/default-npm-packages"
     line: "{{ item }}"
     state: present
-    create: yes
+    create: true
+    mode: "0644"
   loop: "{{ nvim_lsp_npm_packages }}"
   tags:
     - nvim-lsp
@@ -58,7 +59,8 @@
     path: "{{ config_dir }}/asdf/default-gems"
     line: "{{ item }}"
     state: present
-    create: yes
+    create: true
+    mode: "0644"
   loop: "{{ nvim_lsp_gem_packages }}"
   tags:
     - nvim-lsp
@@ -72,11 +74,15 @@
   ansible.builtin.copy:
     src: ./
     dest: "{{ config_dir }}/nvim/"
+    mode: preserve
   tags:
     - nvim-files
 - name: Add nvr completion in fish
   ansible.builtin.command:
     creates: "{{ config_dir }}/fish/completions/nvr.fish"
-    cmd: "{{ homebrew_brew_bin_path }}/fish -c 'curl https://raw.githubusercontent.com/mhinz/neovim-remote/master/contrib/completion.fish > {{ config_dir }}/fish/completions/nvr.fish'"
+    cmd: >-
+      {{ homebrew_brew_bin_path }}/fish -c
+      'curl https://raw.githubusercontent.com/mhinz/neovim-remote/master/contrib/completion.fish
+      > {{ config_dir }}/fish/completions/nvr.fish'
   tags:
     - nvr
