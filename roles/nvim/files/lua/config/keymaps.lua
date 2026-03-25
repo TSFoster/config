@@ -34,8 +34,6 @@ keymap.set("i", "jj", "<Esc>", { desc = "Return to normal mode via home row" })
 keymap.set("i", "jkj", "j<Esc>", { desc = "Return to normal mode via home row after typing j" })
 keymap.set("n", "<BS>", "<C-^>", { desc = "Use backspace to flip between files" })
 keymap.set("n", "Q", "@@", { desc = "Repeat last macro (use gQ to go into ex mode)" })
-keymap.set({ "n", "v" }, "v", "<C-V>", { desc = "Toggle visual block mode" })
-keymap.set({ "n", "v" }, "<C-V>", "v", { desc = "Toggle visual mode" })
 
 keymap.set("n", "j", function()
   return (v.count > 5) and ("m'" .. v.count .. "j") or "j"
