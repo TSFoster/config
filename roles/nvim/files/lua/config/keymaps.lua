@@ -110,7 +110,12 @@ keymap.set("n", "<Leader>gg", ":Git<Space>", { desc = "Make arbitrary Git comman
 keymap.set("n", "<Leader>ga", cmd.Gwrite, { desc = "Stage changes in Git" })
 keymap.set("n", "<Leader>gs", cmd.Git, { desc = "Git status" })
 keymap.set("n", "<Leader>gps", util.mk_fn(cmd.Git, { "push", bang = true }), { desc = "Git push" })
-keymap.set("n", "<Leader>gpf", util.mk_fn(cmd.Git, { "push --force", bang = true }), { desc = "Git force push" })
+keymap.set(
+  "n",
+  "<Leader>gpf",
+  util.mk_fn(cmd.Git, { "push --force-with-lease", bang = true }),
+  { desc = "Git force push" }
+)
 keymap.set("n", "<Leader>gpl", util.mk_fn(cmd.Git, "pull"), { desc = "Git pull" })
 keymap.set("n", "<Leader>gco", util.mk_fn(cmd.Git, "commit"), { desc = "Git commit" })
 keymap.set("n", "<Leader>gca", util.mk_fn(cmd.Git, "commit --amend"), { desc = "Amend git commit" })
