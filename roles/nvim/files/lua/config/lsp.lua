@@ -133,6 +133,21 @@ vim.lsp.config("emmet_language_server", {
   filetypes = { "css", "eruby", "gohtmltmpl", "html", "javascriptreact", "less", "sass", "scss", "typescriptreact" },
 })
 
+vim.lsp.config("tailwindcss", {
+  filetypes = {
+    "css",
+    "gohtmltmpl",
+    "html",
+    "javascript",
+    "javascriptreact",
+    "sass",
+    "scss",
+    "typescript",
+    "typescriptreact",
+    "blade",
+  },
+})
+
 vim.lsp.config("yamlls", {
   settings = {
     yaml = {
@@ -166,6 +181,7 @@ local server_commands = {
   pyright = "pyright-langserver",
   rust_analyzer = "rust-analyzer",
   solargraph = "solargraph",
+  tailwindcss = "tailwindcss-language-server",
   ts_ls = "typescript-language-server",
   yamlls = "yaml-language-server",
 }

@@ -7,6 +7,7 @@ nvim_lsp_npm_packages:
   - "@olrtg/emmet-language-server"
   - prettier
   - pyright
+  - "@tailwindcss/language-server"
   - tree-sitter-cli
   - typescript-language-server
   - vscode-langservers-extracted
