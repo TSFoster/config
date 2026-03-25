@@ -177,6 +177,8 @@ if treesitter then
           ["iF"] = { query = "@function.inner", desc = "Select inside function" },
           ["aC"] = { query = "@comment.outer", desc = "Select around comment" },
           ["iC"] = { query = "@comment.inner", desc = "Select inside comment" },
+          ["aA"] = { query = "@attribute.outer", desc = "Select around attribute" },
+          ["iA"] = { query = "@attribute.inner", desc = "Select inside attribute" },
         },
         selection_modes = {
           ["@parameter.outer"] = "v",
