@@ -2,27 +2,17 @@ local opt = vim.opt
 local g = vim.g
 
 opt.backupdir:remove(".")
-opt.breakindent = true
 opt.showbreak = "... "
 opt.cmdheight = 2
 opt.expandtab = true
 opt.fixendofline = false
 opt.formatprg = "par rqw80"
 opt.hidden = true
-opt.ignorecase = true
-opt.smartcase = true
 opt.lazyredraw = true
-opt.list = true
-opt.listchars = { tab = "▸ ", trail = "·" }
 opt.path:append("**")
 opt.relativenumber = true
-opt.number = true
 opt.scrolloff = 5
-opt.shortmess:append("c")
 opt.spelllang = "en_gb"
-opt.splitbelow = true
-opt.splitright = true
-opt.undofile = true
 opt.undolevels = 1000
 opt.undoreload = 1000
 opt.updatetime = 300
@@ -34,9 +24,6 @@ opt.nrformats = { "bin", "hex", "unsigned", "blank" }
 opt.foldmethod = "expr"
 opt.foldexpr = "nvim_treesitter#foldexpr()"
 opt.foldenable = false
-opt.showmode = false
-
-g.mapleader = " "
 
 vim.filetype.add({
   extension = {

@@ -23,12 +23,16 @@ vim.g.Undotree_CustomMap = function()
 end
 
 keymap.set("n", "yoS", fn["toggle#inccommand"], { desc = "Cycle through inccommand options" })
-keymap.set(
-  "n",
-  "da<Space>",
-  util.mk_fn(util.cursor_preserve_cmd, "%s/ \\+$//e"),
-  { desc = "Delete all trailing whitespace" }
-)
+keymap.set("n", "da<Space>", function()
+  local trailspace = util.safe_require("mini.trailspace")
+  if trailspace then
+    trailspace.trim()
+    trailspace.trim_last_lines()
+    return
+  end
+
+  util.cursor_preserve_cmd("%s/ \\+$//e")
+end, { desc = "Delete all trailing whitespace" })
 
 keymap.set("i", "jj", "<Esc>", { desc = "Return to normal mode via home row" })
 keymap.set("i", "jkj", "j<Esc>", { desc = "Return to normal mode via home row after typing j" })
@@ -203,6 +207,56 @@ keymap.set("n", "<Leader>E", telescope_files("file", true), { desc = "Find files
 keymap.set("n", "<Leader>h:", telescope("command_history"), { desc = "Command history" })
 keymap.set("n", "<Leader>h/", telescope("search_history"), { desc = "Search history" })
 keymap.set("n", "<Leader>mr", telescope("oldfiles"), { desc = "Recent files" })
+keymap.set("n", "<Leader>ms", function()
+  local sessions = util.safe_require("mini.sessions")
+  if sessions then
+    sessions.select("read")
+  end
+end, { desc = "Read session" })
+keymap.set("n", "<Leader>mS", function()
+  local sessions = util.safe_require("mini.sessions")
+  if not sessions then
+    return
+  end
+
+  vim.ui.input({ prompt = "Session name: " }, function(input)
+    if not input or input == "" then
+      return
+    end
+
+    sessions.write(input)
+  end)
+end, { desc = "Write session" })
+keymap.set("n", "<Leader>md", function()
+  local sessions = util.safe_require("mini.sessions")
+  if sessions then
+    sessions.select("delete")
+  end
+end, { desc = "Delete session" })
+keymap.set("n", "<Leader>mv", function()
+  local visits = util.safe_require("mini.visits")
+  if visits then
+    visits.select_path(vim.fn.getcwd())
+  end
+end, { desc = "Select visited file in cwd" })
+keymap.set("n", "<Leader>mV", function()
+  local visits = util.safe_require("mini.visits")
+  if visits then
+    visits.select_path("")
+  end
+end, { desc = "Select visited file from all projects" })
+keymap.set("n", "[v", function()
+  local visits = util.safe_require("mini.visits")
+  if visits then
+    visits.iterate_paths("forward", vim.fn.getcwd())
+  end
+end, { desc = "Older visited file in cwd" })
+keymap.set("n", "]v", function()
+  local visits = util.safe_require("mini.visits")
+  if visits then
+    visits.iterate_paths("backward", vim.fn.getcwd())
+  end
+end, { desc = "Newer visited file in cwd" })
 keymap.set("n", "<Leader>he", telescope("help_tags"), { desc = "Help tags" })
 keymap.set("n", "<Leader>ta", telescope("tags"), { desc = "Tags" })
 keymap.set("n", "<Leader>b", telescope("buffers"), { desc = "Buffers" })

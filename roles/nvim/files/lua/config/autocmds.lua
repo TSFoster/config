@@ -1,10 +1,5 @@
 local util = require("config.util")
 
-vim.api.nvim_create_autocmd("TextYankPost", {
-  callback = vim.hl.on_yank,
-  desc = "Briefly highlight yanked area",
-})
-
 vim.api.nvim_create_autocmd("BufReadPost", {
   callback = function()
     if vim.fn.line([['"]]) > 1 and vim.fn.line([['"]]) <= vim.fn.line("$") then
@@ -74,28 +69,6 @@ do
     pattern = { "*.rtf" },
     callback = util.mk_fn(vim.cmd.silent, { "%!textutil", '"%"', "-convert", "html", "-stdout", "\\|", "pandoc", "--from=html", "--to=markdown" }),
     group = group,
-  })
-end
-
-do
-  local group = vim.api.nvim_create_augroup("terminal_insert", { clear = true })
-  vim.api.nvim_create_autocmd("BufEnter", {
-    group = group,
-    desc = "Automatically enter insert mode in terminal if not scrolled back",
-    callback = function()
-      if vim.o.buftype == "terminal" and vim.fn.line("$") == vim.fn.line("w$") then
-        vim.cmd("startinsert")
-      end
-    end,
-  })
-  vim.api.nvim_create_autocmd("TermOpen", {
-    group = group,
-    desc = "Automatically enter insert mode in terminal",
-    callback = function()
-      if vim.o.buftype == "terminal" then
-        vim.cmd("startinsert")
-      end
-    end,
   })
 end
 

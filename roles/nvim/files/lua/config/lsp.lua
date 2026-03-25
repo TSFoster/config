@@ -31,7 +31,23 @@ if blink then
     appearance = {
       nerd_font_variant = "mono",
     },
+    cmdline = {
+      completion = {
+        menu = {
+          auto_show = true,
+          auto_show_delay_ms = 0,
+        },
+      },
+    },
     completion = {
+      trigger = {
+        show_on_keyword = true,
+        show_on_trigger_character = true,
+      },
+      menu = {
+        auto_show = true,
+        auto_show_delay_ms = 0,
+      },
       documentation = {
         auto_show = true,
       },
@@ -216,18 +232,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
     end, "Focused code action")
     map("n", "<A-;>", vim.lsp.codelens.run, "Run code lens")
     map("n", "<Leader>ci", vim.diagnostic.open_float, "Show diagnostic at cursor")
-    map("n", "]d", function()
-      vim.diagnostic.jump({ count = 1 })
-    end, "Next diagnostic")
-    map("n", "[d", function()
-      vim.diagnostic.jump({ count = -1 })
-    end, "Previous diagnostic")
-    map("n", "]D", function()
-      vim.diagnostic.goto_next({ severity = vim.diagnostic.severity.ERROR })
-    end, "Next error")
-    map("n", "[D", function()
-      vim.diagnostic.goto_prev({ severity = vim.diagnostic.severity.ERROR })
-    end, "Previous error")
     map("i", "<A-k>", vim.lsp.buf.signature_help, "Signature help")
 
     if supports("textDocument/documentHighlight", buffer) then

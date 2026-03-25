@@ -2,10 +2,43 @@ local util = require("config.util")
 
 pcall(vim.cmd.colorscheme, "catppuccin")
 
+local mini_animate = util.safe_require("mini.animate")
+if mini_animate then
+  mini_animate.setup({
+    cursor = { enable = false },
+    scroll = { timing = mini_animate.gen_timing.linear({ duration = 100, unit = "total" }) },
+    resize = { timing = mini_animate.gen_timing.linear({ duration = 100, unit = "total" }) },
+    open = { timing = mini_animate.gen_timing.linear({ duration = 100, unit = "total" }) },
+    close = { timing = mini_animate.gen_timing.linear({ duration = 100, unit = "total" }) },
+  })
+end
+
 local mini = util.safe_require("mini.ai")
 if mini then
   mini.setup({
     n_lines = 500,
+  })
+end
+
+local mini_basics = util.safe_require("mini.basics")
+if mini_basics then
+  mini_basics.setup({
+    options = {
+      basic = true,
+      extra_ui = true,
+      win_borders = "single",
+    },
+    mappings = {
+      basic = true,
+      option_toggle_prefix = "yo",
+      windows = false,
+      move_with_alt = false,
+    },
+    autocommands = {
+      basic = true,
+      relnum_in_visual_mode = false,
+    },
+    silent = true,
   })
 end
 
@@ -17,6 +50,11 @@ if mini_align then
       start_with_preview = "gA",
     },
   })
+end
+
+local mini_bracketed = util.safe_require("mini.bracketed")
+if mini_bracketed then
+  mini_bracketed.setup()
 end
 
 local mini_bufremove = util.safe_require("mini.bufremove")
@@ -32,6 +70,7 @@ if mini_clue then
     triggers = {
       { mode = "n", keys = "<Leader>" },
       { mode = "x", keys = "<Leader>" },
+      { mode = "n", keys = "yo" },
       { mode = "n", keys = "[" },
       { mode = "n", keys = "]" },
       { mode = "i", keys = "<C-x>" },
@@ -52,10 +91,12 @@ if mini_clue then
     clues = {
       { mode = "n", keys = "<Leader>g", desc = "+git" },
       { mode = "n", keys = "<Leader>h", desc = "+history/help/hunks" },
+      { mode = "n", keys = "<Leader>m", desc = "+mini" },
       { mode = "n", keys = "<Leader>n", desc = "+new" },
       { mode = "n", keys = "<Leader>t", desc = "+terminal/tags/tools" },
       { mode = "n", keys = "<Leader>/", desc = "+search web" },
       { mode = "n", keys = "<Leader><Leader>", desc = "+secondary" },
+      { mode = "n", keys = "yo", desc = "+toggle options" },
       mini_clue.gen_clues.square_brackets(),
       mini_clue.gen_clues.builtin_completion(),
       mini_clue.gen_clues.g(),
@@ -70,9 +111,71 @@ if mini_clue then
   })
 end
 
+local mini_cmdline = util.safe_require("mini.cmdline")
+if mini_cmdline then
+  mini_cmdline.setup({
+    autocomplete = {
+      enable = false,
+    },
+  })
+end
+
 local mini_comment = util.safe_require("mini.comment")
 if mini_comment then
   mini_comment.setup()
+end
+
+local mini_icons = util.safe_require("mini.icons")
+if mini_icons then
+  mini_icons.setup()
+end
+
+local mini_indentscope = util.safe_require("mini.indentscope")
+if mini_indentscope then
+  mini_indentscope.setup({
+    draw = {
+      delay = 0,
+      animation = mini_indentscope.gen_animation.none(),
+    },
+    symbol = "│",
+  })
+end
+
+local mini_jump = util.safe_require("mini.jump")
+if mini_jump then
+  mini_jump.setup()
+end
+
+local mini_jump2d = util.safe_require("mini.jump2d")
+if mini_jump2d then
+  mini_jump2d.setup({
+    view = {
+      dim = true,
+      n_steps_ahead = 2,
+    },
+  })
+end
+
+local mini_move = util.safe_require("mini.move")
+if mini_move then
+  mini_move.setup({
+    mappings = {
+      left = "<S-Left>",
+      right = "<S-Right>",
+      down = "<S-Down>",
+      up = "<S-Up>",
+      line_left = "<S-Left>",
+      line_right = "<S-Right>",
+      line_down = "<S-Down>",
+      line_up = "<S-Up>",
+    },
+  })
+end
+
+local mini_notify = util.safe_require("mini.notify")
+if mini_notify then
+  mini_notify.setup()
+  vim.notify = mini_notify.make_notify()
 end
 
 local mini_operators = util.safe_require("mini.operators")
@@ -97,16 +200,49 @@ if mini_splitjoin then
   mini_splitjoin.setup()
 end
 
-local mini_statusline = util.safe_require("mini.statusline")
-if mini_statusline then
-  mini_statusline.setup({
-    use_icons = true,
+local mini_sessions = util.safe_require("mini.sessions")
+if mini_sessions then
+  mini_sessions.setup({
+    autoread = false,
+    autowrite = true,
+  })
+end
+
+local mini_snippets = util.safe_require("mini.snippets")
+if mini_snippets then
+  local gen_loader = mini_snippets.gen_loader
+
+  mini_snippets.setup({
+    snippets = {
+      gen_loader.from_lang({ silent = true }),
+      gen_loader.from_file(".vscode/project.code-snippets", { silent = true }),
+    },
+    mappings = {
+      expand = "<C-l>",
+      jump_next = "<C-l>",
+      jump_prev = "<C-h>",
+      stop = "<C-c>",
+    },
   })
 end
 
 local mini_surround = util.safe_require("mini.surround")
 if mini_surround then
   mini_surround.setup()
+end
+
+local mini_trailspace = util.safe_require("mini.trailspace")
+if mini_trailspace then
+  mini_trailspace.setup()
+end
+
+local mini_visits = util.safe_require("mini.visits")
+if mini_visits then
+  mini_visits.setup({
+    store = {
+      autowrite = true,
+    },
+  })
 end
 
 local gitsigns = util.safe_require("gitsigns")

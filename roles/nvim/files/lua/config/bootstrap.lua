@@ -40,6 +40,7 @@ vim.api.nvim_create_autocmd("PackChanged", {
 
 local specs = {
   gh("nvim-mini/mini.nvim", { name = "mini.nvim", version = "stable" }),
+  gh("rafamadriz/friendly-snippets"),
   gh("nvim-lua/plenary.nvim"),
   gh("catppuccin/nvim", { name = "catppuccin" }),
   gh("nvim-telescope/telescope.nvim"),
@@ -52,7 +53,6 @@ local specs = {
   gh("nvim-treesitter/nvim-treesitter-textobjects"),
   gh("greggh/claude-code.nvim"),
   gh("johnseth97/codex.nvim"),
-  gh("tpope/vim-unimpaired"),
   gh("fcpg/vim-kickfix"),
   gh("tpope/vim-fugitive"),
   gh("tpope/vim-repeat"),
