@@ -132,6 +132,9 @@ keymap.set(
 keymap.set("n", "<Leader>gre", function()
   cmd.Git("rebase -i HEAD~" .. v.count1)
 end, { desc = "Rebase git" })
+keymap.set("n", "<Leader>gv", ":GV<GR>", { desc = "Open GV" })
+keymap.set("n", "<Leader>gV", ":GV!<CR>", { desc = "Open GV for current file" })
+keymap.set("n", "<Leader>gl", ":GV?<CR>", { desc = "Fill location list with file revisions" })
 
 keymap.set({ "x", "o" }, "i,", "<Plug>(swap-textobject-i)", { remap = true, desc = "Delimited item i text object" })
 keymap.set({ "x", "o" }, "a,", "<Plug>(swap-textobject-a)", { remap = true, desc = "Delimited item a text object" })
