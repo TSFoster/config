@@ -60,6 +60,7 @@ vim.filetype.add({
     mdx = "markdown.mdx",
   },
   filename = {
+    [".ansible-lint"] = "yaml",
     ["go.work"] = "gowork",
   },
   pattern = {
