@@ -14,13 +14,13 @@
   ansible.builtin.copy:
     src: mailbox-count
     dest: "~/.local/bin/"
-    mode: "u+rwx"
+    mode: preserve
   when: ansible_facts["system"] == "Darwin"
 - name: Add ghostty config
   ansible.builtin.template:
     src: ghostty.toml.j2
     dest: "{{ config_dir }}/ghostty/config"
-    mode: "0644"
+    mode: preserve
 - name: Add gh config
   ansible.builtin.copy:
     src: gh
@@ -30,7 +30,7 @@
   ansible.builtin.copy:
     src: ripgreprc
     dest: "{{ config_dir }}/"
-    mode: "0644"
+    mode: preserve
 - name: Add yazi config
   ansible.builtin.copy:
     src: yazi

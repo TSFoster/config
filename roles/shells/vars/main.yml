@@ -1,8 +1,8 @@
 ---
 shells_fisher_plugins:
-  - TSFoster/posix-source
-  - TSFoster/docker-tools
-  - TSFoster/fish-elm-completion
+  - tsfoster/posix-source
+  - tsfoster/docker-tools
+  - tsfoster/fish-elm-completion
   - fisherman/getopts
   - catppuccin/fish
   - jethrokuan/fzf
@@ -21,7 +21,8 @@ shells_path_entries_darwin:
   - /Applications/Setapp/Soulver.app/Contents/MacOS/CLI
 shells_uv:
   xdg_data: "{{ ansible_facts['env']['HOME'] }}/.local/share"
-  fd_default: --exclude node_modules --exclude .git --exclude elm-stuff --exclude bower_components --exclude target --exclude .DS_Store --exclude .sass-cache
+  fd_default:
+    --exclude node_modules --exclude .git --exclude elm-stuff --exclude bower_components --exclude target --exclude .DS_Store --exclude .sass-cache
     --hidden
   iCloud: "{{ ansible_facts['env']['HOME'] }}/Library/Mobile Documents/com~apple~CloudDocs"
   isMac: "{{ ansible_facts['system'] == 'Darwin' }}"
@@ -55,6 +56,9 @@ shells_variables:
     export: true
   - name: RIPGREP_CONFIG_PATH
     value: "{{ config_dir }}/ripgreprc"
+    export: true
+  - name: BAT_THEME
+    value: Catppuccin Mocha
     export: true
   - name: FZF_DEFAULT_COMMAND
     value: "fd --type file {{ shells_uv.fd_default }}"
@@ -154,9 +158,6 @@ shells_abbreviations:
     shell_alias: false
   - name: v
     value: "{{ shells_uv.editor }}"
-  - name: man
-    value: viman
-    shell_alias: false
   - name: e
     value: "{{ shells_uv.editor }}"
     shell_alias: false

@@ -45,26 +45,31 @@
     path: "{{ config_dir }}/fish/fish_variables"
     create: true
     mode: "0644"
-    regexp: "^SETUVAR (--export )?(--path )?{{ item.name }}:"
+    regexp: "^SETUVAR( +--export)?( +--path)? +{{ item.name }}:"
     line: >-
-      SETUVAR{{ ' ' }}
-      {% if item.export | default(false, true) %}--export {% endif -%}
-      {% if item.path | default(false, true) %}--path {% endif -%}
-      {{ item.name }}:
-      {{- item.value_multiple | default([item.value])
-        | join('\x1e')
-        | replace(' ', '\x20')
-        | replace('%', '\x25')
-        | replace('(', '\x28')
-        | replace(')', '\x29')
-        | replace('-', '\x2d')
-        | replace('.', '\x2e')
-        | replace('<', '\x3c')
-        | replace('=', '\x3d')
-        | replace('>', '\x3e')
-        | replace('{', '\x7b')
-        | replace('}', '\x7d')
-        | replace('~', '\x7e')
+      {{
+        'SETUVAR'
+        ~ (item.export | default(false, true) | ternary(' --export', ''))
+        ~ (item.path | default(false, true) | ternary(' --path', ''))
+        ~ ' '
+        ~ item.name
+        ~ ':'
+        ~ (
+          item.value_multiple | default([item.value])
+          | join('\x1e')
+          | replace(' ', '\x20')
+          | replace('%', '\x25')
+          | replace('(', '\x28')
+          | replace(')', '\x29')
+          | replace('-', '\x2d')
+          | replace('.', '\x2e')
+          | replace('<', '\x3c')
+          | replace('=', '\x3d')
+          | replace('>', '\x3e')
+          | replace('{', '\x7b')
+          | replace('}', '\x7d')
+          | replace('~', '\x7e')
+        )
       }}
   loop: "{{ shells_variables + shells_fish_universal_variables }}"
   tags:
@@ -133,12 +138,21 @@
   tags:
     - fisher
 - name: Install fisher
-  ansible.builtin.command:
-    cmd: "fish -c 'curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher'"
-  changed_when: true
   when: shells_which_fisher.stdout.find('installed') == -1
   tags:
     - fisher
+  block:
+    - name: Download fisher installer
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish
+        dest: "{{ ansible_facts['env'].get('TMPDIR', '/tmp') }}/fisher.fish"
+        mode: "0644"
+    - name: Source fisher installer
+      ansible.builtin.command:
+        cmd: >-
+          fish -c 'source {{ ansible_facts["env"].get("TMPDIR", "/tmp") }}/fisher.fish &&
+          fisher install jorgebucaran/fisher'
+      changed_when: true
 - name: Get list of plugins
   ansible.builtin.command:
     cmd: "fish -c 'fisher list'"

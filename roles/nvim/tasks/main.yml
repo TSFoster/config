@@ -27,7 +27,7 @@
     executable: "{{ nvim_npm_location.stdout }}"
   loop: "{{ nvim_lsp_npm_packages }}"
   tags:
-    - nvim-lsp
+    - nvim_lsp
 - name: Check default npm packages for Neovim language servers
   ansible.builtin.lineinfile:
     path: "{{ config_dir }}/asdf/default-npm-packages"
@@ -37,14 +37,14 @@
     mode: "0644"
   loop: "{{ nvim_lsp_npm_packages }}"
   tags:
-    - nvim-lsp
+    - nvim_lsp
 - name: Install Homebrew language servers for Neovim
   community.general.homebrew:
     name: "{{ nvim_lsp_homebrew_packages_darwin }}"
     state: present
   when: ansible_facts["system"] == "Darwin"
   tags:
-    - nvim-lsp
+    - nvim_lsp
 - name: Install gem language servers for Neovim
   community.general.gem:
     name: "{{ item }}"
@@ -53,7 +53,7 @@
     PATH: "{{ homebrew_prefix }}/opt/ruby/bin:{{ ansible_facts['env']['PATH'] }}"
   loop: "{{ nvim_lsp_gem_packages }}"
   tags:
-    - nvim-lsp
+    - nvim_lsp
 - name: Check default gems for Neovim language servers
   ansible.builtin.lineinfile:
     path: "{{ config_dir }}/asdf/default-gems"
@@ -63,7 +63,7 @@
     mode: "0644"
   loop: "{{ nvim_lsp_gem_packages }}"
   tags:
-    - nvim-lsp
+    - nvim_lsp
 - name: Install neovim-remote # TODO Check present in default-python-packages?
   ansible.builtin.pip:
     name: neovim-remote
@@ -76,13 +76,19 @@
     dest: "{{ config_dir }}/nvim/"
     mode: preserve
   tags:
-    - nvim-files
+    - nvim_files
 - name: Add nvr completion in fish
-  ansible.builtin.command:
-    creates: "{{ config_dir }}/fish/completions/nvr.fish"
-    cmd: >-
-      {{ homebrew_brew_bin_path }}/fish -c
-      'curl https://raw.githubusercontent.com/mhinz/neovim-remote/master/contrib/completion.fish
-      > {{ config_dir }}/fish/completions/nvr.fish'
+  block:
+    - name: Ensure fish completions directory exists
+      ansible.builtin.file:
+        path: "{{ config_dir }}/fish/completions"
+        state: directory
+        mode: "0755"
+    - name: Download nvr fish completion
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/mhinz/neovim-remote/master/contrib/completion.fish
+        dest: "{{ config_dir }}/fish/completions/nvr.fish"
+        mode: "0644"
+        force: false
   tags:
     - nvr

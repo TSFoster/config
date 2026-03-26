@@ -5,7 +5,7 @@
     - role: shells
       tags: ["shells"]
     - role: dot_dirs
-      tags: ["dot-dirs"]
+      tags: ["dot_dirs"]
     - role: ssh
       tags: ["ssh"]
     - role: npm
@@ -22,7 +22,7 @@
       tags: ["hammerspoon"]
       when: ansible_facts["system"] == "Darwin"
     - role: macos_navigation
-      tags: ["macos-navigation"]
+      tags: ["macos_navigation"]
       when: ansible_facts["system"] == "Darwin"
     - role: fonts
       tags: ["fonts"]
@@ -35,7 +35,7 @@
     - role: java
       tags: ["java"]
     - role: cli_tools
-      tags: ["cli-tools"]
+      tags: ["cli_tools"]
     - role: alfred
       tags: ["alfred"]
       when: ansible_facts["system"] == "Darwin"
