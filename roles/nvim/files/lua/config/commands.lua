@@ -44,3 +44,52 @@ end, { nargs = 0, bang = true, desc = "Delete buffer while preserving window spl
 vim.api.nvim_create_user_command("Format", function()
   lsp.format_buffer()
 end, { desc = "Format current buffer" })
+
+local function split_command_args(args)
+  if args == "" then
+    return {}
+  end
+
+  local parts = vim.split(vim.trim(args), "%s+")
+
+  if parts[1] == "" then
+    return {}
+  end
+
+  return parts
+end
+
+local function grep_completion(arglead, cmdline)
+  local args = cmdline:gsub("^%S+%s*", "")
+  local has_trailing_space = args:match("%s$") ~= nil
+  local parts = split_command_args(args)
+  local completed_args = #parts
+
+  if has_trailing_space then
+    completed_args = completed_args + 1
+  end
+
+  if completed_args <= 1 then
+    return {}
+  end
+
+  return vim.fn.getcompletion(arglead, "file_in_path")
+end
+
+local function create_silent_grep_command(name, target, list_name)
+  vim.api.nvim_create_user_command(name, function(params)
+    local parsed = vim.api.nvim_parse_cmd(target .. " " .. params.args, {})
+    parsed.mods.silent = true
+    parsed.mods.emsg_silent = true
+    vim.api.nvim_cmd(parsed, {})
+  end, {
+    nargs = "+",
+    complete = grep_completion,
+    desc = string.format("%s with grep without echoing errors", list_name),
+  })
+end
+
+create_silent_grep_command("Grep", "grep", "Populate quickfix")
+create_silent_grep_command("Grepadd", "grepadd", "Add to quickfix")
+create_silent_grep_command("Lgrep", "lgrep", "Populate location list")
+create_silent_grep_command("Lgrepadd", "lgrepadd", "Add to location list")
