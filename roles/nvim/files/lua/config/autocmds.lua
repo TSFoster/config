@@ -10,6 +10,19 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 })
 
 do
+  local group = vim.api.nvim_create_augroup("terminal_insert", { clear = true })
+  vim.api.nvim_create_autocmd("BufEnter", {
+    group = group,
+    desc = "Automatically enter insert mode in terminal if not scrolled back",
+    callback = function()
+      if vim.o.buftype == "terminal" and vim.fn.line("$") == vim.fn.line("w$") then
+        vim.cmd("startinsert")
+      end
+    end,
+  })
+end
+
+do
   local timer_id = 0
   local group = vim.api.nvim_create_augroup("titlebar_naming", { clear = true })
 
@@ -67,7 +80,10 @@ do
   })
   vim.api.nvim_create_autocmd("BufReadPost", {
     pattern = { "*.rtf" },
-    callback = util.mk_fn(vim.cmd.silent, { "%!textutil", '"%"', "-convert", "html", "-stdout", "\\|", "pandoc", "--from=html", "--to=markdown" }),
+    callback = util.mk_fn(
+      vim.cmd.silent,
+      { "%!textutil", '"%"', "-convert", "html", "-stdout", "\\|", "pandoc", "--from=html", "--to=markdown" }
+    ),
     group = group,
   })
 end
