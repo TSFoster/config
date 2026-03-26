@@ -172,12 +172,6 @@ if mini_move then
   })
 end
 
-local mini_notify = util.safe_require("mini.notify")
-if mini_notify then
-  mini_notify.setup()
-  vim.notify = mini_notify.make_notify()
-end
-
 local mini_operators = util.safe_require("mini.operators")
 if mini_operators then
   mini_operators.setup({

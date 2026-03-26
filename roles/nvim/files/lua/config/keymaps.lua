@@ -111,8 +111,8 @@ keymap.set("i", "<C-c>", "<Esc>", { desc = "Ensure InsertLeave is triggered with
 keymap.set("n", "gh", [[ciw<C-r>=printf('0x%x', <C-r>")<CR><Esc>]], { silent = true, desc = "Convert bases" })
 
 keymap.set("n", "<Leader>gg", ":Git<Space>", { desc = "Make arbitrary Git command" })
-keymap.set("n", "<Leader>ga", cmd.Gwrite, { desc = "Stage changes in Git" })
-keymap.set("n", "<Leader>gs", cmd.Git, { desc = "Git status" })
+keymap.set("n", "<Leader>ga", util.mk_fn(cmd.Gwrite), { desc = "Stage changes in Git" })
+keymap.set("n", "<Leader>gs", util.mk_fn(cmd.Git), { desc = "Git status" })
 keymap.set("n", "<Leader>gps", util.mk_fn(cmd.Git, { "push", bang = true }), { desc = "Git push" })
 keymap.set(
   "n",

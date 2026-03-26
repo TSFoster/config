@@ -2,7 +2,13 @@ local M = {}
 
 function M.mk_fn(fn, arg)
   return function()
-    return fn(arg)
+    local ok, result = pcall(fn, arg)
+    if not ok then
+      vim.notify(result, vim.log.levels.ERROR)
+      return nil
+    end
+
+    return result
   end
 end
 
