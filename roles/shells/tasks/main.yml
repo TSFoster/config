@@ -168,6 +168,14 @@
   loop: "{{ shells_fisher_plugins }}"
   tags:
     - fisher
+- name: Set fish theme
+  ansible.builtin.copy:
+    dest: "{{ config_dir }}/fish/conf.d/zz_theme.fish"
+    mode: "0644"
+    content: |
+      fish_config theme choose catppuccin-mocha --color-theme=dark >/dev/null 2>/dev/null
+  tags:
+    - fisher
 - name: Install thefuck
   community.general.homebrew:
     name: thefuck

@@ -36,6 +36,24 @@
     src: yazi
     dest: "{{ config_dir }}/"
     mode: preserve
+- name: Add bat themes
+  block:
+    - name: Ensure bat config directory exists
+      ansible.builtin.file:
+        state: directory
+        dest: "{{ config_dir }}/bat"
+        mode: "0755"
+    - name: Download Catppuccin bat themes
+      ansible.builtin.get_url:
+        url: "https://raw.githubusercontent.com/catppuccin/bat/main/themes/{{ item | urlencode }}"
+        dest: "{{ config_dir }}/bat/{{ item }}"
+        mode: "0644"
+        force: false
+      loop:
+        - Catppuccin Latte.tmTheme
+        - Catppuccin Frappe.tmTheme
+        - Catppuccin Macchiato.tmTheme
+        - Catppuccin Mocha.tmTheme
 - name: Add git config
   block:
     - name: Copy config
@@ -52,9 +70,9 @@
   ansible.builtin.copy:
     src: editorconfig
     dest: ~/.editorconfig
-    mode: "0644"
+    mode: preserve
 - name: Add warpd config
   ansible.builtin.copy:
     src: warpd
     dest: "{{ config_dir }}/warpd/config"
-    mode: "u+rw"
+    mode: preserve

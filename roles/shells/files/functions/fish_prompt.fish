@@ -15,18 +15,33 @@ function fish_prompt
   set pathinfofile /tmp/fish-prompt-path-(string replace -a '/' '%' $PWD)
   set gitinfofile /tmp/fish-prompt-git-(string replace -a '/' '%' $PWD)
 
-  set project_path_color black
-  set project_dir_color red
+  # Follow the active fish theme when prompt-specific colors are not set.
+  set project_path_color normal
+  set -q fish_color_normal
+  and set project_path_color $fish_color_normal
+
+  set project_dir_color $project_path_color
+  set -q fish_color_cwd
+  and set project_dir_color $fish_color_cwd
+
   set pwd_path_color $project_path_color
-  set pwd_dir_color blue
-  set docker_machine_color cyan
-  set sshinfo_color green
+  set pwd_dir_color $project_dir_color
+
+  set docker_machine_color $project_dir_color
+  set -q fish_color_host
+  and set docker_machine_color $fish_color_host
+
+  set sshinfo_color $docker_machine_color
+  set -q fish_color_user
+  and set sshinfo_color $fish_color_user
 
   if test $last_status -eq 0
     set last_status_color normal
     set last_status ' '
   else
-    set last_status_color red
+    set last_status_color $project_dir_color
+    set -q fish_color_error
+    and set last_status_color $fish_color_error
     set last_status \u2524_$last_status
   end
 
@@ -72,32 +87,43 @@ function fish_prompt
   set giticons ' '
   set gitcolors normal
   if test -n "$gitinfo[1]"
-    set gitcolors $gitcolors green
+    set git_branch_color $project_dir_color
+    set -q fish_color_command
+    and set git_branch_color $fish_color_command
+    set gitcolors $gitcolors $git_branch_color
     set giticons $giticons '('(string replace -r '^master|main$' '●' $gitinfo[1] | string replace -r '^feature/' '★' | string replace -r '^hotfix/' '⌁')')'
 
+    set git_dirty_color $last_status_color
     test "$gitinfo[2]" = "STAGED"
     and set giticons $giticons +
-    and set gitcolors $gitcolors red
+    and set gitcolors $gitcolors $git_dirty_color
 
     test "$gitinfo[3]" = "DIRTY"
     and set giticons $giticons …
-    and set gitcolors $gitcolors red
+    and set gitcolors $gitcolors $git_dirty_color
 
     switch "$gitinfo[4]"
       case 'AHEAD'
+        set git_ahead_color $git_branch_color
         set giticons $giticons \u2191
-        set gitcolors $gitcolors green
+        set gitcolors $gitcolors $git_ahead_color
       case 'BEHIND'
+        set git_behind_color $project_dir_color
+        set -q fish_color_param
+        and set git_behind_color $fish_color_param
         set giticons $giticons \u2193
-        set gitcolors $gitcolors blue
+        set gitcolors $gitcolors $git_behind_color
       case 'AHEADBEHIND'
         set giticons $giticons \u2195
-        set gitcolors $gitcolors red
+        set gitcolors $gitcolors $git_dirty_color
     end
 
+    set git_stash_color $project_dir_color
+    set -q fish_color_quote
+    and set git_stash_color $fish_color_quote
     test "$gitinfo[5]" = "STASHES"
     and set giticons $giticons '❖'
-    and set gitcolors $gitcolors magenta
+    and set gitcolors $gitcolors $git_stash_color
   end
 
   set gitinfo_length (string length (string join '' $giticons))
