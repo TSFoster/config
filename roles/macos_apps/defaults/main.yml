@@ -1,0 +1,85 @@
+---
+# Homebrew casks — GUI applications, macOS only.
+# These are installed via community.general.homebrew_cask, not install_packages.
+# Cask upgrades are out of scope — run `brew upgrade --cask` manually if needed.
+macos_apps_casks:
+  # Terminals
+  - ghostty
+
+  # Browsers
+  - firefox-developer-edition
+  - google-chrome-dev
+  - opera-developer
+
+  # Productivity
+  - 1password
+  - keyboard-maestro
+  - hazel
+  - things
+  - drafts
+  - choosy
+  - openinterminal
+  - homerow
+
+  # Design
+  - sf-symbols
+  - couleurs
+  - affinity-publisher
+
+  # Media
+  - calibre
+  - imageoptim
+  - yattee
+  - transmission-remote-gui
+
+  # Utilities
+  - karabiner-elements
+  - utm
+  - vyprvpn
+  - setapp
+  - swiftdefaultappsprefpane
+  - bookmacster
+  - keybase
+  - syntax-highlight
+  - zoom
+
+  # Gaming
+  - steam
+  - 8bitdo-ultimate-software
+  - 8bitdo-firmware-updater
+
+  # Developer GUI
+  - docker
+
+  # Fonts
+  - font-fira-code
+  - font-fira-mono
+  - font-fira-sans
+  - font-ibm-plex-mono
+  - font-ibm-plex-sans
+  - font-ibm-plex-serif
+  - font-roboto
+  - font-roboto-mono
+  - font-roboto-slab
+  - font-source-code-pro
+  - font-source-sans-pro
+  - font-source-serif-pro
+  - font-charter
+
+# Mac App Store apps — requires `mas` CLI (installed in dev_tools)
+macos_apps_mas:
+  - { id: 1365531024, name: "1Blocker" }
+  - { id: 1616822987, name: "Affinity Photo 2" }
+  - { id: 1616831348, name: "Affinity Designer 2" }
+  - { id: 1435957248, name: "Drafts" }
+  - { id: 1551506255, name: "Dynamo" }
+  - { id: 414568915,  name: "Key Codes" }
+  - { id: 441258766,  name: "Magnet" }
+  - { id: 1303222628, name: "Paprika 3" }
+  - { id: 639968404,  name: "Parcel" }
+  - { id: 1529448980, name: "Reeder 5" }
+  - { id: 693112260,  name: "Sim Daltonism" }
+  - { id: 904280696,  name: "Things 3" }
+  - { id: 1384080005, name: "Tweetbot 3" }
+  - { id: 1480933944, name: "Vimari" }
+  - { id: 972572731,  name: "Thingsmacsandboxhelper" }

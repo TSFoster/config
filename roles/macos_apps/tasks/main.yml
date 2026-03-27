@@ -1,0 +1,18 @@
+---
+# Guard is also set at the call site in main.yml, but repeated here so the
+# role is safe to include from any playbook without platform knowledge.
+- name: Skip on non-macOS
+  ansible.builtin.meta: end_play
+  when: ansible_facts['system'] != 'Darwin'
+
+- name: Install macOS GUI applications via Homebrew cask
+  community.general.homebrew_cask:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ macos_apps_casks }}"
+
+- name: Install Mac App Store applications
+  community.general.mas:
+    id: "{{ item.id }}"
+    state: present
+  loop: "{{ macos_apps_mas }}"
