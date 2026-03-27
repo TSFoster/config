@@ -9,25 +9,20 @@
     state: present
   environment:
     PATH: "{{ homebrew_prefix }}/opt/ruby/bin:{{ ansible_facts['env']['PATH'] }}"
-- name: Install npm neovim module # TODO Check present in default-node-packages?
-  community.general.npm:
-    name: neovim
-    global: true
-    state: present
-- name: Find npm
-  ansible.builtin.command:
-    cmd: asdf which npm
-  register: nvim_npm_location
-  changed_when: false
-- name: Install npm language servers for Neovim
+  when: ansible_facts['system'] == 'Darwin'
+- name: Install Neovim LSP tool packages
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: install_packages
+  vars:
+    packages: "{{ nvim_packages }}"
+
+- name: Install Neovim npm packages
   community.general.npm:
     name: "{{ item }}"
     global: true
     state: present
-    executable: "{{ nvim_npm_location.stdout }}"
-  loop: "{{ nvim_lsp_npm_packages }}"
-  tags:
-    - nvim_lsp
+  loop: "{{ nvim_npm_packages }}"
 - name: Check default npm packages for Neovim language servers
   ansible.builtin.lineinfile:
     path: "{{ config_dir }}/asdf/default-npm-packages"
@@ -35,25 +30,19 @@
     state: present
     create: true
     mode: "0644"
-  loop: "{{ nvim_lsp_npm_packages }}"
+  loop: "{{ nvim_npm_packages }}"
   tags:
     - nvim_lsp
-- name: Install Homebrew language servers for Neovim
-  community.general.homebrew:
-    name: "{{ nvim_lsp_homebrew_packages_darwin }}"
-    state: present
-  when: ansible_facts["system"] == "Darwin"
-  tags:
-    - nvim_lsp
-- name: Install gem language servers for Neovim
+# Gem tasks use Homebrew-managed Ruby PATH and are macOS-only for now.
+# To support Linux, replace the environment PATH with the system Ruby path.
+- name: Install Neovim Ruby gem packages (macOS only)
   community.general.gem:
     name: "{{ item }}"
     state: present
   environment:
-    PATH: "{{ homebrew_prefix }}/opt/ruby/bin:{{ ansible_facts['env']['PATH'] }}"
-  loop: "{{ nvim_lsp_gem_packages }}"
-  tags:
-    - nvim_lsp
+    PATH: "{{ homebrew_prefix }}/opt/ruby/bin:{{ ansible_env.PATH }}"
+  loop: "{{ nvim_gem_packages }}"
+  when: ansible_facts['system'] == 'Darwin'
 - name: Check default gems for Neovim language servers
   ansible.builtin.lineinfile:
     path: "{{ config_dir }}/asdf/default-gems"
@@ -61,7 +50,7 @@
     state: present
     create: true
     mode: "0644"
-  loop: "{{ nvim_lsp_gem_packages }}"
+  loop: "{{ nvim_gem_packages }}"
   tags:
     - nvim_lsp
 - name: Install neovim-remote # TODO Check present in default-python-packages?

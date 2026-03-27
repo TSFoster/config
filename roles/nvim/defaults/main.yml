@@ -1,5 +1,19 @@
+# roles/nvim/defaults/main.yml
 ---
-nvim_lsp_npm_packages:
+# Packages without `pkg:` are macOS-only (no standard apt equivalent).
+# They are silently skipped on Linux by the install_packages abstraction.
+nvim_packages:
+  - brew: deno                   # no standard apt package
+  - brew: gopls                  # Go LSP; on Linux install via `go install golang.org/x/tools/gopls@latest`
+  - brew: lua-language-server    # no apt package
+  - brew: marksman               # no apt package
+  - name: rust-analyzer          # available in Ubuntu 22.04+ apt
+  - brew: stylua                 # Lua formatter; no apt package
+
+# npm-based LSP servers and tools — installed globally via npm (asdf-managed).
+# Includes the Node.js neovim provider, migrated here from the old npm role.
+nvim_npm_packages:
+  - neovim
   - "@ansible/ansible-language-server"
   - "@fsouza/prettierd"
   - bash-language-server
@@ -13,13 +27,8 @@ nvim_lsp_npm_packages:
   - vscode-langservers-extracted
   - yaml-language-server
 
-nvim_lsp_homebrew_packages_darwin:
-  - deno
-  - gopls
-  - lua-language-server
-  - marksman
-  - rust-analyzer
-  - stylua
-
-nvim_lsp_gem_packages:
+# Ruby gems — use Homebrew-managed Ruby on macOS.
+# On Linux, system Ruby is used; the gem tasks are guarded to Darwin
+# because the current PATH setup uses the Homebrew Ruby path.
+nvim_gem_packages:
   - solargraph
