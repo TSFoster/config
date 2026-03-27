@@ -1,0 +1,27 @@
+# roles/dev_tools/tasks/main.yml
+---
+- name: Install dev tool packages
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: install_packages
+  vars:
+    packages: "{{ dev_tools_packages }}"
+
+# npm global installs use the asdf-managed npm shim.
+# Do NOT add become: true — asdf-managed node/npm must run as the user.
+# The asdf shim resolves the correct npm binary; no executable: path needed.
+- name: Install global npm packages
+  community.general.npm:
+    name: "{{ item }}"
+    global: true
+    state: present
+  loop: "{{ dev_tools_npm_packages }}"
+
+# Use lineinfile with regexp so re-running is idempotent per package.
+- name: Track npm packages in asdf default-npm-packages
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/.default-npm-packages"
+    line: "{{ item }}"
+    regexp: "^{{ item | regex_escape }}$"
+    create: true
+  loop: "{{ dev_tools_npm_packages }}"

@@ -1,0 +1,110 @@
+# roles/dev_tools/defaults/main.yml
+---
+dev_tools_packages:
+  # Version control
+  - name: git
+  - name: gh             # GitHub CLI — available via apt on Ubuntu 22.04+
+  - name: glab           # GitLab CLI
+  - name: tig            # git TUI
+
+  # Shell tooling foundation
+  - name: asdf           # version manager — required before nvim role runs
+
+  # Mac App Store CLI — macOS only, must be present before macos_apps role
+  - brew: mas
+
+  # Search & filter
+  - name: ripgrep
+  - brew: fd
+    pkg: fd-find         # Ubuntu apt name differs from brew
+  - name: fzf
+  - name: bat
+  - brew: the_silver_searcher
+    pkg: silversearcher-ag
+
+  # JSON / data
+  - name: jq
+  - name: fx
+
+  # Web / HTTP
+  - name: httpie
+  - name: nmap
+  - name: mosh
+  - brew: telnet         # macOS no longer ships telnet
+    pkg: telnet
+
+  # Text / document
+  - name: pandoc
+  - brew: par
+    pkg: par
+  - name: rename
+
+  # Build / media
+  - name: ffmpeg
+  - name: imagemagick
+  - name: qrencode
+  - name: svn            # required by some font cask installs
+
+  # Monitoring / disk
+  - name: ncdu
+  - name: pv
+  - brew: trash          # macOS: safe rm — no direct apt equivalent
+  - name: fswatch
+  - name: wrk            # HTTP benchmarking
+
+  # Security
+  - name: gnupg
+  - name: mkcert
+
+  # Containers / DevOps
+  - name: podman
+  - name: skopeo
+  - brew: dive           # Docker image explorer — no standard apt package
+  - brew: container-diff
+  - brew: doctl          # DigitalOcean CLI
+
+  # Languages & runtimes
+  - brew: go
+    pkg: golang          # brew formula is 'go', apt package is 'golang'
+  - name: python3
+  - brew: php
+
+  # Misc dev tools
+  - name: shellcheck
+  - name: yamllint
+  - name: exercism
+  - name: watchexec
+  - name: cloc
+  - name: hugo
+  - brew: terminal-notifier   # macOS-only notification tool
+  - name: rlwrap
+  - brew: lorem               # macOS-only Lorem Ipsum generator
+  - name: gperf
+  - brew: libusb
+    pkg: libusb-dev
+  - brew: libuv
+    pkg: libuv1-dev
+
+  # Database
+  - name: postgresql
+  - name: sqlite
+
+  # Code analysis / formatting
+  - brew: efm-langserver  # no standard apt package
+
+  # HTML
+  - brew: tidy-html5
+    pkg: tidy
+
+# Global npm packages that belong to the dev_tools concern.
+# Note: neovim (Node.js neovim client) lives in the nvim role.
+# Note: alfred-fkill lives in the alfred role.
+dev_tools_npm_packages:
+  - curlconverter
+  - firebase-tools
+  - hostile
+  - machine-share
+  - netlify-cli
+  - vercel
+  - "@openai/codex"
+  - react-devtools
