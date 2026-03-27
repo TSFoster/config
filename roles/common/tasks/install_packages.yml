@@ -22,7 +22,7 @@
       - packages | length > 0
     fail_msg: >
       install_packages requires a non-empty `packages` variable.
-      Pass it via: vars: { packages: "{{ my_role_packages }}" }
+      Pass it via: vars: { packages: "{{ '{{' }} my_role_packages {{ '}}' }}" }
 
 - name: Install packages via Homebrew (macOS)
   community.general.homebrew:
