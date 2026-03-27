@@ -20,13 +20,13 @@
   when: ansible_facts['system'] == 'Linux'
 - name: Set fish as default shell (macOS)
   ansible.builtin.user:
-    name: "{{ the_user }}"
+    name: "{{ ansible_facts['env']['USER'] }}"
     shell: "{{ homebrew_brew_bin_path }}/fish"
   become: true
   when: ansible_facts['system'] == 'Darwin'
 - name: Set fish as default shell (Linux)
   ansible.builtin.user:
-    name: "{{ the_user }}"
+    name: "{{ ansible_facts['env']['USER'] }}"
     shell: /usr/bin/fish
   become: true
   when: ansible_facts['system'] == 'Linux'
@@ -71,7 +71,7 @@
         ~ item.name
         ~ ':'
         ~ (
-          item.value_multiple | default([item.value])
+          item.value_multiple | default([item.value]) | reject('equalto', '') | list
           | join('\x1e')
           | replace(' ', '\x20')
           | replace('%', '\x25')
@@ -142,10 +142,10 @@
     path: "{{ config_dir }}/fish/themes"
     state: directory
     mode: "0755"
-- name: Get homebrew config
-  ansible.builtin.command:
-    creates: "{{ config_dir }}/fish/conf.d/_0homebrew.fish"
-    cmd: "{{ homebrew_brew_bin_path }}/fish -c '{{ homebrew_brew_bin_path }}/brew shellenv fish > {{ config_dir }}/fish/conf.d/_0homebrew.fish'"
+- name: Remove legacy fish Homebrew config
+  ansible.builtin.file:
+    path: "{{ config_dir }}/fish/conf.d/_0homebrew.fish"
+    state: absent
   when: ansible_facts['system'] == 'Darwin'
 - name: Check fisher installed
   ansible.builtin.command:

@@ -7,9 +7,6 @@ dev_tools_packages:
   - name: glab # GitLab CLI
   - name: tig # git TUI
 
-  # Shell tooling foundation
-  - brew: asdf # version manager — macOS only; on Linux install via https://asdf-vm.com/guide/getting-started.html
-
   # Mac App Store CLI — macOS only, must be present before macos_apps role
   - brew: mas
 
@@ -60,13 +57,10 @@ dev_tools_packages:
   - brew: container-diff
   - brew: doctl # DigitalOcean CLI
 
-  # Languages & runtimes
-  - brew: go
-    pkg: golang # brew formula is 'go', apt package is 'golang'
+  # Language-adjacent tooling
   - brew: openjdk
     pkg: default-jdk # Ubuntu: installs the default OpenJDK version
   - name: python3
-  - brew: php
 
   # Misc dev tools
   - name: shellcheck
@@ -107,3 +101,10 @@ dev_tools_npm_packages:
   - vercel
   - "@openai/codex"
   - react-devtools
+
+# Global Python packages that belong to the dev_tools concern.
+dev_tools_pip_packages:
+  - ansible
+  - ansible-core
+  - ansible-compat
+  - ansible-lint

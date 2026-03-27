@@ -50,21 +50,6 @@ macos_apps_casks:
   # Developer GUI
   - docker
 
-  # Fonts
-  - font-fira-code
-  - font-fira-mono
-  - font-fira-sans
-  - font-ibm-plex-mono
-  - font-ibm-plex-sans
-  - font-ibm-plex-serif
-  - font-roboto
-  - font-roboto-mono
-  - font-roboto-slab
-  - font-source-code-pro
-  - font-source-sans-pro
-  - font-source-serif-pro
-  - font-charter
-
 # Mac App Store apps — requires `mas` CLI (installed in dev_tools)
 macos_apps_mas:
   - { id: 1365531024, name: "1Blocker" }
@@ -73,7 +58,7 @@ macos_apps_mas:
   - { id: 414568915, name: "Key Codes" }
   - { id: 441258766, name: "Magnet" }
   - { id: 639968404, name: "Parcel" }
-  - { id: 1529448980, name: "Reeder 5" }
+  - { id: 1529448980, name: "Reeder Classic" }
   - { id: 693112260, name: "Sim Daltonism" }
   - { id: 904280696, name: "Things 3" }
   - { id: 1480933944, name: "Vimari" }

@@ -1,0 +1,38 @@
+---
+- name: Install asdf dependencies
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: install_packages
+  vars:
+    common_packages: "{{ asdf_packages }}"
+
+- name: Install asdf via go
+  ansible.builtin.command:
+    argv:
+      - go
+      - install
+      - github.com/asdf-vm/asdf/cmd/asdf@latest
+  register: asdf_go_install
+  environment: "{{ asdf_runtime_environment }}"
+  changed_when: >-
+    (asdf_go_install.stdout | trim | length) > 0 or
+    (asdf_go_install.stderr | trim | length) > 0
+
+- name: Touch asdf config files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: touch
+    modification_time: preserve
+    access_time: preserve
+    mode: "0644"
+  loop:
+    - "{{ asdf_default_gems_file }}"
+    - "{{ asdf_default_npm_packages_file }}"
+    - "{{ asdf_default_python_packages_file }}"
+
+- name: Add asdf plugins
+  ansible.builtin.include_tasks: plugin.yml
+  loop: "{{ asdf_plugins }}"
+  loop_control:
+    loop_var: asdf_plugin
+    label: "{{ asdf_plugin.name }} {{ asdf_plugin.version_query }}"

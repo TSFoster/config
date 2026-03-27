@@ -1,4 +1,11 @@
 ---
+- name: Install Homebrew font casks
+  community.general.homebrew_cask:
+    name: "{{ item }}"
+    state: present
+    sudo_password: "{{ ansible_become_password }}"
+  loop: "{{ fonts_homebrew_casks }}"
+
 - name: Get list of fonts available to install via iCloud Drive # TODO Separate out fonts that I actaully want installed
   ansible.builtin.find:
     paths: "{{ ansible_facts['env']['HOME'] }}/Library/Mobile Documents/com~apple~CloudDocs/Data/Fonts/"

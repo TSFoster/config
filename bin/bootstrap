@@ -5,14 +5,15 @@ set -e
 ! [ -t 0 ] && echo 'It looks like your are running this through a pipe. You must clone the repo and call ./bootstrap directly' >&2 && exit 1
 
 # make sure we're one dir above this file
-CDPATH= cd -- "$(dirname -- "$0")"/..
+CDPATH='' cd -- "$(dirname -- "$0")"/..
 
-if [ "$(basename $0)" != bootstrap ] || [ "$(git rev-parse --show-toplevel 2>/dev/null)" != "$PWD" ] || [ "$(git remote get-url origin 2>/dev/null)" != 'git@github.com:TSFoster/config.git' ]; then
+if [ "$(basename "$0")" != bootstrap ] || [ "$(git rev-parse --show-toplevel 2>/dev/null)" != "$PWD" ] || [ "$(git remote get-url origin 2>/dev/null)" != 'git@github.com:TSFoster/config.git' ]; then
   echo "Something's wrong with how this file is being executed. Please clone the repo and call ./bootstrap directly" >&2
   exit 1
 fi
 
 OS="$(uname -s)"
+ASDF_PYTHON_SPEC="latest:3"
 
 if [[ "$OS" == "Darwin" ]]; then
   # if brew isn't in path, let's check default install location before trying to install it
@@ -24,36 +25,27 @@ if [[ "$OS" == "Darwin" ]]; then
 
   eval "$($BREW_LOCATION shellenv)"
 
-  ! command -v asdf >/dev/null && echo "Can't find asdf. Installing" >&2 && brew install asdf
-  ! asdf plugin list | grep -q '^python$' && echo "Installing asdf python plugin" >&2 && asdf plugin install python
-  ! asdf list python 3 >/dev/null && echo "Installing python 3 via asdf" >&2 && asdf install python latest:3
-
-  ! asdf which ansible-playbook >/dev/null 2>&1 && echo "Can't find ansible in asdf python. Installing" >&2 && $(asdf which pip3) install ansible
+  ! command -v go >/dev/null && echo "Can't find go. Installing" >&2 && brew install go
 
   ! command -v op >/dev/null && echo "Can't find 1password-cli. Installing" >&2 && brew install 1password-cli
 
 elif [[ "$OS" == "Linux" ]]; then
-  # Install pip and ansible
+  # Install core packages
   sudo apt-get update -qq
-  sudo apt-get install -y git python3-pip
-
-  pip3 install --user ansible || pip3 install --user --break-system-packages ansible
-
-  # Ensure ~/.local/bin is on PATH for this session
-  export PATH="$HOME/.local/bin:$PATH"
+  sudo apt-get install -y git golang-go
 
   # Install 1Password CLI via official apt repository
   # https://developer.1password.com/docs/cli/get-started/#install
-  curl -fsSL https://downloads.1password.com/linux/keys/1password.asc \
-    | sudo gpg --dearmor -o /usr/share/keyrings/1password-archive-keyring.gpg
+  curl -fsSL https://downloads.1password.com/linux/keys/1password.asc |
+    sudo gpg --dearmor -o /usr/share/keyrings/1password-archive-keyring.gpg
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/1password-archive-keyring.gpg] \
-    https://downloads.1password.com/linux/debian/$(dpkg --print-architecture) stable main" \
-    | sudo tee /etc/apt/sources.list.d/1password.list > /dev/null
+    https://downloads.1password.com/linux/debian/$(dpkg --print-architecture) stable main" |
+    sudo tee /etc/apt/sources.list.d/1password.list >/dev/null
   sudo mkdir -p /etc/debsig/policies/AC2D62742012EA22/
-  curl -fsSL https://downloads.1password.com/linux/debian/debsig/1password.pol \
-    | sudo tee /etc/debsig/policies/AC2D62742012EA22/1password.pol > /dev/null
-  curl -fsSL https://downloads.1password.com/linux/keys/1password.asc \
-    | sudo gpg --dearmor -o /usr/share/debsig/keyrings/AC2D62742012EA22/debsig.gpg
+  curl -fsSL https://downloads.1password.com/linux/debian/debsig/1password.pol |
+    sudo tee /etc/debsig/policies/AC2D62742012EA22/1password.pol >/dev/null
+  curl -fsSL https://downloads.1password.com/linux/keys/1password.asc |
+    sudo gpg --dearmor -o /usr/share/debsig/keyrings/AC2D62742012EA22/debsig.gpg
   sudo apt-get update -qq && sudo apt-get install -y 1password-cli
 
 else
@@ -61,14 +53,52 @@ else
   exit 1
 fi
 
+if [ -z "${GOPATH:-}" ]; then
+  export GOPATH="$HOME/.local/share/go"
+fi
+
+path_prepend() {
+  case ":$PATH:" in
+  *":$1:"*) ;;
+  *) PATH="$1${PATH:+:$PATH}" ;;
+  esac
+}
+
+path_prepend "$HOME/.local/bin"
+path_prepend "$GOPATH/bin"
+export PATH
+
+ASDF_GO_BINARY="$GOPATH/bin/asdf"
+
+if ! [ -x "$ASDF_GO_BINARY" ]; then
+  echo "Installing asdf via go install" >&2
+fi
+go install github.com/asdf-vm/asdf/cmd/asdf@latest
+
+! "$ASDF_GO_BINARY" plugin list | grep -q '^python$' && echo "Installing asdf python plugin" >&2 && "$ASDF_GO_BINARY" plugin add python
+! "$ASDF_GO_BINARY" list python 3 >/dev/null && echo "Installing python 3 via asdf" >&2 && "$ASDF_GO_BINARY" install python "$ASDF_PYTHON_SPEC"
+
+ASDF_PYTHON_VERSION="$("$ASDF_GO_BINARY" list python 3 | sed 's/^ *\**//' | sort -V | tail -n 1)"
+ASDF_PYTHON_BIN="$("$ASDF_GO_BINARY" where python "$ASDF_PYTHON_VERSION")/bin"
+ASDF_PIP3="$ASDF_PYTHON_BIN/pip3"
+ASDF_PYTHON3="$ASDF_PYTHON_BIN/python3"
+ASDF_ANSIBLE_PLAYBOOK="$ASDF_PYTHON_BIN/ansible-playbook"
+
+if ! [ -x "$ASDF_PIP3" ] || ! [ -x "$ASDF_PYTHON3" ]; then
+  echo "Failed to locate the asdf-managed Python installation" >&2
+  exit 1
+fi
+
+! [ -x "$ASDF_ANSIBLE_PLAYBOOK" ] && echo "Can't find ansible in asdf python. Installing" >&2 && "$ASDF_PIP3" install ansible
+
 if ! [ -f ~/.config/op/config ]; then
   echo '1password-cli not set up. Setting up' >&2
-  read -p 'Enter 1Password username: ' OP_USER
+  read -rp 'Enter 1Password username: ' OP_USER
   echo '' >&2
-  eval $(op signin my $OP_USER)
+  eval "$(op signin my "$OP_USER")"
 else
-  echo 'Checking signed in to 1Password\n' >&2
-  eval $(op signin)
+  printf 'Checking signed in to 1Password\n' >&2
+  eval "$(op signin)"
 fi
 
 if ! [ -f vault_pass ]; then
@@ -76,6 +106,6 @@ if ! [ -f vault_pass ]; then
   op item get --fields password 'Config vault' >vault_pass
 fi
 
-echo "Installing Ansible collections" >&2 && ansible-galaxy collection install --upgrade -r collections/requirements.yml
+echo "Installing Ansible collections" >&2 && "$ASDF_PYTHON_BIN/ansible-galaxy" collection install --upgrade -r collections/requirements.yml
 
-echo "Running playbook" >&2 && ansible-playbook -i "localhost ansible_python_interpreter=$(command -v python3)," main.yml $@
+echo "Running playbook" >&2 && "$ASDF_ANSIBLE_PLAYBOOK" -i "localhost ansible_python_interpreter=$ASDF_PYTHON3," main.yml "$@"

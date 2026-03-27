@@ -1,0 +1,93 @@
+---
+- name: Add asdf plugin for {{ asdf_plugin.name }}
+  ansible.builtin.command:
+    argv:
+      - "{{ asdf_binary }}"
+      - plugin
+      - add
+      - "{{ asdf_plugin.name }}"
+      - "{{ asdf_plugin.repo }}"
+    creates: "{{ asdf_data_dir }}/plugins/{{ asdf_plugin.name }}"
+  environment: "{{ asdf_runtime_environment }}"
+
+- name: Get installed versions for {{ asdf_plugin.name + ' ' + asdf_plugin.version_query }}
+  ansible.builtin.command:
+    argv:
+      - "{{ asdf_binary }}"
+      - list
+      - "{{ asdf_plugin.name }}"
+      - "{{ asdf_plugin.version_query }}"
+  register: asdf_current_version
+  environment: "{{ asdf_runtime_environment }}"
+  changed_when: false
+
+- name: Set asdf_matching_version_found fact
+  ansible.builtin.set_fact:
+    asdf_matching_version_found: >-
+      {{ not ("No compatible versions" in (asdf_current_version.stderr | default(''))) }}
+  changed_when: false
+
+- name: Get latest installed version for {{ asdf_plugin.name + ' ' + asdf_plugin.version_query }}
+  ansible.builtin.set_fact:
+    asdf_latest_installed_version: >-
+      {{
+        (
+          asdf_current_version.stdout_lines
+          | map('regex_replace', '^ *\*?', '')
+          | reject('equalto', '')
+          | community.general.version_sort
+          | last
+        ) | default('')
+      }}
+  changed_when: false
+  when: asdf_matching_version_found
+
+- name: Update ~/.tool-versions for {{ asdf_plugin.name + ' ' + asdf_latest_installed_version }}
+  ansible.builtin.lineinfile:
+    create: true
+    regexp: "^{{ asdf_plugin.name }} "
+    line: "{{ asdf_plugin.name }} {{ asdf_latest_installed_version }}"
+    path: "{{ asdf_tool_versions_file }}"
+    mode: "0644"
+  when:
+    - asdf_matching_version_found
+    - asdf_latest_installed_version | length > 0
+
+- name: Find latest available {{ asdf_plugin.name + ' ' + asdf_plugin.version_query }}
+  ansible.builtin.command:
+    argv:
+      - "{{ asdf_binary }}"
+      - latest
+      - "{{ asdf_plugin.name }}"
+      - "{{ asdf_plugin.version_query }}"
+  register: asdf_latest_available_version
+  environment: "{{ asdf_runtime_environment }}"
+  changed_when: false
+  when: not asdf_matching_version_found
+
+- name: Install {{ asdf_plugin.name + ' ' + (asdf_latest_available_version.stdout | trim) }}
+  ansible.builtin.command:
+    argv:
+      - "{{ asdf_binary }}"
+      - install
+      - "{{ asdf_plugin.name }}"
+      - "{{ asdf_latest_available_version.stdout | trim }}"
+  environment: "{{ asdf_runtime_environment }}"
+  when:
+    - not asdf_matching_version_found
+    - asdf_latest_available_version.stdout | length > 0
+  register: asdf_version_installed
+  changed_when: asdf_version
+  check_mode: false
+
+- name: Update ~/.tool-versions for newly-installed {{ asdf_plugin.name + ' ' + (asdf_latest_available_version.stdout | trim) }}
+  ansible.builtin.lineinfile:
+    create: true
+    regexp: "^{{ asdf_plugin.name }} "
+    line: "{{ asdf_plugin.name }} {{ asdf_latest_available_version.stdout | trim }}"
+    path: "{{ asdf_tool_versions_file }}"
+    mode: "0644"
+  when:
+    - not asdf_matching_version_found
+    - asdf_version_installed is defined
+    - asdf_version_installed.rc == 0

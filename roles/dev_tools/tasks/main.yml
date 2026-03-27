@@ -7,6 +7,13 @@
   vars:
     common_packages: "{{ dev_tools_packages }}"
 
+- name: Install dev tool Python packages
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: install_pip_packages
+  vars:
+    common_packages: "{{ dev_tools_pip_packages }}"
+
 - name: Symlink JDK
   ansible.builtin.file:
     src: /opt/homebrew/opt/openjdk/libexec/openjdk.jdk
@@ -29,22 +36,25 @@
   become: true
   when: ansible_facts["system"] == "Darwin" and dev_tools_java_svn_extension.stat.exists
 
-# npm global installs use the asdf-managed npm shim.
-# Do NOT add become: true — asdf-managed node/npm must run as the user.
-# The asdf shim resolves the correct npm binary; no executable: path needed.
-- name: Install global npm packages
-  community.general.npm:
-    name: "{{ item }}"
-    global: true
-    state: present
-  loop: "{{ dev_tools_npm_packages }}"
+- name: Check whether npm is available
+  ansible.builtin.command:
+    cmd: sh -lc "command -v npm"
+  register: dev_tools_npm_command
+  changed_when: false
+  failed_when: false
 
-# Use lineinfile with regexp so re-running is idempotent per package.
-- name: Track npm packages in asdf default-npm-packages
-  ansible.builtin.lineinfile:
-    path: "{{ config_dir }}/asdf/default-npm-packages"
-    line: "{{ item }}"
-    regexp: "^{{ item | regex_escape }}$"
-    create: true
-    mode: "0644"
-  loop: "{{ dev_tools_npm_packages }}"
+- name: Install global npm packages
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: install_npm_packages
+  vars:
+    common_packages: "{{ dev_tools_npm_packages }}"
+    common_package_environment: "{{ asdf_runtime_environment }}"
+  when: dev_tools_npm_command.rc == 0
+
+- name: Warn when npm packages are skipped
+  ansible.builtin.debug:
+    msg: >-
+      Skipping dev_tools npm packages because npm is not on PATH.
+      Install Node.js first so the asdf npm shim is available.
+  when: dev_tools_npm_command.rc != 0

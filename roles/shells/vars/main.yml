@@ -11,12 +11,15 @@ shells_path_entries_interactive:
   - bin
   - node_modules/.bin
 shells_path_entries:
-  - /usr/local/bin
-  - /usr/local/sbin
+  - "{{ ansible_facts['env']['HOME'] }}/.asdf/shims"
+  - "{{ ansible_facts['env']['HOME'] }}/.local/share/go/bin"
   - "{{ ansible_facts['env']['HOME'] }}/.local/bin"
   - "{{ ansible_facts['env']['HOME'] }}/.cargo/bin"
-  - "{{ ansible_facts['env']['HOME'] }}/.local/share/go/bin"
+  - /usr/local/sbin
+  - /usr/local/bin
 shells_path_entries_darwin:
+  - "{{ homebrew_prefix }}/bin"
+  - "{{ homebrew_prefix }}/sbin"
   - "{{ homebrew_cask_appdir }}/opt/openjdk/bin"
   - /Applications/Setapp/Soulver.app/Contents/MacOS/CLI
 shells_uv:
@@ -29,7 +32,7 @@ shells_uv:
   editor: "zmx attach nvim-(random) nvim"
   shell_path_entries: "{{ shells_path_entries + (lookup('vars', 'shells_path_entries_' + (ansible_facts['system'] | lower)) | default([])) }}"
   shell_path_entries_interactive: "{{ shells_path_entries_interactive }}"
-shells_variables:
+shells_variables_base:
   - name: PAGER
     value: less # TODO nvr/nvim +Man!
     export: true
@@ -63,18 +66,6 @@ shells_variables:
   - name: FZF_DEFAULT_COMMAND
     value: "fd --type file {{ shells_uv.fd_default }}"
     export: true
-  - name: ASDF_DATA_DIR
-    value: "{{ ansible_facts['env']['HOME'] }}/.asdf"
-    export: true
-  - name: ASDF_PYTHON_DEFAULT_PACKAGES_FILE
-    value: "{{ config_dir }}/asdf/default-python-packages"
-    export: true
-  - name: ASDF_GEM_DEFAULT_PACKAGES_FILE
-    value: "{{ config_dir }}/asdf/default-gems"
-    export: true
-  - name: ASDF_NPM_DEFAULT_PACKAGES_FILE
-    value: "{{ config_dir }}/asdf/default-npm-packages"
-    export: true
   - name: EDITOR
     value: "{{ shells_uv.editor }}"
     export: true
@@ -101,6 +92,29 @@ shells_variables:
   - name: clients
     export: true
     value: "{{ shells_uv.isMac | ternary(shells_uv.iCloud + '/Documents/Work/Clients', omit) }}"
+shells_variables_darwin:
+  - name: HOMEBREW_PREFIX
+    value: "{{ homebrew_prefix }}"
+    export: true
+  - name: HOMEBREW_CELLAR
+    value: "{{ homebrew_prefix }}/Cellar"
+    export: true
+  - name: HOMEBREW_REPOSITORY
+    value: "{{ homebrew_prefix }}"
+    export: true
+  - name: MANPATH
+    value_multiple:
+      - "{{ homebrew_prefix }}/share/man"
+      - "{{ ansible_facts['env'].get('MANPATH', '') }}"
+    export: true
+    path: true
+  - name: INFOPATH
+    value_multiple:
+      - "{{ homebrew_prefix }}/share/info"
+      - "{{ ansible_facts['env'].get('INFOPATH', '') }}"
+    export: true
+    path: true
+shells_variables: "{{ shells_variables_base + (lookup('vars', 'shells_variables_' + (ansible_facts['system'] | lower)) | default([])) }}"
 shells_fish_universal_variables:
   - name: fish_user_paths
     value_multiple: "{{ shells_uv.shell_path_entries }}"

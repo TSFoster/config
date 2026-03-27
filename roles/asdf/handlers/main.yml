@@ -1,0 +1,8 @@
+---
+- name: Reshim asdf
+  ansible.builtin.command:
+    argv:
+      - "{{ asdf_binary }}"
+      - reshim
+  environment: "{{ asdf_runtime_environment }}"
+  changed_when: false

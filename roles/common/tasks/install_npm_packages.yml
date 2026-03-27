@@ -1,0 +1,31 @@
+---
+# Global npm package installer.
+#
+# The caller MUST pass a `common_packages` variable — a list of package names.
+# Optional: pass `common_package_environment` to control PATH/node selection.
+
+- name: Assert common_packages variable is provided
+  ansible.builtin.assert:
+    that:
+      - common_packages is defined
+      - common_packages | length > 0
+    fail_msg: >
+      install_npm_packages requires a non-empty `common_packages` variable.
+      Pass it via: vars: { common_packages: "{{ '{{' }} my_npm_packages {{ '}}' }}" }
+
+- name: Install global npm packages
+  community.general.npm:
+    name: "{{ item }}"
+    global: true
+    state: present
+  loop: "{{ common_packages }}"
+  environment: "{{ common_package_environment | default({}) }}"
+
+- name: Track npm packages in asdf default-npm-packages
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_facts['env']['HOME'] }}/.default-npm-packages"
+    line: "{{ item }}"
+    regexp: "^{{ item | regex_escape }}$"
+    create: true
+    mode: "0644"
+  loop: "{{ common_packages }}"

@@ -1,20 +1,20 @@
 ---
 # Guard is also set at the call site in main.yml, but repeated here so the
 # role is safe to include from any playbook without platform knowledge.
-- name: Skip on non-macOS
-  ansible.builtin.meta: end_role
-  when: ansible_facts['system'] != 'Darwin'
+- name: Install macOS applications
+  when: ansible_facts['system'] == 'Darwin'
+  block:
+    - name: Install macOS GUI applications via Homebrew cask
+      community.general.homebrew_cask:
+        name: "{{ item }}"
+        state: present
+        install_options: "appdir={{ homebrew_cask_appdir }}"
+        sudo_password: "{{ ansible_become_password }}"
+      loop: "{{ macos_apps_casks }}"
 
-- name: Install macOS GUI applications via Homebrew cask
-  community.general.homebrew_cask:
-    name: "{{ item }}"
-    state: present
-    install_options: "appdir={{ homebrew_cask_appdir }}"
-    sudo_password: "{{ ansible_become_password }}"
-  loop: "{{ macos_apps_casks }}"
-
-- name: Install Mac App Store applications
-  community.general.mas:
-    id: "{{ item.id }}"
-    state: present
-  loop: "{{ macos_apps_mas }}"
+    - name: Install Mac App Store applications
+      community.general.mas:
+        id: "{{ item.id }}"
+        state: present
+      loop: "{{ macos_apps_mas }}"
+      ignore_errors: true

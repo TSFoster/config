@@ -1,0 +1,30 @@
+---
+# Global pip package installer.
+#
+# The caller MUST pass a `common_packages` variable — a list of package names.
+# Optional: pass `common_package_environment` to control PATH/Python selection.
+
+- name: Assert common_packages variable is provided
+  ansible.builtin.assert:
+    that:
+      - common_packages is defined
+      - common_packages | length > 0
+    fail_msg: >
+      install_pip_packages requires a non-empty `common_packages` variable.
+      Pass it via: vars: { common_packages: "{{ '{{' }} my_pip_packages {{ '}}' }}" }
+
+- name: Install global pip packages
+  ansible.builtin.pip:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ common_packages }}"
+  environment: "{{ common_package_environment | default({}) }}"
+
+- name: Track pip packages in asdf default-python-packages
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_facts['env']['HOME'] }}/.default-python-packages"
+    line: "{{ item }}"
+    regexp: "^{{ item | regex_escape }}$"
+    create: true
+    mode: "0644"
+  loop: "{{ common_packages }}"

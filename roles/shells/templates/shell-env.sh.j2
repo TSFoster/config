@@ -1,5 +1,6 @@
 {% for item in shells_variables %}
-{% if item.export | default(false, true) %}export {% endif %}{{ item.name }}={{ item.value | to_json }}
+{% set value = item.value_multiple | default([item.value]) | reject('equalto', '') | list | join(':') %}
+{% if item.export | default(false, true) %}export {% endif %}{{ item.name }}={{ value | to_json }}
 {% endfor %}
 
 {% for item in shells_abbreviations if item.shell_alias | default(true) %}

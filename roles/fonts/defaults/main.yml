@@ -1,0 +1,15 @@
+---
+fonts_homebrew_casks:
+  - font-fira-code
+  - font-fira-mono
+  - font-fira-sans
+  - font-ibm-plex-mono
+  - font-ibm-plex-sans
+  - font-ibm-plex-serif
+  - font-roboto
+  - font-roboto-mono
+  - font-roboto-slab
+  - font-source-code-pro
+  - font-source-sans-3
+  - font-source-serif-4
+  - font-charter

@@ -1,0 +1,30 @@
+---
+# Global gem package installer.
+#
+# The caller MUST pass a `common_packages` variable — a list of package names.
+# Optional: pass `common_package_environment` to control PATH/ruby selection.
+
+- name: Assert common_packages variable is provided
+  ansible.builtin.assert:
+    that:
+      - common_packages is defined
+      - common_packages | length > 0
+    fail_msg: >
+      install_gem_packages requires a non-empty `common_packages` variable.
+      Pass it via: vars: { common_packages: "{{ '{{' }} my_gem_packages {{ '}}' }}" }
+
+- name: Install global gem packages
+  community.general.gem:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ common_packages }}"
+  environment: "{{ common_package_environment | default({}) }}"
+
+- name: Track gem packages in asdf default-gems
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_facts['env']['HOME'] }}/.default-gems"
+    line: "{{ item }}"
+    regexp: "^{{ item | regex_escape }}$"
+    create: true
+    mode: "0644"
+  loop: "{{ common_packages }}"

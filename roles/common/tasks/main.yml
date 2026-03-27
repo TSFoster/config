@@ -2,3 +2,6 @@
 # Common role — no top-level tasks.
 # Include specific utilities via tasks_from:
 #   - install_packages: cross-platform package installer
+#   - install_pip_packages: global pip installer + asdf tracking
+#   - install_npm_packages: global npm installer + asdf tracking
+#   - install_gem_packages: global gem installer + asdf tracking

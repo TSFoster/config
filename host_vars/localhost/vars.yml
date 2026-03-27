@@ -3,13 +3,7 @@ ssh_keys: "{{ vault_ssh_keys }}"
 
 ansible_become_password: "{{ vault_ansible_become_password }}"
 
-the_user: "{{ ansible_facts['env']['USER'] }}"
-
 config_dir: "{{ ansible_facts['env'].get('XDG_CONFIG_DIR', ansible_facts['env']['HOME'] + '/.config') }}"
-
-homebrew_prefix: "{{ (ansible_facts['machine'] == 'arm64') | ternary('/opt/homebrew', '/usr/local') }}"
-homebrew_brew_bin_path: "{{ homebrew_prefix }}/bin"
-homebrew_cask_appdir: /Applications
 
 git_credentials_github_user: "{{ vault_git_credentials_github_user }}"
 git_credentials_github_token: "{{ vault_git_credentials_github_token }}"

@@ -1,0 +1,12 @@
+---
+homebrew_prefix: "{{ (ansible_facts['machine'] == 'arm64') | ternary('/opt/homebrew', '/usr/local') }}"
+homebrew_brew_bin_path: "{{ homebrew_prefix }}/bin"
+homebrew_cask_appdir: /Applications
+homebrew_ruby_environment:
+  PATH: "{{ homebrew_prefix }}/opt/ruby/bin:{{ homebrew_brew_bin_path }}:{{ ansible_facts['env']['PATH'] }}"
+
+asdf_runtime_gopath: "{{ ansible_facts['env'].get('GOPATH', ansible_facts['env']['HOME'] + '/.local/share/go') }}"
+asdf_runtime_path: "{{ ansible_facts['env']['HOME'] }}/.asdf/shims:{{ asdf_runtime_gopath }}/bin:{{ ansible_facts['env']['PATH'] }}"
+asdf_runtime_environment:
+  GOPATH: "{{ asdf_runtime_gopath }}"
+  PATH: "{{ asdf_runtime_path }}"

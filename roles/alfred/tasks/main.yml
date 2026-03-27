@@ -15,8 +15,9 @@
     key: syncfolder
     value: "{{ alfred_dir }}/"
 - name: Install Alfred npm packages
-  community.general.npm:
-    name: "{{ item }}"
-    global: true
-    state: present
-  loop: "{{ alfred_npm_packages }}"
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: install_npm_packages
+  vars:
+    common_packages: "{{ alfred_npm_packages }}"
+    common_package_environment: "{{ asdf_runtime_environment }}"

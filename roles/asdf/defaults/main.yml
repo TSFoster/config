@@ -1,0 +1,35 @@
+---
+asdf_packages:
+  - brew: go
+    pkg: golang
+
+asdf_gopath: "{{ asdf_runtime_gopath }}"
+asdf_binary: "{{ asdf_gopath }}/bin/asdf"
+asdf_data_dir: "{{ ansible_facts['env']['HOME'] }}/.asdf"
+asdf_tool_versions_file: "{{ ansible_facts['env']['HOME'] }}/.tool-versions"
+asdf_default_gems_file: "{{ ansible_facts['env']['HOME'] }}/.default-gems"
+asdf_default_npm_packages_file: "{{ ansible_facts['env']['HOME'] }}/.default-npm-packages"
+asdf_default_python_packages_file: "{{ ansible_facts['env']['HOME'] }}/.default-python-packages"
+asdf_tool_path: "{{ asdf_runtime_path }}"
+asdf_plugins:
+  - name: deno
+    repo: https://github.com/asdf-community/asdf-deno.git
+    version_query: "2"
+  - name: nodejs
+    repo: https://github.com/asdf-vm/asdf-nodejs.git
+    version_query: "25"
+  - name: php
+    repo: https://github.com/asdf-community/asdf-php.git
+    version_query: "8.5"
+  - name: pnpm
+    repo: https://github.com/jonathanmorley/asdf-pnpm.git
+    version_query: "10"
+  - name: python
+    repo: https://github.com/asdf-community/asdf-python.git
+    version_query: "3"
+  - name: ruby
+    repo: https://github.com/asdf-vm/asdf-ruby.git
+    version_query: "4"
+  - name: yarn
+    repo: https://github.com/twuni/asdf-yarn.git
+    version_query: "1"
