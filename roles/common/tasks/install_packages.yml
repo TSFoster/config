@@ -1,0 +1,46 @@
+---
+# Cross-platform package installer.
+#
+# The caller MUST pass a `packages` variable — a list of entries with:
+#   name:  package name identical on all platforms
+#   brew:  Homebrew formula name (macOS; overrides `name`)
+#   pkg:   apt/dnf/pacman package name (Linux; overrides `name`)
+#
+# Platform-gating rules (by design — not a bug):
+#   - A package with only `brew:` (no `pkg:` or `name:`) is silently skipped on Linux.
+#   - A package with only `pkg:` (no `brew:` or `name:`) is silently skipped on macOS.
+#   - A package with `name:` is installed on both platforms using that name.
+#   - A package with `brew:` + `pkg:` uses the platform-appropriate name on each.
+#
+# IMPORTANT: Do not add `become: true` to the Homebrew task.
+# Homebrew explicitly refuses to run as root and will error.
+
+- name: Assert packages variable is provided
+  ansible.builtin.assert:
+    that: packages is defined
+    fail_msg: >
+      install_packages requires a `packages` variable.
+      Pass it via: vars: { packages: "{{ my_role_packages }}" }
+
+- name: Install packages via Homebrew (macOS)
+  community.general.homebrew:
+    name: "{{ item.brew | default(item.name) }}"
+    state: present
+  loop: "{{ packages }}"
+  # Only run when the entry has a brew or generic name (not pkg-only).
+  # Packages with only `pkg:` have neither `brew` nor `name`, so this when-guard
+  # prevents the default() filter from receiving undefined values.
+  when:
+    - ansible_facts['system'] == 'Darwin'
+    - (item.brew is defined) or (item.name is defined)
+
+- name: Install packages via package manager (Linux)
+  ansible.builtin.package:
+    name: "{{ item.pkg | default(item.name) }}"
+    state: present
+  become: true
+  loop: "{{ packages }}"
+  # Only run when the entry has a pkg or generic name (not brew-only).
+  when:
+    - ansible_facts['system'] == 'Linux'
+    - (item.pkg is defined) or (item.name is defined)

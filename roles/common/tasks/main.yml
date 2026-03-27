@@ -1,0 +1,4 @@
+---
+# Common role — no top-level tasks.
+# Include specific utilities via tasks_from:
+#   - install_packages: cross-platform package installer
