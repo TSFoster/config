@@ -30,13 +30,11 @@ dev_tools_packages:
   - name: httpie
   - name: nmap
   - name: mosh
-  - brew: telnet         # macOS no longer ships telnet
-    pkg: telnet
+  - name: telnet         # macOS no longer ships telnet; same name via brew and apt
 
   # Text / document
   - name: pandoc
-  - brew: par
-    pkg: par
+  - name: par
   - name: rename
 
   # Build / media
