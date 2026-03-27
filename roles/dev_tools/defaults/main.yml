@@ -64,6 +64,8 @@ dev_tools_packages:
   # Languages & runtimes
   - brew: go
     pkg: golang # brew formula is 'go', apt package is 'golang'
+  - brew: openjdk
+    pkg: default-jdk # Ubuntu: installs the default OpenJDK version
   - name: python3
   - brew: php
 

@@ -7,6 +7,28 @@
   vars:
     common_packages: "{{ dev_tools_packages }}"
 
+- name: Symlink JDK
+  ansible.builtin.file:
+    src: /opt/homebrew/opt/openjdk/libexec/openjdk.jdk
+    dest: /Library/Java/JavaVirtualMachines/openjdk.jdk
+    state: link
+  become: true
+  when: ansible_facts["system"] == "Darwin"
+
+- name: Check svn extension exists
+  ansible.builtin.stat:
+    path: /opt/homebrew/lib/libsvnjavahl-1.dylib
+  register: dev_tools_java_svn_extension
+  when: ansible_facts["system"] == "Darwin"
+
+- name: Symlink svn extension
+  ansible.builtin.file:
+    src: /opt/homebrew/lib/libsvnjavahl-1.dylib
+    dest: /Library/Java/Extensions/libsvnjavahl-1.dylib
+    state: link
+  become: true
+  when: ansible_facts["system"] == "Darwin" and dev_tools_java_svn_extension.stat.exists
+
 # npm global installs use the asdf-managed npm shim.
 # Do NOT add become: true — asdf-managed node/npm must run as the user.
 # The asdf shim resolves the correct npm binary; no executable: path needed.

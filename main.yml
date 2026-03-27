@@ -12,8 +12,6 @@
       tags: ["dev_tools"]
     - role: nvim
       tags: ["nvim"]
-    - role: java
-      tags: ["java"]
     - role: macos_apps
       tags: ["macos_apps"]
       when: ansible_facts['system'] == 'Darwin'
