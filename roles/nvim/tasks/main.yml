@@ -23,6 +23,7 @@
     global: true
     state: present
   loop: "{{ nvim_npm_packages }}"
+
 - name: Check default npm packages for Neovim language servers
   ansible.builtin.lineinfile:
     path: "{{ config_dir }}/asdf/default-npm-packages"
@@ -53,6 +54,7 @@
   loop: "{{ nvim_gem_packages }}"
   tags:
     - nvim_lsp
+  when: ansible_facts['system'] == 'Darwin'
 - name: Install neovim-remote # TODO Check present in default-python-packages?
   ansible.builtin.pip:
     name: neovim-remote
