@@ -8,34 +8,33 @@
       tags: ["dotfiles"]
     - role: ssh
       tags: ["ssh"]
-    - role: npm
-      tags: ["npm"]
-    - role: homebrew
-      tags: ["homebrew"]
-      when: ansible_facts["system"] == "Darwin"
-    - role: macos
-      tags: ["macos"]
-      when: ansible_facts["system"] == "Darwin"
+    - role: dev_tools       # installs asdf, git, mas — must precede nvim and macos_apps
+      tags: ["dev_tools"]
     - role: nvim
       tags: ["nvim"]
-    - role: hammerspoon
-      tags: ["hammerspoon"]
-      when: ansible_facts["system"] == "Darwin"
-    - role: macos_navigation
-      tags: ["macos_navigation"]
-      when: ansible_facts["system"] == "Darwin"
-    - role: fonts
-      tags: ["fonts"]
-      when: ansible_facts["system"] == "Darwin"
-    - role: macos_dictionaries
-      tags: ["dictionaries"]
-      when: ansible_facts["system"] == "Darwin"
-    - role: docker
-      tags: ["docker"]
     - role: java
       tags: ["java"]
-    - role: cli_tools
-      tags: ["cli_tools"]
+    - role: macos_apps
+      tags: ["macos_apps"]
+      when: ansible_facts['system'] == 'Darwin'
+    - role: macos
+      tags: ["macos"]
+      when: ansible_facts['system'] == 'Darwin'
+    - role: hammerspoon
+      tags: ["hammerspoon"]
+      when: ansible_facts['system'] == 'Darwin'
+    - role: macos_navigation
+      tags: ["macos_navigation"]
+      when: ansible_facts['system'] == 'Darwin'
+    - role: fonts
+      tags: ["fonts"]
+      when: ansible_facts['system'] == 'Darwin'
+    - role: macos_dictionaries
+      tags: ["dictionaries"]
+      when: ansible_facts['system'] == 'Darwin'
     - role: alfred
       tags: ["alfred"]
-      when: ansible_facts["system"] == "Darwin"
+      when: ansible_facts['system'] == 'Darwin'
+    - role: proxy
+      tags: ["proxy"]
+      when: ansible_facts['system'] == 'Darwin'
