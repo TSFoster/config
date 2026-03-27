@@ -3,12 +3,12 @@
 # Packages without `pkg:` are macOS-only (no standard apt equivalent).
 # They are silently skipped on Linux by the install_packages abstraction.
 nvim_packages:
-  - brew: deno                   # no standard apt package
-  - brew: gopls                  # Go LSP; on Linux install via `go install golang.org/x/tools/gopls@latest`
-  - brew: lua-language-server    # no apt package
-  - brew: marksman               # no apt package
-  - name: rust-analyzer          # available in Ubuntu 22.04+ apt
-  - brew: stylua                 # Lua formatter; no apt package
+  - brew: deno # no standard apt package
+  - brew: gopls # Go LSP; on Linux install via `go install golang.org/x/tools/gopls@latest`
+  - brew: lua-language-server # no apt package
+  - brew: marksman # no apt package
+  - name: rust-analyzer # available in Ubuntu 22.04+ apt
+  - brew: stylua # Lua formatter; no apt package
 
 # npm-based LSP servers and tools — installed globally via npm (asdf-managed).
 # Includes the Node.js neovim provider, migrated here from the old npm role.

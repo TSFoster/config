@@ -3,12 +3,12 @@
 dev_tools_packages:
   # Version control
   - name: git
-  - name: gh             # GitHub CLI — available via apt on Ubuntu 22.04+
-  - name: glab           # GitLab CLI
-  - name: tig            # git TUI
+  - name: gh # GitHub CLI — available via apt on Ubuntu 22.04+
+  - name: glab # GitLab CLI
+  - name: tig # git TUI
 
   # Shell tooling foundation
-  - brew: asdf           # version manager — macOS only; on Linux install via https://asdf-vm.com/guide/getting-started.html
+  - brew: asdf # version manager — macOS only; on Linux install via https://asdf-vm.com/guide/getting-started.html
 
   # Mac App Store CLI — macOS only, must be present before macos_apps role
   - brew: mas
@@ -16,7 +16,7 @@ dev_tools_packages:
   # Search & filter
   - name: ripgrep
   - brew: fd
-    pkg: fd-find         # Ubuntu apt name differs from brew
+    pkg: fd-find # Ubuntu apt name differs from brew
   - name: fzf
   - name: bat
   - brew: the_silver_searcher
@@ -30,7 +30,7 @@ dev_tools_packages:
   - name: httpie
   - name: nmap
   - name: mosh
-  - name: telnet         # macOS no longer ships telnet; same name via brew and apt
+  - name: telnet # macOS no longer ships telnet; same name via brew and apt
 
   # Text / document
   - name: pandoc
@@ -41,14 +41,14 @@ dev_tools_packages:
   - name: ffmpeg
   - name: imagemagick
   - name: qrencode
-  - name: svn            # required by some font cask installs
+  - name: svn # required by some font cask installs
 
   # Monitoring / disk
   - name: ncdu
   - name: pv
-  - brew: trash          # macOS: safe rm — no direct apt equivalent
+  - brew: trash # macOS: safe rm — no direct apt equivalent
   - name: fswatch
-  - name: wrk            # HTTP benchmarking
+  - name: wrk # HTTP benchmarking
 
   # Security
   - name: gnupg
@@ -57,13 +57,13 @@ dev_tools_packages:
   # Containers / DevOps
   - name: podman
   - name: skopeo
-  - brew: dive           # Docker image explorer — no standard apt package
+  - brew: dive # Docker image explorer — no standard apt package
   - brew: container-diff
-  - brew: doctl          # DigitalOcean CLI
+  - brew: doctl # DigitalOcean CLI
 
   # Languages & runtimes
   - brew: go
-    pkg: golang          # brew formula is 'go', apt package is 'golang'
+    pkg: golang # brew formula is 'go', apt package is 'golang'
   - name: python3
   - brew: php
 
@@ -74,9 +74,9 @@ dev_tools_packages:
   - name: watchexec
   - name: cloc
   - name: hugo
-  - brew: terminal-notifier   # macOS-only notification tool
+  - brew: terminal-notifier # macOS-only notification tool
   - name: rlwrap
-  - brew: lorem               # macOS-only Lorem Ipsum generator
+  - brew: lorem # macOS-only Lorem Ipsum generator
   - name: gperf
   - brew: libusb
     pkg: libusb-dev
@@ -88,7 +88,7 @@ dev_tools_packages:
   - name: sqlite
 
   # Code analysis / formatting
-  - brew: efm-langserver  # no standard apt package
+  - brew: efm-langserver # no standard apt package
 
   # HTML
   - brew: tidy-html5

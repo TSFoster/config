@@ -8,7 +8,7 @@
       tags: ["dotfiles"]
     - role: ssh
       tags: ["ssh"]
-    - role: dev_tools       # installs asdf, git, mas — must precede nvim and macos_apps
+    - role: dev_tools # installs asdf, git, mas — must precede nvim and macos_apps
       tags: ["dev_tools"]
     - role: nvim
       tags: ["nvim"]

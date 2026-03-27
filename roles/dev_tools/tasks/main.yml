@@ -5,7 +5,7 @@
     name: common
     tasks_from: install_packages
   vars:
-    packages: "{{ dev_tools_packages }}"
+    common_packages: "{{ dev_tools_packages }}"
 
 # npm global installs use the asdf-managed npm shim.
 # Do NOT add become: true — asdf-managed node/npm must run as the user.
@@ -24,4 +24,5 @@
     line: "{{ item }}"
     regexp: "^{{ item | regex_escape }}$"
     create: true
+    mode: "0644"
   loop: "{{ dev_tools_npm_packages }}"

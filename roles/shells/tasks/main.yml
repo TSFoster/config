@@ -4,7 +4,7 @@
     name: common
     tasks_from: install_packages
   vars:
-    packages: "{{ shells_packages }}"
+    common_packages: "{{ shells_packages }}"
 - name: Add fish to /etc/shells (macOS — Homebrew path)
   ansible.builtin.lineinfile:
     path: /etc/shells

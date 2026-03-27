@@ -15,7 +15,7 @@
     name: common
     tasks_from: install_packages
   vars:
-    packages: "{{ nvim_packages }}"
+    common_packages: "{{ nvim_packages }}"
 
 - name: Install Neovim npm packages
   community.general.npm:
@@ -69,6 +69,8 @@
   tags:
     - nvim_files
 - name: Add nvr completion in fish
+  tags:
+    - nvr
   block:
     - name: Ensure fish completions directory exists
       ansible.builtin.file:
@@ -81,5 +83,3 @@
         dest: "{{ config_dir }}/fish/completions/nvr.fish"
         mode: "0644"
         force: false
-  tags:
-    - nvr

@@ -4,7 +4,7 @@
     name: common
     tasks_from: install_packages
   vars:
-    packages: "{{ java_packages }}"
+    common_packages: "{{ java_packages }}"
 - name: Symlink JDK
   ansible.builtin.file:
     src: /opt/homebrew/opt/openjdk/libexec/openjdk.jdk

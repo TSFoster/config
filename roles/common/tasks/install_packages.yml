@@ -1,7 +1,7 @@
 ---
 # Cross-platform package installer.
 #
-# The caller MUST pass a `packages` variable — a list of entries with:
+# The caller MUST pass a `common_packages` variable — a list of entries with:
 #   name:  package name identical on all platforms
 #   brew:  Homebrew formula name (macOS; overrides `name`)
 #   pkg:   apt/dnf/pacman package name (Linux; overrides `name`)
@@ -15,20 +15,20 @@
 # IMPORTANT: Do not add `become: true` to the Homebrew task.
 # Homebrew explicitly refuses to run as root and will error.
 
-- name: Assert packages variable is provided
+- name: Assert common_packages variable is provided
   ansible.builtin.assert:
     that:
-      - packages is defined
-      - packages | length > 0
+      - common_packages is defined
+      - common_packages | length > 0
     fail_msg: >
-      install_packages requires a non-empty `packages` variable.
-      Pass it via: vars: { packages: "{{ '{{' }} my_role_packages {{ '}}' }}" }
+      install_packages requires a non-empty `common_packages` variable.
+      Pass it via: vars: { common_packages: "{{ '{{' }} my_role_packages {{ '}}' }}" }
 
 - name: Install packages via Homebrew (macOS)
   community.general.homebrew:
     name: "{{ item.brew | default(item.name) }}"
     state: present
-  loop: "{{ packages }}"
+  loop: "{{ common_packages }}"
   # Only run when the entry has a brew or generic name (not pkg-only).
   # Packages with only `pkg:` have neither `brew` nor `name`, so this when-guard
   # prevents the default() filter from receiving undefined values.
@@ -41,7 +41,7 @@
     name: "{{ item.pkg | default(item.name) }}"
     state: present
   become: true
-  loop: "{{ packages }}"
+  loop: "{{ common_packages }}"
   # Only run when the entry has a pkg or generic name (not brew-only).
   when:
     - ansible_facts['system'] == 'Linux'
