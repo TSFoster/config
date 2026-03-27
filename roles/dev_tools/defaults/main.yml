@@ -19,14 +19,13 @@ dev_tools_packages:
     pkg: fd-find # Ubuntu apt name differs from brew
   - name: fzf
   - name: bat
-  - brew: the_silver_searcher
-    pkg: silversearcher-ag
 
   # JSON / data
   - name: jq
   - name: fx
 
   # Web / HTTP
+  - name: curl
   - name: httpie
   - name: nmap
   - name: mosh
