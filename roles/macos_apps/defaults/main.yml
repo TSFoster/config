@@ -7,16 +7,14 @@ macos_apps_casks:
   - ghostty
 
   # Browsers
-  - firefox-developer-edition
-  - google-chrome-dev
+  - firefox@developer-edition
+  - google-chrome@dev
   - opera-developer
 
   # Productivity
   - 1password
   - keyboard-maestro
   - hazel
-  - things
-  - drafts
   - choosy
   - openinterminal
   - homerow
@@ -39,6 +37,7 @@ macos_apps_casks:
   - setapp
   - swiftdefaultappsprefpane
   - bookmacster
+  - thingsmacsandboxhelper
   - keybase
   - syntax-highlight
   - zoom
@@ -82,4 +81,3 @@ macos_apps_mas:
   - { id: 904280696,  name: "Things 3" }
   - { id: 1384080005, name: "Tweetbot 3" }
   - { id: 1480933944, name: "Vimari" }
-  - { id: 972572731,  name: "Thingsmacsandboxhelper" }
