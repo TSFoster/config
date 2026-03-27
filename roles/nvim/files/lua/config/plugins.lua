@@ -346,11 +346,7 @@ if treesitter_context then
   })
 end
 
-local claude = util.safe_require("claude-code")
-if claude then
-  claude.setup({
-    refresh = {
-      enable = false,
-    },
-  })
+local fterm = util.safe_require("FTerm")
+if fterm then
+  fterm.setup({})
 end

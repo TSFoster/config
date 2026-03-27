@@ -479,6 +479,18 @@ keymap.set("n", "<Leader>th", util.mk_fn(cmd, "topleft vertical terminal"), { de
 keymap.set("n", "<Leader>tT", util.mk_fn(cmd, "tab terminal"), { desc = "Open terminal session in new tab" })
 keymap.set("n", "<Leader>tt", cmd.terminal, { desc = "Open terminal session in window" })
 
+local fterm = util.safe_require("FTerm")
+if fterm then
+  local claude_term = fterm:new({ cmd = "claude" })
+  local codex_term = fterm:new({ cmd = "codex" })
+  keymap.set("n", "<Leader>tc", function()
+    claude_term:toggle()
+  end, { desc = "Toggle Claude Code" })
+  keymap.set("n", "<Leader>tC", function()
+    codex_term:toggle()
+  end, { desc = "Toggle Codex" })
+end
+
 keymap.set("n", "<A-h>", "<C-w><", { desc = "Resize window <" })
 keymap.set("t", "<A-h>", "<C-\\><C-n><C-w><i", { desc = "Resize window <" })
 keymap.set("n", "<A-j>", "<C-w>-", { desc = "Resize window -" })
