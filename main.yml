@@ -4,8 +4,8 @@
   roles:
     - role: shells
       tags: ["shells"]
-    - role: dot_dirs
-      tags: ["dot_dirs"]
+    - role: dotfiles
+      tags: ["dotfiles"]
     - role: ssh
       tags: ["ssh"]
     - role: npm
