@@ -7,7 +7,7 @@ GALAXY := ansible-galaxy collection install --upgrade -r collections/requirement
 TAGS ?=
 EXTRA_ARGS ?=
 
-.PHONY: help bootstrap collections install run check syntax nvim_pack shells dotfiles ssh dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries java macos_apps alfred proxy nvim_lsp
+.PHONY: help bootstrap collections install run check syntax nvim-pack shells dotfiles ssh dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries java macos_apps alfred proxy nvim_lsp
 
 help:
 	@printf '%s\n' \

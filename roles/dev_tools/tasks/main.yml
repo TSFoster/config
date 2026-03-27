@@ -20,7 +20,7 @@
 # Use lineinfile with regexp so re-running is idempotent per package.
 - name: Track npm packages in asdf default-npm-packages
   ansible.builtin.lineinfile:
-    path: "{{ ansible_env.HOME }}/.default-npm-packages"
+    path: "{{ config_dir }}/asdf/default-npm-packages"
     line: "{{ item }}"
     regexp: "^{{ item | regex_escape }}$"
     create: true

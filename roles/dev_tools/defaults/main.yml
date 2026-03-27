@@ -8,7 +8,7 @@ dev_tools_packages:
   - name: tig            # git TUI
 
   # Shell tooling foundation
-  - name: asdf           # version manager — required before nvim role runs
+  - brew: asdf           # version manager — macOS only; on Linux install via https://asdf-vm.com/guide/getting-started.html
 
   # Mac App Store CLI — macOS only, must be present before macos_apps role
   - brew: mas
