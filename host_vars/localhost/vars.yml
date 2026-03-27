@@ -14,5 +14,3 @@ homebrew_cask_appdir: /Applications
 git_credentials_github_user: "{{ vault_git_credentials_github_user }}"
 git_credentials_github_token: "{{ vault_git_credentials_github_token }}"
 git_credentials_gitlab_token: "{{ vault_git_credentials_gitlab_token }}"
-
-proxy_domains: "{{ vault_proxy_domains }}"

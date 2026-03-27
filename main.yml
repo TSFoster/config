@@ -35,6 +35,3 @@
     - role: alfred
       tags: ["alfred"]
       when: ansible_facts['system'] == 'Darwin'
-    - role: proxy
-      tags: ["proxy"]
-      when: ansible_facts['system'] == 'Darwin'
