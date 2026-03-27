@@ -3,7 +3,7 @@
   ansible.builtin.find:
     paths: "{{ ansible_facts['env']['HOME'] }}/Library/Mobile Documents/com~apple~CloudDocs/Data/Fonts/"
     recurse: true
-    patterns: "*.ttf"
+    patterns: "*.otf"
   register: fonts_icloud_fonts
 - name: Install fonts
   ansible.builtin.copy:
