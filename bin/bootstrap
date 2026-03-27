@@ -1,8 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 set -e
-
-[ "$(uname -s)" != 'Darwin' ] && echo 'This is currently only intended for macOS' >&2 && exit 1
 
 ! [ -t 0 ] && echo 'It looks like your are running this through a pipe. You must clone the repo and call ./bootstrap directly' >&2 && exit 1
 
@@ -14,22 +12,54 @@ if [ "$(basename $0)" != bootstrap ] || [ "$(git rev-parse --show-toplevel 2>/de
   exit 1
 fi
 
-# if brew isn't in path, let's check default install location before trying to install it
-BREW_LOCATION=$(command -v brew || ([ "$(uname -m)" = arm64 ] && echo /opt/homebrew/bin/brew || echo /usr/local/bin/brew))
+OS="$(uname -s)"
 
-! [ -x "$BREW_LOCATION" ] && echo "Can't find homebrew. Installing" >&2 && /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+if [[ "$OS" == "Darwin" ]]; then
+  # if brew isn't in path, let's check default install location before trying to install it
+  BREW_LOCATION=$(command -v brew || ([ "$(uname -m)" = arm64 ] && echo /opt/homebrew/bin/brew || echo /usr/local/bin/brew))
 
-! [ -x "$BREW_LOCATION" ] && echo "Still can't find homebrew. Aborting" >&2 && exit 1
+  ! [ -x "$BREW_LOCATION" ] && echo "Can't find homebrew. Installing" >&2 && /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-eval "$($BREW_LOCATION shellenv)"
+  ! [ -x "$BREW_LOCATION" ] && echo "Still can't find homebrew. Aborting" >&2 && exit 1
 
-! command -v asdf >/dev/null && echo "Can't find asdf. Installing" >&2 && brew install asdf
-! asdf plugin list | grep -q '^python$' && echo "Installing asdf python plugin" >&2 && asdf plugin install python
-! asdf list python 3 >/dev/null && echo "Installing python 3 via asdf" >&2 && asdf install python latest:3
+  eval "$($BREW_LOCATION shellenv)"
 
-! asdf which ansible-playbook >/dev/null 2>&1 && echo "Can't find ansible in asdf python. Installing" >&2 && $(asdf which pip3) install ansible
+  ! command -v asdf >/dev/null && echo "Can't find asdf. Installing" >&2 && brew install asdf
+  ! asdf plugin list | grep -q '^python$' && echo "Installing asdf python plugin" >&2 && asdf plugin install python
+  ! asdf list python 3 >/dev/null && echo "Installing python 3 via asdf" >&2 && asdf install python latest:3
 
-! command -v op >/dev/null && echo "Can't find 1password-cli. Installing" >&2 && brew install 1password-cli
+  ! asdf which ansible-playbook >/dev/null 2>&1 && echo "Can't find ansible in asdf python. Installing" >&2 && $(asdf which pip3) install ansible
+
+  ! command -v op >/dev/null && echo "Can't find 1password-cli. Installing" >&2 && brew install 1password-cli
+
+elif [[ "$OS" == "Linux" ]]; then
+  # Install pip and ansible
+  sudo apt-get update -qq
+  sudo apt-get install -y git python3-pip
+
+  pip3 install --user ansible
+
+  # Ensure ~/.local/bin is on PATH for this session
+  export PATH="$HOME/.local/bin:$PATH"
+
+  # Install 1Password CLI via official apt repository
+  # https://developer.1password.com/docs/cli/get-started/#install
+  curl -fsSL https://downloads.1password.com/linux/keys/1password.asc \
+    | sudo gpg --dearmor -o /usr/share/keyrings/1password-archive-keyring.gpg
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/1password-archive-keyring.gpg] \
+    https://downloads.1password.com/linux/debian/$(dpkg --print-architecture) stable main" \
+    | sudo tee /etc/apt/sources.list.d/1password.list > /dev/null
+  sudo mkdir -p /etc/debsig/policies/AC2D62742012EA22/
+  curl -fsSL https://downloads.1password.com/linux/debian/debsig/1password.pol \
+    | sudo tee /etc/debsig/policies/AC2D62742012EA22/1password.pol > /dev/null
+  curl -fsSL https://downloads.1password.com/linux/keys/1password.asc \
+    | sudo gpg --dearmor -o /usr/share/debsig/keyrings/AC2D62742012EA22/debsig.gpg
+  sudo apt-get update -qq && sudo apt-get install -y 1password-cli
+
+else
+  echo "Unsupported OS: $OS" >&2
+  exit 1
+fi
 
 if ! [ -f ~/.config/op/config ]; then
   echo '1password-cli not set up. Setting up' >&2
@@ -46,6 +76,6 @@ if ! [ -f vault_pass ]; then
   op item get --fields password 'Config vault' >vault_pass
 fi
 
-echo "Installing Ansible collections" >&2 && asdf exec ansible-galaxy collection install --upgrade -r collections/requirements.yml
+echo "Installing Ansible collections" >&2 && ansible-galaxy collection install --upgrade -r collections/requirements.yml
 
-echo "Running playbook" >&2 && asdf exec ansible-playbook -i "localhost ansible_python_interpreter=$(asdf which python3)," main.yml $@
+echo "Running playbook" >&2 && ansible-playbook -i "localhost ansible_python_interpreter=$(command -v python3)," main.yml $@

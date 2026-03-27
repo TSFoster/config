@@ -1,9 +1,9 @@
 .DEFAULT_GOAL := help
 
 PLAYBOOK := main.yml
-INVENTORY := localhost ansible_python_interpreter=$$(asdf which python3),
-ANSIBLE := asdf exec ansible-playbook -i "$(INVENTORY)"
-GALAXY := asdf exec ansible-galaxy collection install --upgrade -r collections/requirements.yml
+INVENTORY := localhost ansible_python_interpreter=$$(command -v python3),
+ANSIBLE := ansible-playbook -i "$(INVENTORY)"
+GALAXY := ansible-galaxy collection install --upgrade -r collections/requirements.yml
 TAGS ?=
 EXTRA_ARGS ?=
 
