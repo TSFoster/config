@@ -1,19 +1,35 @@
 ---
-- name: Install fish
-  community.general.homebrew:
-    name: fish
-    state: present
-- name: Add fish to available shells
-  become: true
+- name: Install shell packages
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: install_packages
+  vars:
+    packages: "{{ shells_packages }}"
+- name: Add fish to /etc/shells (macOS — Homebrew path)
   ansible.builtin.lineinfile:
     path: /etc/shells
     line: "{{ homebrew_brew_bin_path }}/fish"
     state: present
-- name: Change user shell to fish
   become: true
+  when: ansible_facts['system'] == 'Darwin'
+- name: Add fish to /etc/shells (Linux — system path)
+  ansible.builtin.lineinfile:
+    path: /etc/shells
+    line: /usr/bin/fish
+  become: true
+  when: ansible_facts['system'] == 'Linux'
+- name: Set fish as default shell (macOS)
   ansible.builtin.user:
     name: "{{ the_user }}"
     shell: "{{ homebrew_brew_bin_path }}/fish"
+  become: true
+  when: ansible_facts['system'] == 'Darwin'
+- name: Set fish as default shell (Linux)
+  ansible.builtin.user:
+    name: "{{ the_user }}"
+    shell: /usr/bin/fish
+  become: true
+  when: ansible_facts['system'] == 'Linux'
 - name: Add .hushlogin
   ansible.builtin.file:
     path: "~/.hushlogin"
@@ -130,6 +146,7 @@
   ansible.builtin.command:
     creates: "{{ config_dir }}/fish/conf.d/_0homebrew.fish"
     cmd: "{{ homebrew_brew_bin_path }}/fish -c '{{ homebrew_brew_bin_path }}/brew shellenv fish > {{ config_dir }}/fish/conf.d/_0homebrew.fish'"
+  when: ansible_facts['system'] == 'Darwin'
 - name: Check fisher installed
   ansible.builtin.command:
     cmd: 'fish -c "functions -q fisher; and echo installed; exit 0"'
@@ -176,18 +193,10 @@
       fish_config theme choose catppuccin-mocha --color-theme=dark >/dev/null 2>/dev/null
   tags:
     - fisher
-- name: Install thefuck
-  community.general.homebrew:
-    name: thefuck
-    state: present
 - name: Install thefuck for fish
   ansible.builtin.command:
     creates: "{{ config_dir }}/fish/functions/fuck.fish"
     cmd: fish -c 'thefuck --alias > {{ config_dir }}/fish/functions/fuck.fish'
-- name: Install atuin
-  community.general.homebrew:
-    name: atuin
-    state: present
 - name: Add atuin config
   ansible.builtin.copy:
     src: "atuin"

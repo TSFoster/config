@@ -1,0 +1,9 @@
+# roles/shells/defaults/main.yml
+---
+# Note: atuin is available in apt on Ubuntu 22.04+ but may require
+# the atuin apt repository on older distros. If it fails on Linux,
+# use the official install script instead: curl https://setup.atuin.sh | sh
+shells_packages:
+  - name: fish
+  - name: thefuck
+  - name: atuin
