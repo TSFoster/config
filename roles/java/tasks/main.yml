@@ -1,8 +1,10 @@
 ---
-- name: Install OpenJDK
-  community.general.homebrew:
-    name: openjdk
-    state: present
+- name: Install Java packages
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: install_packages
+  vars:
+    packages: "{{ java_packages }}"
 - name: Symlink JDK
   ansible.builtin.file:
     src: /opt/homebrew/opt/openjdk/libexec/openjdk.jdk

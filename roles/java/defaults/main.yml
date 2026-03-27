@@ -1,0 +1,4 @@
+---
+java_packages:
+  - brew: openjdk
+    pkg: default-jdk    # Ubuntu: installs the default OpenJDK version

@@ -1,7 +1,7 @@
 ---
 - name: Install Hammerspoon
   community.general.homebrew_cask:
-    name: hammerspoon
+    name: "{{ hammerspoon_cask }}"
     state: present
 - name: Copy Hammerspoon config
   ansible.builtin.template:
