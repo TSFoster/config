@@ -1,0 +1,6 @@
+---
+alfred_cask: alfred
+
+# npm packages that support Alfred workflows
+alfred_npm_packages:
+  - alfred-fkill
