@@ -17,4 +17,4 @@
         id: "{{ item.id }}"
         state: present
       loop: "{{ macos_apps_mas }}"
-      ignore_errors: true
+      failed_when: false
