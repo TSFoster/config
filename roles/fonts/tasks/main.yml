@@ -8,7 +8,7 @@
 
 - name: Get list of fonts available to install via iCloud Drive # TODO Separate out fonts that I actaully want installed
   ansible.builtin.find:
-    paths: "{{ ansible_facts['env']['HOME'] }}/Library/Mobile Documents/com~apple~CloudDocs/Data/Fonts/"
+    paths: "{{ ansible_facts['env']['HOME'] }}/Library/Mobile Documents/com~apple~CloudDocs/Data/Fonts/macOS"
     recurse: true
     patterns: "*.otf"
   register: fonts_icloud_fonts
