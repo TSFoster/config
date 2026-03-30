@@ -203,10 +203,6 @@
       fish_config theme choose {{ shells_fish_theme_name }} --color-theme={{ shells_fish_theme_variant }} >/dev/null 2>/dev/null
   tags:
     - fisher
-- name: Install thefuck for fish
-  ansible.builtin.command:
-    creates: "{{ shells_thefuck_alias_path }}"
-    cmd: fish -c 'thefuck --alias > {{ shells_thefuck_alias_path }}'
 - name: Add atuin config
   ansible.builtin.copy:
     src: "atuin"
