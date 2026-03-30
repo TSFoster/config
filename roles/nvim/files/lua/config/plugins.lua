@@ -222,7 +222,19 @@ end
 
 local mini_surround = util.safe_require("mini.surround")
 if mini_surround then
-  mini_surround.setup()
+  mini_surround.setup({
+    mappings = {
+      add = "sa",
+      delete = "sd",
+      find = "sf",
+      find_left = "sF",
+      highlight = "sh",
+      replace = "sc",
+
+      suffix_last = "l",
+      suffix_next = "n",
+    },
+  })
 end
 
 local mini_trailspace = util.safe_require("mini.trailspace")
