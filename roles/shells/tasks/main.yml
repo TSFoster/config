@@ -63,6 +63,14 @@
     mode: "0644"
     regexp: "^SETUVAR( +--export)?( +--path)? +{{ item.name }}:"
     line: >-
+      {%- set values = item.value_multiple | default([item.value]) | list -%}
+      {%- if item.keep_existing | default(false, true) -%}
+      {%- set values = values + ansible_facts['env'].get(item.name, '').split(':') -%}
+      {%- endif -%}
+      {%- set values = values | reject('equalto', '') | list -%}
+      {%- if item.path | default(false, true) -%}
+      {%- set values = values | unique | list -%}
+      {%- endif -%}
       {{
         'SETUVAR'
         ~ (item.export | default(false, true) | ternary(' --export', ''))
@@ -71,7 +79,7 @@
         ~ item.name
         ~ ':'
         ~ (
-          item.value_multiple | default([item.value]) | reject('equalto', '') | list
+          values
           | join('\x1e')
           | replace(' ', '\x20')
           | replace('%', '\x25')
@@ -88,6 +96,8 @@
         )
       }}
   loop: "{{ shells_variables + shells_fish_universal_variables }}"
+  loop_control:
+    label: "{{ item.name }}"
   tags:
     - vars_debug
 - name: Set fish abbreviations

@@ -1,5 +1,13 @@
 {% for item in shells_variables %}
-{% set value = item.value_multiple | default([item.value]) | reject('equalto', '') | list | join(':') %}
+{% set values = item.value_multiple | default([item.value]) | list %}
+{% if item.keep_existing | default(false, true) %}
+{% set values = values + ansible_facts['env'].get(item.name, '').split(':') %}
+{% endif %}
+{% set values = values | reject('equalto', '') | list %}
+{% if item.path | default(false, true) %}
+{% set values = values | unique | list %}
+{% endif %}
+{% set value = values | join(':') %}
 {% if item.export | default(false, true) %}export {% endif %}{{ item.name }}={{ value | to_json }}
 {% endfor %}
 

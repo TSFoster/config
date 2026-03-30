@@ -24,7 +24,8 @@ shells_path_entries_darwin:
   - /Applications/Setapp/Soulver.app/Contents/MacOS/CLI
 shells_uv:
   xdg_data: "{{ ansible_facts['env']['HOME'] }}/.local/share"
-  fd_default: --exclude node_modules --exclude .git --exclude elm-stuff --exclude bower_components --exclude target --exclude .DS_Store --exclude .sass-cache
+  fd_default:
+    --exclude node_modules --exclude .git --exclude elm-stuff --exclude bower_components --exclude target --exclude .DS_Store --exclude .sass-cache
     --hidden
   iCloud: "{{ ansible_facts['env']['HOME'] }}/Library/Mobile Documents/com~apple~CloudDocs"
   isMac: "{{ ansible_facts['system'] == 'Darwin' }}"
@@ -104,13 +105,13 @@ shells_variables_darwin:
   - name: MANPATH
     value_multiple:
       - "{{ homebrew_prefix }}/share/man"
-      - "{{ ansible_facts['env'].get('MANPATH', '') }}"
+    keep_existing: true
     export: true
     path: true
   - name: INFOPATH
     value_multiple:
       - "{{ homebrew_prefix }}/share/info"
-      - "{{ ansible_facts['env'].get('INFOPATH', '') }}"
+    keep_existing: true
     export: true
     path: true
 shells_variables: "{{ shells_variables_base + (lookup('vars', 'shells_variables_' + (ansible_facts['system'] | lower)) | default([])) }}"
