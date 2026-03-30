@@ -60,7 +60,7 @@ dev_tools_packages:
   - name: podman
   - name: skopeo
   - brew: dive # Docker image explorer — no standard apt package
-  - brew: container-diff
+  - brew: diffoci
   - brew: doctl # DigitalOcean CLI
 
   # Language-adjacent tooling
@@ -85,7 +85,7 @@ dev_tools_packages:
     pkg: libuv1-dev
 
   # Database
-  - name: postgresql
+  - name: postgresql@18
   - name: sqlite
 
   # Code analysis / formatting
