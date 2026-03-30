@@ -15,8 +15,42 @@ end
 
 local mini = util.safe_require("mini.ai")
 if mini then
+  local entire_file_textobject = function(ai_type)
+    local line_count = vim.api.nvim_buf_line_count(0)
+    local lines = vim.api.nvim_buf_get_lines(0, 0, line_count, false)
+
+    local first_line = 1
+    local last_line = line_count
+
+    if ai_type == "i" then
+      while first_line <= line_count and lines[first_line]:match("^%s*$") do
+        first_line = first_line + 1
+      end
+
+      while last_line >= first_line and lines[last_line]:match("^%s*$") do
+        last_line = last_line - 1
+      end
+
+      if first_line > last_line then
+        return nil
+      end
+    end
+
+    return {
+      from = { line = first_line, col = 1 },
+      to = {
+        line = last_line,
+        col = math.max(lines[last_line]:len(), 1),
+      },
+      vis_mode = "V",
+    }
+  end
+
   mini.setup({
     n_lines = 500,
+    custom_textobjects = {
+      e = entire_file_textobject,
+    },
   })
 end
 
