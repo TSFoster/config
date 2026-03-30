@@ -1,16 +1,14 @@
 ---
 - name: Clone dictionaries
   ansible.builtin.git:
-    repo: "git@github.com:afischer/osx-dictionaries.git"
-    dest: ~/workspace/osx-dictionaries
-    version: d1be4f086dcb9a997db838827ce165158aa8a7f4
+    repo: "{{ macos_dictionaries_repo }}"
+    dest: "{{ macos_dictionaries_checkout_dir }}"
+    version: "{{ macos_dictionaries_repo_version }}"
     update: false
 - name: Copy dictionaries
   ansible.builtin.copy:
     remote_src: true
-    src: "~/workspace/osx-dictionaries/{{ item }}"
-    dest: "~/Library/Dictionaries/"
+    src: "{{ macos_dictionaries_checkout_dir }}/{{ item }}"
+    dest: "{{ macos_dictionaries_install_dir }}/"
     mode: "0644"
-  loop:
-    - danish/dan-eng.dictionary
-    - english/Oxford_English_Collocation_Dictionary.dictionary
+  loop: "{{ macos_dictionaries_items }}"

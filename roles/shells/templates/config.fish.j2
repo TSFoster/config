@@ -16,8 +16,8 @@ contains -- "./{{ entry }}" $PATH; or set -gxp PATH "./{{ entry }}"
 
 # TOOL SETUP
 
-op completion fish | source
-[ -f ~/.config/tabtab/__tabtab.fish ]; and source ~/.config/tabtab/__tabtab.fish
+{{ shells_op_command }} completion fish | source
+[ -f {{ shells_tabtab_fish_path }} ]; and source {{ shells_tabtab_fish_path }}
 atuin init fish --disable-up-arrow | source
 
 

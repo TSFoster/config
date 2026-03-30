@@ -1,5 +1,9 @@
 ---
 alfred_cask: alfred
+alfred_dir: "{{ config_dir }}/alfred"
+alfred_repo: git@github.com:TSFoster/alfred.git
+alfred_repo_version: 0d1b829f7a6feb3a1e4bef2f42cda08c4eb8a98b
+alfred_npm_environment: "{{ asdf_runtime_environment }}"
 
 # npm packages that support Alfred workflows
 alfred_npm_packages:

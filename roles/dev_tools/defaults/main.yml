@@ -1,5 +1,11 @@
 # roles/dev_tools/defaults/main.yml
 ---
+dev_tools_npm_environment: "{{ asdf_runtime_environment }}"
+dev_tools_homebrew_openjdk_jdk_path: /opt/homebrew/opt/openjdk/libexec/openjdk.jdk
+dev_tools_java_virtual_machines_jdk_path: /Library/Java/JavaVirtualMachines/openjdk.jdk
+dev_tools_homebrew_svn_extension_path: /opt/homebrew/lib/libsvnjavahl-1.dylib
+dev_tools_java_extensions_svn_extension_path: /Library/Java/Extensions/libsvnjavahl-1.dylib
+
 dev_tools_packages:
   # Version control
   - name: git

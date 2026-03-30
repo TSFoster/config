@@ -16,22 +16,22 @@
 
 - name: Symlink JDK
   ansible.builtin.file:
-    src: /opt/homebrew/opt/openjdk/libexec/openjdk.jdk
-    dest: /Library/Java/JavaVirtualMachines/openjdk.jdk
+    src: "{{ dev_tools_homebrew_openjdk_jdk_path }}"
+    dest: "{{ dev_tools_java_virtual_machines_jdk_path }}"
     state: link
   become: true
   when: ansible_facts["system"] == "Darwin"
 
 - name: Check svn extension exists
   ansible.builtin.stat:
-    path: /opt/homebrew/lib/libsvnjavahl-1.dylib
+    path: "{{ dev_tools_homebrew_svn_extension_path }}"
   register: dev_tools_java_svn_extension
   when: ansible_facts["system"] == "Darwin"
 
 - name: Symlink svn extension
   ansible.builtin.file:
-    src: /opt/homebrew/lib/libsvnjavahl-1.dylib
-    dest: /Library/Java/Extensions/libsvnjavahl-1.dylib
+    src: "{{ dev_tools_homebrew_svn_extension_path }}"
+    dest: "{{ dev_tools_java_extensions_svn_extension_path }}"
     state: link
   become: true
   when: ansible_facts["system"] == "Darwin" and dev_tools_java_svn_extension.stat.exists
@@ -49,7 +49,7 @@
     tasks_from: install_npm_packages
   vars:
     common_packages: "{{ dev_tools_npm_packages }}"
-    common_package_environment: "{{ asdf_runtime_environment }}"
+    common_package_environment: "{{ dev_tools_npm_environment }}"
   when: dev_tools_npm_command.rc == 0
 
 - name: Warn when npm packages are skipped

@@ -23,7 +23,7 @@
 
 - name: Track npm packages in asdf default-npm-packages
   ansible.builtin.lineinfile:
-    path: "{{ ansible_facts['env']['HOME'] }}/.default-npm-packages"
+    path: "{{ common_default_npm_packages_file }}"
     line: "{{ item }}"
     regexp: "^{{ item | regex_escape }}$"
     create: true

@@ -15,24 +15,24 @@
 - name: Add fish to /etc/shells (Linux — system path)
   ansible.builtin.lineinfile:
     path: /etc/shells
-    line: /usr/bin/fish
+    line: "{{ shells_linux_fish_path }}"
   become: true
   when: ansible_facts['system'] == 'Linux'
 - name: Set fish as default shell (macOS)
   ansible.builtin.user:
-    name: "{{ ansible_facts['env']['USER'] }}"
+    name: "{{ shells_target_user }}"
     shell: "{{ homebrew_brew_bin_path }}/fish"
   become: true
   when: ansible_facts['system'] == 'Darwin'
 - name: Set fish as default shell (Linux)
   ansible.builtin.user:
-    name: "{{ ansible_facts['env']['USER'] }}"
-    shell: /usr/bin/fish
+    name: "{{ shells_target_user }}"
+    shell: "{{ shells_linux_fish_path }}"
   become: true
   when: ansible_facts['system'] == 'Linux'
 - name: Add .hushlogin
   ansible.builtin.file:
-    path: "~/.hushlogin"
+    path: "{{ shells_hushlogin_path }}"
     state: touch
     modification_time: preserve
     access_time: preserve
@@ -40,16 +40,16 @@
 - name: Add zprofile
   ansible.builtin.template:
     src: zprofile.j2
-    dest: ~/.zprofile
+    dest: "{{ shells_zprofile_path }}"
     mode: "0644"
 - name: Add bash_profile
   ansible.builtin.template:
     src: bash_profile.j2
-    dest: ~/.bash_profile
+    dest: "{{ shells_bash_profile_path }}"
     mode: "0644"
 - name: Create fish_variables
   ansible.builtin.file:
-    path: "{{ config_dir }}/fish/fish_variables"
+    path: "{{ shells_fish_variables_path }}"
     state: touch
     modification_time: preserve
     access_time: preserve
@@ -58,7 +58,7 @@
     - vars_debug
 - name: Set fish universal shell variables
   ansible.builtin.lineinfile:
-    path: "{{ config_dir }}/fish/fish_variables"
+    path: "{{ shells_fish_variables_path }}"
     create: true
     mode: "0644"
     regexp: "^SETUVAR( +--export)?( +--path)? +{{ item.name }}:"
@@ -92,7 +92,7 @@
     - vars_debug
 - name: Set fish abbreviations
   ansible.builtin.lineinfile:
-    path: "{{ config_dir }}/fish/fish_variables"
+    path: "{{ shells_fish_variables_path }}"
     create: true
     mode: "0644"
     regexp: "^SETUVAR _fish_abbr_{{ item.name }}:"
@@ -121,7 +121,7 @@
     - name: Copy dirs
       ansible.builtin.copy:
         src: "{{ item }}/"
-        dest: "{{ config_dir }}/fish/{{ item }}/"
+        dest: "{{ shells_fish_config_dir }}/{{ item }}/"
         mode: preserve
       loop:
         - bin
@@ -130,21 +130,21 @@
     - name: Make config.fish
       ansible.builtin.template:
         src: "config.fish.j2"
-        dest: "{{ config_dir }}/fish/config.fish"
+        dest: "{{ shells_fish_config_dir }}/config.fish"
         mode: "0644"
 - name: Make conf.d dir
   ansible.builtin.file:
-    path: "{{ config_dir }}/fish/conf.d"
+    path: "{{ shells_fish_conf_d_dir }}"
     state: directory
     mode: "0755"
 - name: Make themes dir
   ansible.builtin.file:
-    path: "{{ config_dir }}/fish/themes"
+    path: "{{ shells_fish_themes_dir }}"
     state: directory
     mode: "0755"
 - name: Remove legacy fish Homebrew config
   ansible.builtin.file:
-    path: "{{ config_dir }}/fish/conf.d/_0homebrew.fish"
+    path: "{{ shells_fish_conf_d_dir }}/_0homebrew.fish"
     state: absent
   when: ansible_facts['system'] == 'Darwin'
 - name: Check fisher installed
@@ -162,12 +162,12 @@
     - name: Download fisher installer
       ansible.builtin.get_url:
         url: https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish
-        dest: "{{ ansible_facts['env'].get('TMPDIR', '/tmp') }}/fisher.fish"
+        dest: "{{ shells_fisher_installer_path }}"
         mode: "0644"
     - name: Source fisher installer
       ansible.builtin.command:
         cmd: >-
-          fish -c 'source {{ ansible_facts["env"].get("TMPDIR", "/tmp") }}/fisher.fish &&
+          fish -c 'source {{ shells_fisher_installer_path }} &&
           fisher install jorgebucaran/fisher'
       changed_when: true
 - name: Get list of plugins
@@ -187,18 +187,18 @@
     - fisher
 - name: Set fish theme
   ansible.builtin.copy:
-    dest: "{{ config_dir }}/fish/conf.d/zz_theme.fish"
+    dest: "{{ shells_theme_config_path }}"
     mode: "0644"
     content: |
-      fish_config theme choose catppuccin-mocha --color-theme=dark >/dev/null 2>/dev/null
+      fish_config theme choose {{ shells_fish_theme_name }} --color-theme={{ shells_fish_theme_variant }} >/dev/null 2>/dev/null
   tags:
     - fisher
 - name: Install thefuck for fish
   ansible.builtin.command:
-    creates: "{{ config_dir }}/fish/functions/fuck.fish"
-    cmd: fish -c 'thefuck --alias > {{ config_dir }}/fish/functions/fuck.fish'
+    creates: "{{ shells_thefuck_alias_path }}"
+    cmd: fish -c 'thefuck --alias > {{ shells_thefuck_alias_path }}'
 - name: Add atuin config
   ansible.builtin.copy:
     src: "atuin"
-    dest: "{{ config_dir }}/atuin/"
+    dest: "{{ shells_atuin_config_dir }}/"
     mode: preserve

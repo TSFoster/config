@@ -1,5 +1,11 @@
 # roles/nvim/defaults/main.yml
 ---
+nvim_ruby_environment: "{{ homebrew_ruby_environment }}"
+nvim_npm_environment: "{{ asdf_runtime_environment }}"
+nvim_config_dir: "{{ config_dir }}/nvim"
+nvim_fish_completions_dir: "{{ config_dir }}/fish/completions"
+nvim_fish_completion_path: "{{ nvim_fish_completions_dir }}/nvr.fish"
+
 # Packages without `pkg:` are macOS-only (no standard apt equivalent).
 # They are silently skipped on Linux by the install_packages abstraction.
 nvim_packages:

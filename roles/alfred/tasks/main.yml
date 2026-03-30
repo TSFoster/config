@@ -5,9 +5,9 @@
     state: present
 - name: Setup Alfred repo
   ansible.builtin.git:
-    repo: git@github.com:TSFoster/alfred.git
+    repo: "{{ alfred_repo }}"
     dest: "{{ alfred_dir }}"
-    version: 0d1b829f7a6feb3a1e4bef2f42cda08c4eb8a98b
+    version: "{{ alfred_repo_version }}"
     update: false
 - name: Set config dir
   community.general.osx_defaults:
@@ -20,4 +20,4 @@
     tasks_from: install_npm_packages
   vars:
     common_packages: "{{ alfred_npm_packages }}"
-    common_package_environment: "{{ asdf_runtime_environment }}"
+    common_package_environment: "{{ alfred_npm_environment }}"

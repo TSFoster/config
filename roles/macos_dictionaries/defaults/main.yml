@@ -1,0 +1,8 @@
+---
+macos_dictionaries_repo: git@github.com:afischer/osx-dictionaries.git
+macos_dictionaries_repo_version: d1be4f086dcb9a997db838827ce165158aa8a7f4
+macos_dictionaries_checkout_dir: "{{ ansible_facts['env']['HOME'] }}/workspace/osx-dictionaries"
+macos_dictionaries_install_dir: "{{ ansible_facts['env']['HOME'] }}/Library/Dictionaries"
+macos_dictionaries_items:
+  - danish/dan-eng.dictionary
+  - english/Oxford_English_Collocation_Dictionary.dictionary

@@ -22,7 +22,7 @@
 
 - name: Track gem packages in asdf default-gems
   ansible.builtin.lineinfile:
-    path: "{{ ansible_facts['env']['HOME'] }}/.default-gems"
+    path: "{{ common_default_gems_file }}"
     line: "{{ item }}"
     regexp: "^{{ item | regex_escape }}$"
     create: true

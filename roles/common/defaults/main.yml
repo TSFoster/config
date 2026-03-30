@@ -1,0 +1,5 @@
+---
+common_default_gems_file: "{{ ansible_facts['env']['HOME'] }}/.default-gems"
+common_default_npm_packages_file: "{{ ansible_facts['env']['HOME'] }}/.default-npm-packages"
+common_default_python_packages_file: "{{ ansible_facts['env']['HOME'] }}/.default-python-packages"
+common_package_environment: {}

@@ -12,7 +12,7 @@
   vars:
     common_packages:
       - neovim
-    common_package_environment: "{{ homebrew_ruby_environment }}"
+    common_package_environment: "{{ nvim_ruby_environment }}"
   when: ansible_facts['system'] == 'Darwin'
 - name: Install Neovim LSP tool packages
   ansible.builtin.include_role:
@@ -27,7 +27,7 @@
     tasks_from: install_npm_packages
   vars:
     common_packages: "{{ nvim_npm_packages }}"
-    common_package_environment: "{{ asdf_runtime_environment }}"
+    common_package_environment: "{{ nvim_npm_environment }}"
   tags:
     - nvim_lsp
 
@@ -52,7 +52,7 @@
 - name: Copy files
   ansible.builtin.copy:
     src: ./
-    dest: "{{ config_dir }}/nvim/"
+    dest: "{{ nvim_config_dir }}/"
     mode: preserve
   tags:
     - nvim_files
@@ -62,12 +62,12 @@
   block:
     - name: Ensure fish completions directory exists
       ansible.builtin.file:
-        path: "{{ config_dir }}/fish/completions"
+        path: "{{ nvim_fish_completions_dir }}"
         state: directory
         mode: "0755"
     - name: Download nvr fish completion
       ansible.builtin.get_url:
         url: https://raw.githubusercontent.com/mhinz/neovim-remote/master/contrib/completion.fish
-        dest: "{{ config_dir }}/fish/completions/nvr.fish"
+        dest: "{{ nvim_fish_completion_path }}"
         mode: "0644"
         force: false

@@ -1,5 +1,24 @@
 # roles/shells/defaults/main.yml
 ---
+shells_linux_fish_path: /usr/bin/fish
+shells_target_user: "{{ ansible_facts['env']['USER'] }}"
+shells_hushlogin_path: "{{ ansible_facts['env']['HOME'] }}/.hushlogin"
+shells_zprofile_path: "{{ ansible_facts['env']['HOME'] }}/.zprofile"
+shells_bash_profile_path: "{{ ansible_facts['env']['HOME'] }}/.bash_profile"
+shells_fish_variables_path: "{{ config_dir }}/fish/fish_variables"
+shells_fish_config_dir: "{{ config_dir }}/fish"
+shells_fish_conf_d_dir: "{{ shells_fish_config_dir }}/conf.d"
+shells_fish_themes_dir: "{{ shells_fish_config_dir }}/themes"
+shells_fisher_installer_path: "{{ ansible_facts['env'].get('TMPDIR', '/tmp') }}/fisher.fish"
+shells_theme_config_path: "{{ shells_fish_conf_d_dir }}/zz_theme.fish"
+shells_thefuck_alias_path: "{{ shells_fish_config_dir }}/functions/fuck.fish"
+shells_atuin_config_dir: "{{ config_dir }}/atuin"
+shells_fish_theme_name: catppuccin-mocha
+shells_fish_theme_variant: dark
+shells_op_command: op
+shells_op_plugin_run_prefix: "{{ shells_op_command }} plugin run --"
+shells_tabtab_fish_path: "{{ config_dir }}/tabtab/__tabtab.fish"
+
 # Note: atuin is available in apt on Ubuntu 22.04+ but may require
 # the atuin apt repository on older distros. If it fails on Linux,
 # use the official install script instead: curl https://setup.atuin.sh | sh

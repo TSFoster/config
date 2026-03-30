@@ -1,0 +1,3 @@
+---
+macos_navigation_vimari_settings_dir: >-
+  {{ ansible_facts['env']['HOME'] }}/Library/Containers/net.televator.Vimari.SafariExtension/Data/Library/Application Support

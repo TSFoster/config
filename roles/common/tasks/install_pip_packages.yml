@@ -22,7 +22,7 @@
 
 - name: Track pip packages in asdf default-python-packages
   ansible.builtin.lineinfile:
-    path: "{{ ansible_facts['env']['HOME'] }}/.default-python-packages"
+    path: "{{ common_default_python_packages_file }}"
     line: "{{ item }}"
     regexp: "^{{ item | regex_escape }}$"
     create: true

@@ -1,0 +1,18 @@
+---
+ssh_dir: "{{ ansible_facts['env']['HOME'] }}/.ssh"
+ssh_config_dir: "{{ ssh_dir }}/config.d"
+ssh_config_path: "{{ ssh_dir }}/config"
+ssh_user: "{{ ansible_facts['env']['USER'] }}"
+ssh_op_command: op
+ssh_identity_agent_darwin_dir: >-
+  {{ ansible_facts['env']['HOME'] }}/Library/Group Containers/2BUA8C4S2C.com.1password/t
+ssh_identity_agent_linux_dir: "{{ ansible_facts['env']['HOME'] }}/.1password"
+ssh_identity_agent_dir: >-
+  {{
+    (ansible_facts['system'] == 'Darwin')
+    | ternary(
+      ssh_identity_agent_darwin_dir,
+      ssh_identity_agent_linux_dir
+    )
+  }}
+ssh_identity_agent_path: "{{ ssh_identity_agent_dir }}/agent.sock"

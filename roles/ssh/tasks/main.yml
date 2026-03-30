@@ -1,26 +1,26 @@
 ---
 - name: Make .ssh dir
   ansible.builtin.file:
-    path: ~/.ssh
+    path: "{{ ssh_dir }}"
     state: directory
     mode: "0700"
 - name: Get SSH keys
   ansible.builtin.shell:
-    cmd: "op get document {{ item.0 }}{{ item.1 }} > ~/.ssh/{{ item.0 }}{{ item.1 }}"
-    creates: "~/.ssh/{{ item.0 }}{{ item.1 }}"
+    cmd: "{{ ssh_op_command }} get document {{ item.0 }}{{ item.1 }} > {{ ssh_dir }}/{{ item.0 }}{{ item.1 }}"
+    creates: "{{ ssh_dir }}/{{ item.0 }}{{ item.1 }}"
   loop: "{{ ssh_keys | product(['', '.pub']) | list }}"
 - name: Add id_rsa.pub to authorized_keys
   ansible.posix.authorized_key:
-    user: "{{ ansible_facts['env']['USER'] }}"
+    user: "{{ ssh_user }}"
     state: present
-    key: "{{ lookup('file', '~/.ssh/' ~ (ssh_keys | first) ~ '.pub') }}"
+    key: "{{ lookup('file', ssh_dir ~ '/' ~ (ssh_keys | first) ~ '.pub') }}"
 - name: Make .ssh/config.d dir
   ansible.builtin.file:
-    path: ~/.ssh/config.d
+    path: "{{ ssh_config_dir }}"
     state: directory
     mode: "0700"
 - name: Copy SSH config
   ansible.builtin.template:
     src: "config.j2"
-    dest: "~/.ssh/config"
+    dest: "{{ ssh_config_path }}"
     mode: "0600"

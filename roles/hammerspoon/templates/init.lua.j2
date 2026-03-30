@@ -152,14 +152,14 @@ end
 
 addMenubarChecker{
   icon = "↓",
-  path = "~/Downloads",
+  path = "{{ hammerspoon_downloads_path }}",
   seconds = 60,
   onClick = function()
-    hs.open "~/Downloads"
+    hs.open "{{ hammerspoon_downloads_path }}"
     hs.application.launchOrFocus "Finder"
   end,
   shouldDisplay = function()
-    for x in hs.fs.dir "~/Downloads" do
+    for x in hs.fs.dir "{{ hammerspoon_downloads_path }}" do
       if x and x ~= "." and x ~= ".." and x ~= ".DS_Store" and x ~= ".localized" then
         return true
       end
@@ -172,11 +172,11 @@ addMenubarChecker{
   icon = "↘︎",
   seconds = 30,
   onClick = function()
-    hs.execute("{{ ansible_facts['env']['HOME'] }}/.local/bin/mailbox-count Drafts --unread --activate")
+    hs.execute("{{ hammerspoon_mailbox_count_binary }} Drafts --unread --activate")
     hs.application.launchOrFocus "Mail"
   end,
   shouldDisplay = function()
-    local count = tonumber(string.gsub(hs.execute("{{ ansible_facts['env']['HOME'] }}/.local/bin/mailbox-count Drafts"), "%D", ""), 10)
+    local count = tonumber(string.gsub(hs.execute("{{ hammerspoon_mailbox_count_binary }} Drafts"), "%D", ""), 10)
     return count and count > 0
   end,
 }
@@ -185,11 +185,11 @@ addMenubarChecker{
   icon = "↑",
   seconds = 30,
   onClick = function()
-    hs.execute("{{ ansible_facts['env']['HOME'] }}/.local/bin/mailbox-count Updates --unread --activate")
+    hs.execute("{{ hammerspoon_mailbox_count_binary }} Updates --unread --activate")
     hs.application.launchOrFocus "Mail"
   end,
   shouldDisplay = function()
-    local count = tonumber(string.gsub(hs.execute("{{ ansible_facts['env']['HOME'] }}/.local/bin/mailbox-count Updates --unread"), "%D", ""), 10)
+    local count = tonumber(string.gsub(hs.execute("{{ hammerspoon_mailbox_count_binary }} Updates --unread"), "%D", ""), 10)
     return count and count > 0
   end,
 }

@@ -151,11 +151,11 @@ shells_abbreviations:
   - name: gs
     value: git status
   - name: gh
-    value: op plugin run -- gh
+    value: "{{ shells_op_plugin_run_prefix }} gh"
   - name: glab
-    value: op plugin run -- glab
+    value: "{{ shells_op_plugin_run_prefix }} glab"
   - name: doctl
-    value: op plugin run -- doctl
+    value: "{{ shells_op_plugin_run_prefix }} doctl"
   - name: l
     value: ls
   - name: la

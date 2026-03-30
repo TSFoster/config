@@ -1,4 +1,7 @@
 ---
+fonts_icloud_source_dir: "{{ ansible_facts['env']['HOME'] }}/Library/Mobile Documents/com~apple~CloudDocs/Data/Fonts/macOS"
+fonts_install_dir: "{{ ansible_facts['env']['HOME'] }}/Library/Fonts"
+
 fonts_homebrew_casks:
   - font-fira-code
   - font-fira-mono
