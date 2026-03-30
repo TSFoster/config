@@ -1,34 +1,6 @@
 local opt = vim.opt
 local g = vim.g
 
-local function read_global_asdf_version(tool)
-  local tool_versions = vim.fn.expand("~/.tool-versions")
-
-  if vim.fn.filereadable(tool_versions) == 0 then
-    return nil
-  end
-
-  local lines = vim.fn.readfile(tool_versions)
-
-  for _, line in ipairs(lines) do
-    local name, version = line:match("^(%S+)%s+(%S+)")
-
-    if name == tool then
-      return version
-    end
-  end
-
-  return nil
-end
-
-local global_asdf_nodejs_version = read_global_asdf_version("nodejs")
-
-if global_asdf_nodejs_version then
-  -- Keep Neovim's Node-based providers and LSP tools on the home asdf Node,
-  -- even when launched from a project with its own .tool-versions.
-  vim.env.ASDF_NODEJS_VERSION = global_asdf_nodejs_version
-end
-
 opt.backupdir:remove(".")
 opt.showbreak = "... "
 opt.cmdheight = 2
@@ -90,9 +62,9 @@ vim.filetype.add({
   },
 })
 
-g.python3_host_prog = "~/.asdf/shims/python3"
-g.node_host_prog = "~/.asdf/shims/neovim-node-host"
-g.ruby_host_prog = "~/.asdf/shims/neovim-ruby-host"
+g.python3_host_prog = vim.fn.stdpath("config") .. "/bin/asdf-python3-host"
+g.node_host_prog = vim.fn.stdpath("config") .. "/bin/asdf-node-host"
+g.ruby_host_prog = vim.fn.stdpath("config") .. "/bin/asdf-ruby-host"
 g.loaded_perl_provider = 0
 
 g.loaded_netrwPlugin = 1

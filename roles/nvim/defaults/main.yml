@@ -38,9 +38,8 @@ nvim_npm_packages:
 # because the current PATH setup uses the Homebrew Ruby path.
 nvim_gem_packages:
   - solargraph
+  - neovim
 
 nvim_python_module_packages:
   - pynvim
-
-nvim_nvr_packages:
   - neovim-remote

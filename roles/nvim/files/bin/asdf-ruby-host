@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -eu
+
+tool_versions="$HOME/.tool-versions"
+version=""
+
+if [ -r "$tool_versions" ]; then
+  version="$(awk '$1 == "ruby" { print $2; exit }' "$tool_versions")"
+fi
+
+if [ -n "$version" ]; then
+  exec env ASDF_RUBY_VERSION="$version" "$HOME/.asdf/shims/neovim-ruby-host" "$@"
+fi
+
+exec "$HOME/.asdf/shims/neovim-ruby-host" "$@"

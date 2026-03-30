@@ -1,11 +1,11 @@
 ---
-- name: Install python neovim module # TODO Check present in default-node-packages?
+- name: Install python neovim module
   ansible.builtin.include_role:
     name: common
     tasks_from: install_pip_packages
   vars:
     common_packages: "{{ nvim_python_module_packages }}"
-- name: Install ruby neovim module # TODO Check present in default-ruby-packages?
+- name: Install ruby neovim module
   ansible.builtin.include_role:
     name: common
     tasks_from: install_gem_packages
@@ -40,15 +40,6 @@
   tags:
     - nvim_lsp
 
-- name: Install neovim-remote
-  ansible.builtin.include_role:
-    name: common
-    tasks_from: install_pip_packages
-  vars:
-    common_packages: "{{ nvim_nvr_packages }}"
-  tags:
-    - nvr
-
 - name: Copy files
   ansible.builtin.copy:
     src: ./
@@ -56,9 +47,8 @@
     mode: preserve
   tags:
     - nvim_files
+
 - name: Add nvr completion in fish
-  tags:
-    - nvr
   block:
     - name: Ensure fish completions directory exists
       ansible.builtin.file:

@@ -1,0 +1,48 @@
+const { spawn } = require("node:child_process")
+const { readFileSync } = require("node:fs")
+const { homedir } = require("node:os")
+const path = require("node:path")
+
+function readGlobalAsdfVersion(tool) {
+  const toolVersionsPath = path.join(homedir(), ".tool-versions")
+
+  try {
+    const lines = readFileSync(toolVersionsPath, "utf8").split(/\r?\n/)
+
+    for (const line of lines) {
+      const match = line.match(/^(\S+)\s+(\S+)/)
+
+      if (match && match[1] === tool) {
+        return match[2]
+      }
+    }
+  } catch {
+    return null
+  }
+
+  return null
+}
+
+const nodejsVersion = readGlobalAsdfVersion("nodejs")
+
+const child = spawn(path.join(homedir(), ".asdf", "shims", "neovim-node-host"), process.argv.slice(2), {
+  env: {
+    ...process.env,
+    ...(nodejsVersion ? { ASDF_NODEJS_VERSION: nodejsVersion } : {}),
+  },
+  stdio: "inherit",
+})
+
+child.on("exit", (code, signal) => {
+  if (signal) {
+    process.kill(process.pid, signal)
+    return
+  }
+
+  process.exit(code ?? 0)
+})
+
+child.on("error", (error) => {
+  console.error(error.message)
+  process.exit(1)
+})
