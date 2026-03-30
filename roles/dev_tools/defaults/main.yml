@@ -37,9 +37,12 @@ dev_tools_packages:
   # Text / document
   - name: pandoc
   - name: par
+  - brew: poppler
+    pkg: poppler-utils
   - name: rename
 
   # Build / media
+  - name: chafa
   - name: ffmpeg
   - name: imagemagick
   - name: qrencode
@@ -73,6 +76,7 @@ dev_tools_packages:
   - name: yamllint
   - name: exercism
   - name: watchexec
+  - brew: yazi # Linux package availability varies; install via brew where managed
   - name: cloc
   - name: hugo
   - brew: terminal-notifier # macOS-only notification tool
