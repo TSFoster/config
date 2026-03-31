@@ -7,7 +7,7 @@ GALAXY := ansible-galaxy collection install --upgrade -r collections/requirement
 TAGS ?=
 EXTRA_ARGS ?=
 
-.PHONY: help bootstrap collections install run check syntax nvim-pack shells dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp
+.PHONY: help bootstrap collections install run check syntax nvim_pack shells dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp
 
 help:
 	@printf '%s\n' \
@@ -18,7 +18,7 @@ help:
 		'  make run               Run the full playbook' \
 		'  make check             Dry-run the playbook (--check --diff)' \
 		'  make syntax            Run ansible-playbook syntax check' \
-		'  make nvim-pack         Run Neovim vim.pack updates headlessly' \
+		'  make nvim_pack         Run Neovim vim.pack updates headlessly' \
 		'  make <tag>             Run only that tagged role (for example: make nvim)' \
 		'' \
 		'Overrides:' \
@@ -40,7 +40,7 @@ check:
 syntax:
 	$(ANSIBLE) $(PLAYBOOK) --syntax-check $(EXTRA_ARGS)
 
-nvim-pack:
+nvim_pack:
 	nvim --headless "+lua vim.pack.update(nil, { force = true })" +qa
 
 shells dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp:
