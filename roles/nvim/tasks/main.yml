@@ -48,6 +48,15 @@
   tags:
     - nvim_files
 
+- name: Symlink Neovim pack lockfile
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/nvim-pack-lock.json"
+    dest: "{{ nvim_config_dir }}/nvim-pack-lock.json"
+    state: link
+    force: true
+  tags:
+    - nvim_files
+
 - name: Add nvr completion in fish
   block:
     - name: Ensure fish completions directory exists
