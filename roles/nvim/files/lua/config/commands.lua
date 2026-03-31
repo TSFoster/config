@@ -1,4 +1,5 @@
 local buffer = require("config.buffer")
+local pager = require("config.pager")
 local lsp = require("config.lsp")
 local util = require("config.util")
 
@@ -9,7 +10,12 @@ vim.api.nvim_create_user_command("Keywordprg", function(params)
     vim.cmd("help " .. vim.fn.expand("<cword>"))
   elseif vim.bo.filetype == "fish" then
     vim.cmd("Man " .. vim.fn.system("man -w " .. vim.fn.expand("<cword>")))
-  elseif vim.bo.filetype == "shell" or vim.bo.filetype == "sh" or vim.bo.filetype == "bash" or vim.bo.filetype == "zsh" then
+  elseif
+    vim.bo.filetype == "shell"
+    or vim.bo.filetype == "sh"
+    or vim.bo.filetype == "bash"
+    or vim.bo.filetype == "zsh"
+  then
     vim.cmd("Man " .. vim.fn.expand("<cword>"))
   elseif not vim.env.SSH_CLIENT then
     vim.fn.system("search " .. params.args)
@@ -43,7 +49,7 @@ vim.api.nvim_create_user_command("Bd", function(params)
 end, { nargs = 0, bang = true, desc = "Delete buffer while preserving window splits" })
 
 vim.api.nvim_create_user_command("PagerInit", function()
-  buffer.init_pager()
+  pager.setup()
 end, { desc = "Configure current buffer for pager output" })
 
 vim.api.nvim_create_user_command("WipeoutHidden", function(params)

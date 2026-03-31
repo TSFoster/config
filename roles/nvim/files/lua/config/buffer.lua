@@ -1,14 +1,5 @@
 local M = {}
 
-function M.init_pager()
-  vim.bo.bufhidden = "wipe"
-  vim.keymap.set("n", "q", function()
-    vim.cmd.lclose()
-    vim.cmd.close({ bang = true })
-  end, { buffer = true, silent = true, desc = "Close pager window" })
-  vim.bo.filetype = "log"
-end
-
 function M.wipeout(bang)
   local visible = {}
 

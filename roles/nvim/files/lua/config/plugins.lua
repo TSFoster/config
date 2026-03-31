@@ -428,7 +428,7 @@ local ansi = util.safe_require("ansi")
 if ansi then
   ansi.setup({
     auto_enable = true,
-    filetypes = { "log", "ansi" },
+    filetypes = { "log", "ansi", "pager", "man" },
     theme = "catppuccin",
   })
 end
