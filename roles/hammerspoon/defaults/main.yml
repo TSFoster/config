@@ -1,5 +1,5 @@
 ---
 hammerspoon_cask: hammerspoon
-hammerspoon_config_path: "{{ config_dir }}/hammerspoon/init.lua"
+hammerspoon_config_dir: "{{ config_dir }}/hammerspoon"
 hammerspoon_downloads_path: "{{ ansible_facts['env']['HOME'] }}/Downloads"
 hammerspoon_mailbox_count_binary: "{{ ansible_facts['env']['HOME'] }}/.local/bin/mailbox-count"

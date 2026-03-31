@@ -16,26 +16,35 @@
     dest: "{{ dotfiles_bin_dir }}/"
     mode: preserve
   when: ansible_facts["system"] == "Darwin"
+- name: Ensure ghostty config directory exists
+  ansible.builtin.file:
+    state: directory
+    dest: "{{ dotfiles_ghostty_config_dir }}"
+    mode: "0755"
 - name: Add ghostty config
   ansible.builtin.template:
     src: ghostty.toml.j2
-    dest: "{{ dotfiles_ghostty_config_path }}"
+    dest: "{{ dotfiles_ghostty_config_dir }}/config"
     mode: preserve
 - name: Add gh config
-  ansible.builtin.copy:
-    src: gh
+  ansible.posix.synchronize:
+    src: "{{ role_path }}/files/gh/"
     dest: "{{ dotfiles_gh_config_dir }}/"
-    mode: preserve
+    recursive: true
+    links: true
+    delete: true
 - name: Add ripgrep config
   ansible.builtin.copy:
     src: ripgreprc
     dest: "{{ dotfiles_ripgrep_config_dir }}/"
     mode: preserve
 - name: Add yazi config
-  ansible.builtin.copy:
-    src: yazi
+  ansible.posix.synchronize:
+    src: "{{ role_path }}/files/yazi/"
     dest: "{{ dotfiles_yazi_config_dir }}/"
-    mode: preserve
+    recursive: true
+    links: true
+    delete: true
 - name: Add bat themes
   block:
     - name: Ensure bat config directory exists
@@ -52,11 +61,15 @@
       loop: "{{ dotfiles_bat_themes }}"
 - name: Add git config
   block:
-    - name: Copy config
-      ansible.builtin.copy:
-        src: git
+    - name: Sync config except credentials
+      ansible.posix.synchronize:
+        src: "{{ role_path }}/files/git/"
         dest: "{{ dotfiles_git_config_dir }}/"
-        mode: preserve
+        recursive: true
+        links: true
+        delete: true
+        rsync_opts:
+          - "--exclude=credentials.gitconfig"
     - name: Add git credentials
       ansible.builtin.template:
         src: credentials.gitconfig.j2
@@ -67,8 +80,13 @@
     src: editorconfig
     dest: "{{ dotfiles_editorconfig_path }}"
     mode: preserve
+- name: Ensure warpd directory exists
+  ansible.builtin.file:
+    state: directory
+    dest: "{{ dotfiles_warpd_config_dir }}"
+    mode: "0755"
 - name: Add warpd config
   ansible.builtin.copy:
     src: warpd
-    dest: "{{ dotfiles_warpd_config_path }}"
+    dest: "{{ dotfiles_warpd_config_dir }}/config"
     mode: preserve

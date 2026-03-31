@@ -3,14 +3,19 @@
   community.general.homebrew_cask:
     name: "{{ hammerspoon_cask }}"
     state: present
+- name: Ensure Hammerspoon config directory exists
+  ansible.builtin.file:
+    state: directory
+    dest: "{{ hammerspoon_config_dir }}"
+    mode: "0755"
 - name: Copy Hammerspoon config
   ansible.builtin.template:
     src: init.lua.j2
-    dest: "{{ hammerspoon_config_path }}"
+    dest: "{{ hammerspoon_config_dir }}/init.lua"
     mode: "0644"
   notify: Reload Hammerspoon
 - name: Set init.lua location
   community.general.osx_defaults:
     domain: org.hammerspoon.Hammerspoon
     key: MJConfigFile
-    value: "{{ hammerspoon_config_path }}"
+    value: "{{ hammerspoon_config_dir }}/init.lua"

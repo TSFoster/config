@@ -128,11 +128,13 @@
     - vars_debug
 - name: Copy fish config
   block:
-    - name: Copy dirs
-      ansible.builtin.copy:
-        src: "{{ item }}/"
+    - name: Sync dirs
+      ansible.posix.synchronize:
+        src: "{{ role_path }}/files/{{ item }}/"
         dest: "{{ shells_fish_config_dir }}/{{ item }}/"
-        mode: preserve
+        recursive: true
+        links: true
+        delete: false
       loop:
         - bin
         - functions
@@ -204,7 +206,9 @@
   tags:
     - fisher
 - name: Add atuin config
-  ansible.builtin.copy:
-    src: "atuin"
+  ansible.posix.synchronize:
+    src: "{{ role_path }}/files/atuin/"
     dest: "{{ shells_atuin_config_dir }}/"
-    mode: preserve
+    recursive: true
+    links: true
+    delete: true

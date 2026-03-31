@@ -3,13 +3,13 @@ dotfiles_local_dir: "{{ ansible_facts['env']['HOME'] }}/.local"
 dotfiles_bin_dir: "{{ dotfiles_local_dir }}/bin"
 dotfiles_editorconfig_path: "{{ ansible_facts['env']['HOME'] }}/.editorconfig"
 dotfiles_bat_dir: "{{ config_dir }}/bat"
-dotfiles_ghostty_config_path: "{{ config_dir }}/ghostty/config"
-dotfiles_gh_config_dir: "{{ config_dir }}"
+dotfiles_ghostty_config_dir: "{{ config_dir }}/ghostty"
+dotfiles_gh_config_dir: "{{ config_dir }}/gh"
 dotfiles_ripgrep_config_dir: "{{ config_dir }}"
-dotfiles_yazi_config_dir: "{{ config_dir }}"
-dotfiles_git_config_dir: "{{ config_dir }}"
+dotfiles_yazi_config_dir: "{{ config_dir }}/yazi"
+dotfiles_git_config_dir: "{{ config_dir }}/git"
 dotfiles_git_credentials_path: "{{ config_dir }}/git/credentials.gitconfig"
-dotfiles_warpd_config_path: "{{ config_dir }}/warpd/config"
+dotfiles_warpd_config_dir: "{{ config_dir }}/warpd"
 dotfiles_bat_theme_base_url: https://raw.githubusercontent.com/catppuccin/bat/main/themes
 dotfiles_bat_themes:
   - Catppuccin Latte.tmTheme

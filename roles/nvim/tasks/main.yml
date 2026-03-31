@@ -40,11 +40,15 @@
   tags:
     - nvim_lsp
 
-- name: Copy files
-  ansible.builtin.copy:
-    src: ./
+- name: Sync Neovim files except pack lockfile
+  ansible.posix.synchronize:
+    src: "{{ role_path }}/files/"
     dest: "{{ nvim_config_dir }}/"
-    mode: preserve
+    recursive: true
+    links: true
+    delete: true
+    rsync_opts:
+      - "--exclude=nvim-pack-lock.json"
   tags:
     - nvim_files
 
