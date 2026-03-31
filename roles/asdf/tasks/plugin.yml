@@ -65,7 +65,7 @@
   changed_when: false
   when: not asdf_matching_version_found
 
-- name: Install {{ asdf_plugin.name + ' ' + (asdf_latest_available_version.stdout | trim) }}
+- name: Install {{ asdf_plugin.name + ' ' + asdf_plugin.version_query }}
   ansible.builtin.command:
     argv:
       - "{{ asdf_binary }}"
@@ -80,7 +80,7 @@
   changed_when: asdf_version
   check_mode: false
 
-- name: Update ~/.tool-versions for newly-installed {{ asdf_plugin.name + ' ' + (asdf_latest_available_version.stdout | trim) }}
+- name: Update ~/.tool-versions for newly-installed {{ asdf_plugin.name + ' ' + asdf_plugin.version_query }}
   ansible.builtin.lineinfile:
     create: true
     regexp: "^{{ asdf_plugin.name }} "
