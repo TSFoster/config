@@ -81,13 +81,6 @@ local specs = {
   gh("0xferrous/ansi.nvim"),
 }
 
-if
-  vim.fn.has("mac") == 1
-  and (vim.fn.isdirectory("/Applications/Setapp/Dash.app") == 1 or vim.fn.isdirectory("/Applications/Dash.app") == 1)
-then
-  table.insert(specs, gh("rizzatti/dash.vim"))
-end
-
 vim.pack.add(specs, {
   confirm = false,
 })

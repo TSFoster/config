@@ -520,10 +520,3 @@ keymap.set("n", "]ol", util.mk_fn(toggle.location_list, 0), { desc = "Hide locat
 
 keymap.set("", "[<BS>", "<Plug>(IndentWiseBlockScopeBoundaryBegin)", { desc = "Move to beginning of block" })
 keymap.set("", "]<BS>", "<Plug>(IndentWiseBlockScopeBoundaryEnd)", { desc = "Move to end of block" })
-
-if
-  (fn.isdirectory("/Applications/Setapp/Dash.app") == 1 or fn.isdirectory("/Applications/Dash.app") == 1)
-  and not vim.env.SSH_CLIENT
-then
-  keymap.set("n", "gK", "<Plug>DashSearch", { desc = "Search using Dash" })
-end
