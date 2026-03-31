@@ -65,13 +65,3 @@ function! toggle#tabs(...) abort
 
   echo (&expandtab ? 'Spaces (' . &shiftwidth . ')' : 'Tabs (' . &tabstop . ')')
 endfunction
-
-function! toggle#lion(...) abort
-  if (!a:0 && g:lion_squeeze_spaces) || (a:0 && !a:1)
-    let g:lion_squeeze_spaces = 0
-    echo 'Don’t squeeze spaces'
-  else
-    let g:lion_squeeze_spaces = 1
-    echo 'Squeeze spaces'
-  end
-endfunction

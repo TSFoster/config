@@ -310,12 +310,6 @@ if telescope then
   telescope.setup({
     defaults = {
       path_display = { "truncate" },
-      mappings = {
-        i = {
-          ["<C-j>"] = "move_selection_next",
-          ["<C-k>"] = "move_selection_previous",
-        },
-      },
     },
   })
 end
