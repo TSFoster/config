@@ -15,33 +15,52 @@ end
 
 local mini = util.safe_require("mini.ai")
 if mini then
-  local entire_file_textobject = function(ai_type)
-    local line_count = vim.api.nvim_buf_line_count(0)
-    local lines = vim.api.nvim_buf_get_lines(0, 0, line_count, false)
+  local function nonblank_span(line)
+    local start_col = line:find("%S")
+    if not start_col then
+      return 1, math.max(#line, 1)
+    end
 
-    local first_line = 1
-    local last_line = line_count
+    local end_col = line:match(".*()%S")
+    return start_col, end_col
+  end
+
+  local function line_textobject(ai_type)
+    local line_num = vim.fn.line(".")
+    local line = vim.fn.getline(line_num)
+    local from_col, to_col = 1, math.max(#line, 1)
 
     if ai_type == "i" then
-      while first_line <= line_count and lines[first_line]:match("^%s*$") do
-        first_line = first_line + 1
-      end
-
-      while last_line >= first_line and lines[last_line]:match("^%s*$") do
-        last_line = last_line - 1
-      end
-
-      if first_line > last_line then
-        return nil
-      end
+      from_col, to_col = nonblank_span(line)
     end
 
     return {
-      from = { line = first_line, col = 1 },
-      to = {
-        line = last_line,
-        col = math.max(lines[last_line]:len(), 1),
-      },
+      from = { line = line_num, col = from_col },
+      to = { line = line_num, col = to_col },
+      vis_mode = "V",
+    }
+  end
+
+  local function file_textobject(ai_type)
+    local line_count = vim.api.nvim_buf_line_count(0)
+    local from_line, to_line = 1, line_count
+    local from_col, to_col = 1, math.max(#vim.fn.getline(line_count), 1)
+
+    if ai_type == "i" then
+      while from_line < to_line and vim.fn.getline(from_line):find("^%s*$") do
+        from_line = from_line + 1
+      end
+      while to_line > from_line and vim.fn.getline(to_line):find("^%s*$") do
+        to_line = to_line - 1
+      end
+
+      from_col = select(1, nonblank_span(vim.fn.getline(from_line)))
+      to_col = select(2, nonblank_span(vim.fn.getline(to_line)))
+    end
+
+    return {
+      from = { line = from_line, col = from_col },
+      to = { line = to_line, col = to_col },
       vis_mode = "V",
     }
   end
@@ -49,7 +68,8 @@ if mini then
   mini.setup({
     n_lines = 500,
     custom_textobjects = {
-      e = entire_file_textobject,
+      L = line_textobject,
+      e = file_textobject,
     },
   })
 end
