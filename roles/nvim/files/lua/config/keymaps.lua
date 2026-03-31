@@ -1,3 +1,4 @@
+local toggle = require("config.toggle")
 local lsp = require("config.lsp")
 local util = require("config.util")
 
@@ -22,7 +23,7 @@ vim.g.Undotree_CustomMap = function()
   keymap.set("n", "[c", "<Plug>UndotreePreviousState", { buffer = true, desc = "Go to previous state in the undotree" })
 end
 
-keymap.set("n", "yoS", fn["toggle#inccommand"], { desc = "Cycle through inccommand options" })
+keymap.set("n", "yoS", toggle.inccommand, { desc = "Cycle through inccommand options" })
 keymap.set("n", "da<Space>", function()
   local trailspace = util.safe_require("mini.trailspace")
   if trailspace then
@@ -242,7 +243,7 @@ end, { desc = "Delete session" })
 keymap.set("n", "<Leader>mv", function()
   local visits = util.safe_require("mini.visits")
   if visits then
-    visits.select_path(vim.fn.getcwd())
+    visits.select_path(fn.getcwd())
   end
 end, { desc = "Select visited file in cwd" })
 keymap.set("n", "<Leader>mV", function()
@@ -254,13 +255,13 @@ end, { desc = "Select visited file from all projects" })
 keymap.set("n", "[v", function()
   local visits = util.safe_require("mini.visits")
   if visits then
-    visits.iterate_paths("forward", vim.fn.getcwd())
+    visits.iterate_paths("forward", fn.getcwd())
   end
 end, { desc = "Older visited file in cwd" })
 keymap.set("n", "]v", function()
   local visits = util.safe_require("mini.visits")
   if visits then
-    visits.iterate_paths("backward", vim.fn.getcwd())
+    visits.iterate_paths("backward", fn.getcwd())
   end
 end, { desc = "Newer visited file in cwd" })
 keymap.set("n", "<Leader>he", telescope("help_tags"), { desc = "Help tags" })
@@ -505,17 +506,17 @@ keymap.set("t", "<A-l>", "<C-\\><C-n><C-w>>i", { desc = "Resize window >" })
 keymap.set("n", "<A-=>", "<C-w>=", { desc = "Resize window =" })
 keymap.set("t", "<A-=>", "<C-\\><C-n><C-w>=i", { desc = "Resize window =" })
 
-keymap.set("n", "yo<Tab>", fn["toggle#tabs"], { desc = "Toggle tabs/spaces" })
-keymap.set("n", "[o<Tab>", util.mk_fn(fn["toggle#tabs"], 1), { desc = "Use tabs" })
-keymap.set("n", "]o<Tab>", util.mk_fn(fn["toggle#tabs"], 0), { desc = "Use spaces" })
+keymap.set("n", "yo<Tab>", toggle.tabs, { desc = "Toggle tabs/spaces" })
+keymap.set("n", "[o<Tab>", util.mk_fn(toggle.tabs, 1), { desc = "Use tabs" })
+keymap.set("n", "]o<Tab>", util.mk_fn(toggle.tabs, 0), { desc = "Use spaces" })
 
-keymap.set("n", "yoq", fn["toggle#quickfixList"], { desc = "Toggle quickfix visibility" })
-keymap.set("n", "[oq", util.mk_fn(fn["toggle#quickfixList"], 1), { desc = "Show quickfix" })
-keymap.set("n", "]oq", util.mk_fn(fn["toggle#quickfixList"], 0), { desc = "Hide quickfix" })
+keymap.set("n", "yoq", toggle.quickfix_list, { desc = "Toggle quickfix visibility" })
+keymap.set("n", "[oq", util.mk_fn(toggle.quickfix_list, 1), { desc = "Show quickfix" })
+keymap.set("n", "]oq", util.mk_fn(toggle.quickfix_list, 0), { desc = "Hide quickfix" })
 
-keymap.set("n", "yol", fn["toggle#locationList"], { desc = "Toggle location list visibility" })
-keymap.set("n", "[ol", util.mk_fn(fn["toggle#locationList"], 1), { desc = "Show location list" })
-keymap.set("n", "]ol", util.mk_fn(fn["toggle#locationList"], 0), { desc = "Hide location list" })
+keymap.set("n", "yol", toggle.location_list, { desc = "Toggle location list visibility" })
+keymap.set("n", "[ol", util.mk_fn(toggle.location_list, 1), { desc = "Show location list" })
+keymap.set("n", "]ol", util.mk_fn(toggle.location_list, 0), { desc = "Hide location list" })
 
 keymap.set("", "[<BS>", "<Plug>(IndentWiseBlockScopeBoundaryBegin)", { desc = "Move to beginning of block" })
 keymap.set("", "]<BS>", "<Plug>(IndentWiseBlockScopeBoundaryEnd)", { desc = "Move to end of block" })

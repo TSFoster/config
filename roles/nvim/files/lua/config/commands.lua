@@ -1,3 +1,4 @@
+local buffer = require("config.buffer")
 local lsp = require("config.lsp")
 local util = require("config.util")
 
@@ -40,6 +41,14 @@ vim.api.nvim_create_user_command("Bd", function(params)
 
   vim.cmd("bp | bd" .. (params.bang and "!" or "") .. " #")
 end, { nargs = 0, bang = true, desc = "Delete buffer while preserving window splits" })
+
+vim.api.nvim_create_user_command("PagerInit", function()
+  buffer.init_pager()
+end, { desc = "Configure current buffer for pager output" })
+
+vim.api.nvim_create_user_command("WipeoutHidden", function(params)
+  buffer.wipeout(params.bang)
+end, { nargs = 0, bang = true, desc = "Delete hidden unmodified buffers" })
 
 vim.api.nvim_create_user_command("Format", function()
   lsp.format_buffer()

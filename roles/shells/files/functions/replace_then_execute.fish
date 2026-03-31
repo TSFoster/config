@@ -7,7 +7,7 @@ function replace_then_execute
         | sed 's/ G / | rg -S /g' \
     )
     if [ "$NVIM" ]
-      set new_command (echo $new_command | sed 's/ V$/ | nvr \'+call buffer#init_pager()\' --remote-wait -/g')
+      set new_command (echo $new_command | sed 's/ V$/ | nvr +PagerInit --remote-tab-wait -/g')
     else
       set new_command (echo $new_command | sed 's/ V$/ | '"$PAGER"'/g')
     end
