@@ -1,31 +1,5 @@
 scriptencoding utf-8
 
-function! buffer#update() abort
-  if isdirectory(expand("%:h"))
-    update
-  else
-    if confirm('Directory doesn’t exist, should it be created?', "&Yes\n&No", 2, 'question') == 1
-      silent !mkdir -p %:h
-      write
-    endif
-  endif
-endfunction
-
-function! buffer#quit() abort
-  if (winnr('$') == 1 && tabpagenr('$') == 1)
-    if confirm('Are you sure you want to quit?', "&Yes\n&No", 2, 'Question') == 1
-      quit
-    endif
-  else
-    quit
-  endif
-endfunction
-
-function! buffer#update_and_quit() abort
-  call buffer#update()
-  call buffer#quit()
-endfunction
-
 function! buffer#init_pager() abort
   set bufhidden=wipe
   nnoremap <buffer> q <Cmd>lclose <BAR> close<CR>

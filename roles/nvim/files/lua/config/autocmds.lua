@@ -109,6 +109,22 @@ do
 end
 
 do
+  local group = vim.api.nvim_create_augroup("auto_create_parent_dirs", { clear = true })
+  vim.api.nvim_create_autocmd({ "BufWritePre", "FileWritePre" }, {
+    group = group,
+    desc = "Create missing parent directories before writing local files",
+    callback = function(args)
+      local path = args.file
+      if path == "" or path:match("://") then
+        return
+      end
+
+      vim.fn.mkdir(vim.fn.fnamemodify(path, ":p:h"), "p")
+    end,
+  })
+end
+
+do
   local group = vim.api.nvim_create_augroup("detection", { clear = true })
   vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
     pattern = "*.es6",
