@@ -1,5 +1,18 @@
 local util = require("config.util")
 
+local mini_notify = util.safe_require("mini.notify")
+if mini_notify then
+  mini_notify.setup()
+  vim.notify = mini_notify.make_notify()
+end
+
+local catppuccin = util.safe_require("catppuccin")
+if catppuccin then
+  catppuccin.setup({
+    flavour = "mocha",
+  })
+end
+
 pcall(vim.cmd.colorscheme, "catppuccin")
 
 local mini_animate = util.safe_require("mini.animate")
