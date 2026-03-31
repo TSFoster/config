@@ -91,15 +91,8 @@ fi
 
 ! [ -x "$ASDF_ANSIBLE_PLAYBOOK" ] && echo "Can't find ansible in asdf python. Installing" >&2 && "$ASDF_PIP3" install ansible
 
-if ! [ -f ~/.config/op/config ]; then
-  echo '1password-cli not set up. Setting up' >&2
-  read -rp 'Enter 1Password username: ' OP_USER
-  echo '' >&2
-  eval "$(op signin my "$OP_USER")"
-else
-  printf 'Checking signed in to 1Password\n' >&2
-  eval "$(op signin)"
-fi
+printf 'Checking 1Password\n' >&2
+eval "$(op signin)"
 
 if ! [ -f vault_pass ]; then
   echo "Can't find vault password. Retrieving" >&2
