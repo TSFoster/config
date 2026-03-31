@@ -26,6 +26,7 @@ atuin init fish --disable-up-arrow | source
 # This overwrites the universal variables in this shell session only
 if [ "$NVIM" ]
 set --global --export EDITOR nvr --remote-tab-wait
+set --global --export PAGER nvr +PagerInit --remote-tab-wait -
 abbr --add --global e nvr
 abbr --add --global man viman
 abbr --add --global v "$EDITOR"

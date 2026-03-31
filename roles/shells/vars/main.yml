@@ -34,7 +34,7 @@ shells_uv:
   shell_path_entries_interactive: "{{ shells_path_entries_interactive }}"
 shells_variables_base:
   - name: PAGER
-    value: less # TODO nvr/nvim +Man!
+    value: nvim +PagerInit -
     export: true
   - name: XDG_CONFIG_HOME
     value: "{{ config_dir }}"
