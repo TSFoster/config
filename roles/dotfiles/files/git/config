@@ -5,9 +5,7 @@
   status = auto
   ui = auto
 [core]
-  pager = less -FRSX
   autocrlf = input
-  editor = nvr --remote-tab-wait-silent
 [diff]
   tool = nvr
 [difftool "nvr"]

@@ -390,3 +390,12 @@ local fterm = util.safe_require("FTerm")
 if fterm then
   fterm.setup({})
 end
+
+local ansi = util.safe_require("ansi")
+if ansi then
+  ansi.setup({
+    auto_enable = true,
+    filetypes = { "log", "ansi" },
+    theme = "catppuccin",
+  })
+end
