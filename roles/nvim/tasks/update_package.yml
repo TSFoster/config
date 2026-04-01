@@ -1,0 +1,32 @@
+---
+- name: Normalize Neovim vim.pack package names to update
+  ansible.builtin.set_fact:
+    nvim_update_package_names: >-
+      {{
+        (
+          packages_to_update.split(',')
+          | map('trim')
+          | reject('equalto', '')
+          | list
+        )
+        if (packages_to_update is defined and packages_to_update is string and (packages_to_update | trim | length > 0))
+        else
+        (
+          packages_to_update
+          | map('trim')
+          | reject('equalto', '')
+          | list
+        )
+        if (packages_to_update is defined and packages_to_update is sequence and packages_to_update is not string and (packages_to_update | length > 0))
+        else []
+      }}
+
+- name: Update Neovim vim.pack packages
+  ansible.builtin.command:
+    argv:
+      - nvim
+      - --headless
+      - >-
+        +lua vim.pack.update({{ nvim_update_package_names | to_json if (nvim_update_package_names | length > 0) else 'nil' }}, { force = true })
+      - +qa
+  changed_when: true

@@ -5,6 +5,19 @@
     tasks_from: install_pip_packages
   vars:
     common_packages: "{{ nvim_python_module_packages }}"
+
+- name: Uninstall Neovim vim.pack packages
+  ansible.builtin.import_tasks: uninstall_package.yml
+  tags:
+    - never
+    - nvim_pack_uninstall
+
+- name: Update Neovim vim.pack packages
+  ansible.builtin.import_tasks: update_package.yml
+  tags:
+    - never
+    - nvim_pack_update
+
 - name: Install ruby neovim module
   ansible.builtin.include_role:
     name: common

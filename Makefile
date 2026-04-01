@@ -7,7 +7,7 @@ GALAXY := ansible-galaxy collection install --upgrade -r collections/requirement
 TAGS ?=
 EXTRA_ARGS ?=
 
-.PHONY: help bootstrap collections install run check syntax nvim_pack shells dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp
+.PHONY: help bootstrap collections install run check syntax nvim_pack_update nvim_pack_uninstall shells dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp
 
 help:
 	@printf '%s\n' \
@@ -18,11 +18,14 @@ help:
 		'  make run               Run the full playbook' \
 		'  make check             Dry-run the playbook (--check --diff)' \
 		'  make syntax            Run ansible-playbook syntax check' \
-		'  make nvim_pack         Run Neovim vim.pack updates headlessly' \
+		'  make nvim_pack_update  Run Neovim vim.pack updates through Ansible' \
+		'  make nvim_pack_uninstall PACKAGES=<name1,name2>' \
+		'                         Remove one or more vim.pack packages' \
 		'  make <tag>             Run only that tagged role (for example: make nvim)' \
 		'' \
 		'Overrides:' \
 		'  TAGS=<tags>            Comma-separated tags for make run/check' \
+		'  PACKAGES=<csv>         Comma-separated vim.pack packages to update/remove' \
 		'  EXTRA_ARGS="<args>"    Extra args forwarded to ansible-playbook'
 
 bootstrap:
@@ -40,8 +43,12 @@ check:
 syntax:
 	$(ANSIBLE) $(PLAYBOOK) --syntax-check $(EXTRA_ARGS)
 
-nvim_pack:
-	nvim --headless "+lua vim.pack.update(nil, { force = true })" +qa
+nvim_pack_update:
+	$(ANSIBLE) $(PLAYBOOK) --tags nvim_pack_update $(if $(strip $(PACKAGES)),-e 'packages_to_update=$(PACKAGES)') $(EXTRA_ARGS)
+
+nvim_pack_uninstall:
+	@test -n "$(strip $(PACKAGES))" || { printf '%s\n' "Set PACKAGES=<name1,name2>"; exit 1; }
+	$(ANSIBLE) $(PLAYBOOK) --tags nvim_pack_uninstall -e 'packages_to_uninstall=$(PACKAGES)' $(EXTRA_ARGS)
 
 shells dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp:
 	$(MAKE) run TAGS=$@ EXTRA_ARGS="$(EXTRA_ARGS)"
