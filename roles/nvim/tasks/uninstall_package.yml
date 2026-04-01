@@ -26,6 +26,7 @@
         | reject('equalto', '')
         | list
       }}
+  changed_when: false
 
 - name: Assert normalized Neovim vim.pack package names are non-empty
   ansible.builtin.assert:
@@ -34,11 +35,21 @@
     fail_msg: >
       uninstall_package requires at least one non-empty package name after
       normalization.
+  changed_when: false
+
+- name: Capture Neovim vim.pack package names requested via lockfile
+  ansible.builtin.set_fact:
+    nvim_uninstall_requested_lockfile_packages: []
+    nvim_uninstall_existing_repo_packages: []
+    nvim_uninstall_existing_package_names: []
+    nvim_uninstall_should_change: false
+  changed_when: false
 
 - name: Read Neovim vim.pack lockfile
   ansible.builtin.slurp:
     src: "{{ role_path }}/files/nvim-pack-lock.json"
   register: nvim_pack_lockfile
+  changed_when: false
 
 - name: Capture Neovim vim.pack lockfile plugin names
   ansible.builtin.set_fact:
@@ -52,15 +63,23 @@
       {{
         ansible_facts['env'].get('XDG_DATA_HOME', ansible_facts['env']['HOME'] ~ '/.local/share')
       }}/nvim/site/pack/core/opt
+  changed_when: false
 
 - name: Check whether Neovim vim.pack package directories exist
   ansible.builtin.stat:
     path: "{{ nvim_pack_root }}/{{ item }}"
   loop: "{{ nvim_uninstall_package_names }}"
   register: nvim_uninstall_repo_stats
+  changed_when: false
 
 - name: Determine whether any Neovim vim.pack package exists before uninstall
   ansible.builtin.set_fact:
+    nvim_uninstall_requested_lockfile_packages: >-
+      {{
+        nvim_uninstall_package_names
+        | select('in', nvim_pack_lockfile_plugin_names)
+        | list
+      }}
     nvim_uninstall_existing_repo_packages: >-
       {{
         nvim_uninstall_repo_stats.results
@@ -68,22 +87,37 @@
         | map(attribute='item')
         | list
       }}
+  changed_when: false
+
+- name: Capture existing Neovim vim.pack package names before uninstall
+  ansible.builtin.set_fact:
+    nvim_uninstall_existing_package_names: >-
+      {{
+        (
+          nvim_uninstall_requested_lockfile_packages
+          + nvim_uninstall_existing_repo_packages
+        )
+        | unique
+      }}
     nvim_uninstall_should_change: >-
       {{
         (
-          nvim_uninstall_package_names
-          | select('in', nvim_pack_lockfile_plugin_names)
-          | list
-          | length
-        ) > 0
-        or
-        (
-          nvim_uninstall_repo_stats.results
-          | selectattr('stat.exists')
-          | list
+          (
+            nvim_uninstall_requested_lockfile_packages
+            + nvim_uninstall_existing_repo_packages
+          )
+          | unique
           | length
         ) > 0
       }}
+  changed_when: false
+
+- name: Build Lua list for Neovim vim.pack package uninstall
+  ansible.builtin.set_fact:
+    nvim_uninstall_package_names_lua: >-
+      { {{ nvim_uninstall_existing_package_names | map('to_json') | join(', ') }} }
+  when: nvim_uninstall_should_change
+  changed_when: false
 
 - name: Remove Neovim vim.pack packages from disk
   ansible.builtin.command:
@@ -91,7 +125,7 @@
       - nvim
       - --clean
       - --headless
-      - +lua vim.opt.packpath:append(vim.fn.stdpath('data') .. '/site'); vim.pack.del({{ nvim_uninstall_package_names | to_json }})
+      - +lua vim.opt.packpath:append(vim.fn.stdpath('data') .. '/site'); vim.pack.del({{ nvim_uninstall_package_names_lua }})
       - +qa
   when: nvim_uninstall_should_change
   changed_when: nvim_uninstall_should_change
