@@ -1,0 +1,100 @@
+---
+- name: Assert requested Neovim vim.pack packages are provided
+  ansible.builtin.assert:
+    that:
+      - nvim_pack_requested_packages is defined
+      - >-
+        (nvim_pack_requested_packages is string and (nvim_pack_requested_packages | trim | length > 0))
+        or
+        (nvim_pack_requested_packages is sequence and nvim_pack_requested_packages is not string and (nvim_pack_requested_packages | length > 0))
+    fail_msg: "{{ nvim_pack_requested_packages_fail_msg }}"
+  when: nvim_pack_requested_packages_required | bool
+  changed_when: false
+
+- name: Normalize requested Neovim vim.pack package names
+  ansible.builtin.set_fact:
+    nvim_pack_requested_package_names: >-
+      {{
+        nvim_pack_requested_packages.split(',')
+        | map('trim')
+        | reject('equalto', '')
+        | list
+        if nvim_pack_requested_packages is string
+        else
+        nvim_pack_requested_packages
+        | map('trim')
+        | reject('equalto', '')
+        | list
+        if (nvim_pack_requested_packages is defined and nvim_pack_requested_packages is sequence and nvim_pack_requested_packages is not string)
+        else []
+      }}
+    nvim_pack_requested_lockfile_packages: []
+    nvim_pack_existing_repo_packages: []
+    nvim_pack_existing_package_names: []
+    nvim_pack_should_run: false
+    nvim_pack_package_names_lua: nil
+  changed_when: false
+
+- name: Assert normalized Neovim vim.pack package names are non-empty
+  ansible.builtin.assert:
+    that:
+      - nvim_pack_requested_package_names | length > 0
+    fail_msg: "{{ nvim_pack_requested_packages_normalized_fail_msg }}"
+  when: nvim_pack_requested_packages_required | bool
+  changed_when: false
+
+- name: Load Neovim vim.pack state for selected packages
+  ansible.builtin.include_tasks: _load_pack_state.yml
+  when: nvim_pack_requested_package_names | length > 0
+
+- name: Check whether selected Neovim vim.pack package directories exist
+  ansible.builtin.stat:
+    path: "{{ nvim_pack_root }}/{{ item }}"
+  loop: "{{ nvim_pack_requested_package_names }}"
+  register: nvim_pack_repo_stats
+  when: nvim_pack_requested_package_names | length > 0
+  changed_when: false
+
+- name: Determine which selected Neovim vim.pack packages exist
+  ansible.builtin.set_fact:
+    nvim_pack_requested_lockfile_packages: >-
+      {{
+        nvim_pack_requested_package_names
+        | select('in', nvim_pack_lockfile_plugin_names)
+        | list
+      }}
+    nvim_pack_existing_repo_packages: >-
+      {{
+        nvim_pack_repo_stats.results
+        | selectattr('stat.exists')
+        | map(attribute='item')
+        | list
+      }}
+  when: nvim_pack_requested_package_names | length > 0
+  changed_when: false
+
+- name: Capture existing selected Neovim vim.pack package names
+  ansible.builtin.set_fact:
+    nvim_pack_existing_package_names: >-
+      {{
+        (
+          nvim_pack_requested_lockfile_packages
+          + nvim_pack_existing_repo_packages
+        )
+        | unique
+      }}
+    nvim_pack_should_run: >-
+      {{
+        (
+          (
+            nvim_pack_requested_lockfile_packages
+            + nvim_pack_existing_repo_packages
+          )
+          | unique
+          | length
+        ) > 0
+      }}
+    nvim_pack_package_names_lua: >-
+      { {{ ((nvim_pack_requested_lockfile_packages + nvim_pack_existing_repo_packages) | unique) | map('to_json') | join(', ') }} }
+  when: nvim_pack_requested_package_names | length > 0
+  changed_when: false

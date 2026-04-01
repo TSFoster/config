@@ -1,109 +1,11 @@
 ---
-- name: Normalize Neovim vim.pack package names to update
-  ansible.builtin.set_fact:
-    nvim_update_package_names: >-
-      {{
-        (
-          packages_to_update.split(',')
-          | map('trim')
-          | reject('equalto', '')
-          | list
-        )
-        if (packages_to_update is defined and packages_to_update is string and (packages_to_update | trim | length > 0))
-        else
-        (
-          packages_to_update
-          | map('trim')
-          | reject('equalto', '')
-          | list
-        )
-        if (packages_to_update is defined and packages_to_update is sequence and packages_to_update is not string and (packages_to_update | length > 0))
-        else []
-      }}
-  changed_when: false
-
-- name: Capture default Neovim vim.pack update state
-  ansible.builtin.set_fact:
-    nvim_update_requested_lockfile_packages: []
-    nvim_update_existing_repo_packages: []
-    nvim_update_existing_package_names: []
-    nvim_update_should_run: true
-    nvim_update_package_names_lua: nil
-  changed_when: false
-
-- name: Read Neovim vim.pack lockfile
-  ansible.builtin.slurp:
-    src: "{{ role_path }}/files/nvim-pack-lock.json"
-  register: nvim_pack_lockfile
-  when: nvim_update_package_names | length > 0
-  changed_when: false
-
-- name: Capture Neovim vim.pack lockfile plugin names for update
-  ansible.builtin.set_fact:
-    nvim_pack_lockfile_plugin_names: >-
-      {{
-        ((nvim_pack_lockfile.content | b64decode | from_json).plugins | default({}))
-        .keys()
-        | list
-      }}
-    nvim_pack_root: >-
-      {{
-        ansible_facts['env'].get('XDG_DATA_HOME', ansible_facts['env']['HOME'] ~ '/.local/share')
-      }}/nvim/site/pack/core/opt
-  when: nvim_update_package_names | length > 0
-  changed_when: false
-
-- name: Check whether Neovim vim.pack package directories exist for update
-  ansible.builtin.stat:
-    path: "{{ nvim_pack_root }}/{{ item }}"
-  loop: "{{ nvim_update_package_names }}"
-  register: nvim_update_repo_stats
-  when: nvim_update_package_names | length > 0
-  changed_when: false
-
-- name: Determine which Neovim vim.pack packages can be updated
-  ansible.builtin.set_fact:
-    nvim_update_requested_lockfile_packages: >-
-      {{
-        nvim_update_package_names
-        | select('in', nvim_pack_lockfile_plugin_names)
-        | list
-      }}
-    nvim_update_existing_repo_packages: >-
-      {{
-        nvim_update_repo_stats.results
-        | selectattr('stat.exists')
-        | map(attribute='item')
-        | list
-      }}
-  when: nvim_update_package_names | length > 0
-  changed_when: false
-
-- name: Capture existing Neovim vim.pack package names for update
-  ansible.builtin.set_fact:
-    nvim_update_existing_package_names: >-
-      {{
-        (
-          nvim_update_requested_lockfile_packages
-          + nvim_update_existing_repo_packages
-        )
-        | unique
-      }}
-    nvim_update_should_run: >-
-      {{
-        (
-          (
-            nvim_update_requested_lockfile_packages
-            + nvim_update_existing_repo_packages
-          )
-          | unique
-          | length
-        ) > 0
-      }}
-    nvim_update_package_names_lua: >-
-      { {{ ((nvim_update_requested_lockfile_packages + nvim_update_existing_repo_packages) | unique) | map('to_json') | join(', ') }} }
-  when: nvim_update_package_names | length > 0
-  changed_when: false
+- name: Resolve selected Neovim vim.pack packages to update
+  ansible.builtin.include_tasks: _resolve_selected_packages.yml
+  vars:
+    nvim_pack_requested_packages: "{{ packages_to_update | default(omit) }}"
+    nvim_pack_requested_packages_required: false
+    nvim_pack_requested_packages_fail_msg: ""
+    nvim_pack_requested_packages_normalized_fail_msg: ""
 
 - name: Update Neovim vim.pack packages
   ansible.builtin.command:
@@ -111,7 +13,7 @@
       - nvim
       - --headless
       - >-
-        +lua vim.pack.update({{ nvim_update_package_names_lua if (nvim_update_package_names | length > 0) else 'nil' }}, { force = true })
+        +lua vim.pack.update({{ nvim_pack_package_names_lua if (nvim_pack_requested_package_names | length > 0) else 'nil' }}, { force = true })
       - +qa
-  when: nvim_update_should_run
-  changed_when: nvim_update_should_run
+  when: (nvim_pack_requested_package_names | length == 0) or nvim_pack_should_run
+  changed_when: (nvim_pack_requested_package_names | length == 0) or nvim_pack_should_run
