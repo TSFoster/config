@@ -18,6 +18,12 @@
     - never
     - nvim_pack_update
 
+- name: List Neovim vim.pack packages
+  ansible.builtin.import_tasks: list_package.yml
+  tags:
+    - never
+    - nvim_pack_list
+
 - name: Install ruby neovim module
   ansible.builtin.include_role:
     name: common

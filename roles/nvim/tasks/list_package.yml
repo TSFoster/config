@@ -1,0 +1,35 @@
+---
+- name: Check for Neovim vim.pack lockfile
+  ansible.builtin.stat:
+    path: "{{ nvim_config_dir }}/nvim-pack-lock.json"
+  register: nvim_pack_list_lockfile_stat
+  changed_when: false
+
+- name: Assert Neovim vim.pack lockfile exists
+  ansible.builtin.assert:
+    that:
+      - nvim_pack_list_lockfile_stat.stat.exists
+    fail_msg: >
+      Expected Neovim vim.pack lockfile at {{ nvim_config_dir }}/nvim-pack-lock.json.
+  changed_when: false
+
+- name: Read Neovim vim.pack lockfile
+  ansible.builtin.slurp:
+    src: "{{ nvim_config_dir }}/nvim-pack-lock.json"
+  register: nvim_pack_list_lockfile
+  changed_when: false
+
+- name: Capture Neovim vim.pack plugin names
+  ansible.builtin.set_fact:
+    nvim_pack_list_plugin_names: >-
+      {{
+        ((nvim_pack_list_lockfile.content | b64decode | from_json).plugins | default({}))
+        .keys()
+        | sort
+      }}
+  changed_when: false
+
+- name: Print Neovim vim.pack plugin names
+  ansible.builtin.debug:
+    msg: "{{ nvim_pack_list_plugin_names }}"
+  changed_when: false
