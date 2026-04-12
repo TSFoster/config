@@ -18,3 +18,16 @@
         state: present
       loop: "{{ macos_apps_mas }}"
       failed_when: false
+
+    - name: Ensure Karabiner config directory exists
+      ansible.builtin.file:
+        dest: "{{ macos_apps_karabiner_config_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Link Karabiner config
+      ansible.builtin.file:
+        src: "{{ role_path }}/files/karabiner.json"
+        dest: "{{ macos_apps_karabiner_config_path }}"
+        state: link
+        force: true

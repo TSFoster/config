@@ -1,4 +1,7 @@
 ---
+macos_apps_karabiner_config_dir: "{{ config_dir }}/karabiner"
+macos_apps_karabiner_config_path: "{{ macos_apps_karabiner_config_dir }}/karabiner.json"
+
 # Homebrew casks — GUI applications, macOS only.
 # These are installed via community.general.homebrew_cask, not install_packages.
 # Cask upgrades are out of scope — run `brew upgrade --cask` manually if needed.
