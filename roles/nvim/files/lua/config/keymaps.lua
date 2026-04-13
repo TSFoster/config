@@ -7,6 +7,13 @@ local fn = vim.fn
 local keymap = vim.keymap
 local v = vim.v
 
+local function restart_with_temp_session()
+  local session_file = fn.tempname() .. ".vim"
+
+  cmd("mksession! " .. fn.fnameescape(session_file))
+  cmd("restart source " .. fn.fnameescape(session_file))
+end
+
 if vim.env.ZMX_SESSION then
   keymap.set({ "n", "v", "x", "s", "o", "i", "l", "c" }, "<C-z>", "<Nop>", { desc = "Disable suspend in ZMX session" })
 end
@@ -59,6 +66,7 @@ end, { expr = true, desc = "Expand current file's relative path" })
 
 keymap.set("n", "<Leader>w", "<Cmd>write<CR>", { desc = "Write buffer" })
 keymap.set("n", "<Leader><Leader>w", "<Cmd>wall<CR>", { desc = "Write all buffers" })
+keymap.set("n", "<Leader><Leader>R", restart_with_temp_session, { desc = "Restart and restore from temp session" })
 keymap.set("n", "<Leader>q", "<Cmd>quit<CR>", { desc = "Quit window" })
 keymap.set("n", "<Leader><Leader>q", "<Cmd>qall<CR>", { desc = "Quit all windows" })
 keymap.set("n", "<Leader>x", "<Cmd>xit<CR>", { desc = "Write and quit window" })
