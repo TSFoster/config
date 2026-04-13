@@ -1,6 +1,59 @@
 ---
 macos_apps_karabiner_config_dir: "{{ config_dir }}/karabiner"
 macos_apps_karabiner_config_path: "{{ macos_apps_karabiner_config_dir }}/karabiner.json"
+macos_apps_karabiner_hold_keys: []
+  # - a
+  # - b
+  # - c
+  # - d
+  # - e
+  # - f
+  # - g
+  # - h
+  # - i
+  # - j
+  # - k
+  # - l
+  # - m
+  # - n
+  # - o
+  # - p
+  # - q
+  # - r
+  # - s
+  # - t
+  # - u
+  # - v
+  # - w
+  # - x
+  # - y
+  # - z
+  # - 0
+  # - 1
+  # - 2
+  # - 3
+  # - 4
+  # - 5
+  # - 6
+  # - 7
+  # - 8
+  # - 9
+  # - close_bracket
+  # - semicolon
+  # - quote
+  # - backslash
+  # - comma
+  # - period
+  # - slash
+  # - grave_accent_and_tilde
+  # - return_or_enter
+  # - delete_or_backspace
+  # - up_arrow
+  # - down_arrow
+  # - left_arrow
+  # - right_arrow
+  # - spacebar
+macos_apps_karabiner_hold_timeout_milliseconds: 150
 
 # Homebrew casks — GUI applications, macOS only.
 # These are installed via community.general.homebrew_cask, not install_packages.
