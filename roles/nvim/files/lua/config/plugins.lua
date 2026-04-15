@@ -287,6 +287,13 @@ if mini_snippets then
   })
 end
 
+local mini_statusline = util.safe_require("mini.statusline")
+if mini_statusline then
+  mini_statusline.setup({
+    use_icons = true,
+  })
+end
+
 local mini_surround = util.safe_require("mini.surround")
 if mini_surround then
   mini_surround.setup({
