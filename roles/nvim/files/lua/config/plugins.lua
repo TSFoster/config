@@ -81,7 +81,7 @@ if mini then
   mini.setup({
     n_lines = 500,
     custom_textobjects = {
-      L = line_textobject,
+      l = line_textobject,
       e = file_textobject,
     },
   })
