@@ -432,3 +432,23 @@ if ansi then
     theme = "catppuccin",
   })
 end
+
+local obsidian = util.safe_require("obsidian")
+if obsidian then
+  obsidian.setup({
+    completion = {
+      nvim_cmp = false,
+      blink = true,
+      min_chars = 1,
+      match_case = false,
+      create_new = true,
+    },
+    workspaces = {
+      {
+        name = "main",
+        path = os.getenv("obsidian"),
+      },
+    },
+    legacy_commands = false,
+  })
+end

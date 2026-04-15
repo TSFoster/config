@@ -79,6 +79,7 @@ local specs = {
   gh("ap/vim-css-color"),
   gh("chrisbra/csv.vim"),
   gh("0xferrous/ansi.nvim"),
+  gh("obsidian-nvim/obsidian.nvim"),
 }
 
 vim.pack.add(specs, {

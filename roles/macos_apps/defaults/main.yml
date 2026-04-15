@@ -74,6 +74,7 @@ macos_apps_casks:
   - choosy
   - openinterminal
   - homerow
+  - obsidian
 
   # Design
   - affinity

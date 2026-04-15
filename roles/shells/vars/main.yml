@@ -92,6 +92,9 @@ shells_variables_base:
   - name: clients
     export: true
     value: "{{ shells_uv.isMac | ternary(shells_uv.iCloud + '/Documents/Work/Clients', omit) }}"
+  - name: obsidian
+    export: true
+    value: "{{ shells_uv.isMac | ternary(ansible_facts['env']['HOME'] + '/Library/Mobile Documents/iCloud~md~obsidian/Documents/Vault', omit) }}"
 shells_variables_darwin:
   - name: HOMEBREW_PREFIX
     value: "{{ homebrew_prefix }}"

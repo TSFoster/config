@@ -4,6 +4,7 @@ local g = vim.g
 opt.backupdir:remove(".")
 opt.showbreak = "... "
 opt.cmdheight = 2
+opt.conceallevel = 2
 opt.expandtab = true
 opt.fixendofline = false
 opt.formatprg = "par rqw80"
