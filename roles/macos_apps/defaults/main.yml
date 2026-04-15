@@ -73,8 +73,8 @@ macos_apps_casks:
   - hazel
   - choosy
   - openinterminal
-  - homerow
   - obsidian
+  - shortcat
 
   # Design
   - affinity
