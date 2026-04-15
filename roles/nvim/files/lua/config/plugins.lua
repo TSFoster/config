@@ -163,6 +163,7 @@ if mini_clue then
       { mode = "n", keys = "<Leader>t", desc = "+terminal/tags/tools" },
       { mode = "n", keys = "<Leader>/", desc = "+search web" },
       { mode = "n", keys = "<Leader><Leader>", desc = "+secondary" },
+      { mode = "n", keys = "s", desc = "+surround" },
       { mode = "n", keys = "yo", desc = "+toggle options" },
       mini_clue.gen_clues.square_brackets(),
       mini_clue.gen_clues.builtin_completion(),
