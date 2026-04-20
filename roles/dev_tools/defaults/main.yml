@@ -12,6 +12,7 @@ dev_tools_packages:
   - name: gh # GitHub CLI — available via apt on Ubuntu 22.04+
   - name: glab # GitLab CLI
   - name: tig # git TUI
+  - name: icdiff
 
   # Mac App Store CLI — macOS only, must be present before macos_apps role
   - brew: mas
