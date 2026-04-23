@@ -3,6 +3,7 @@
 -- Definitions
 
 local hyper = {"cmd", "alt", "ctrl", "shift"}
+local meh = {"ctrl", "alt", "shift"}
 --[[ DISABLED WHILE APPLE KEYBOARD UNUSED
 local hyperFor = {"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","1","2","3","4","5","6","7","8","9","0","-","=","§","`",",",".","/",";","'","\\","[","]","space","tab","delete","return","left","right","up","down"}
 
@@ -132,6 +133,13 @@ end
 -- TYPE CLIPBOARD
 
 hs.hotkey.bind(hyper, "v", function() hs.eventtap.keyStrokes(hs.pasteboard.getContents()) end)
+
+
+-- APP LAUNCHERS
+
+{% for launcher in hammerspoon_app_launchers %}
+hs.hotkey.bind({% if launcher.k is match('^[A-Z]$') %}hyper{% else %}meh{% endif %}, "{{ launcher.k | lower }}", function() hs.application.launchOrFocus "{{ launcher.app }}" end)
+{% endfor %}
 
 
 -- MENUBAR NOTIFICATIONS

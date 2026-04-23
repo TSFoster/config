@@ -3,3 +3,33 @@ hammerspoon_cask: hammerspoon
 hammerspoon_config_dir: "{{ config_dir }}/hammerspoon"
 hammerspoon_downloads_path: "{{ ansible_facts['env']['HOME'] }}/Downloads"
 hammerspoon_mailbox_count_binary: "{{ ansible_facts['env']['HOME'] }}/.local/bin/mailbox-count"
+hammerspoon_app_launchers:
+  - { k: ",", app: System Settings }
+  - { k: "0", app: Numbers Creator Studio }
+  - { k: "1", app: 1Password }
+  - { k: ";", app: Timing }
+  - { k: "A", app: Activity Monitor }
+  - { k: "A", app: BusyCal }
+  - { k: "F", app: Firefox Developer Edition }
+  - { k: "I", app: Photos } # Mnemonic: iPhoto
+  - { k: "M", app: Maps }
+  - { k: "W", app: WhatsApp }
+  - { k: "a", app: Affinity }
+  - { k: "d", app: Dash }
+  - { k: "e", app: Mail }
+  - { k: "f", app: Finder }
+  - { k: "g", app: Google Chrome Dev }
+  - { k: "h", app: Home }
+  - { k: "i", app: Messages }
+  - { k: "k", app: Keynote Creator Studio }
+  - { k: "l", app: Preview } # Mnemonic: Loupe
+  - { k: "m", app: Music }
+  - { k: "p", app: Pages Creator Studio }
+  - { k: "r", app: Reeder }
+  - { k: "s", app: Ghostty } # Mnemonic: Shell
+  - { k: "t", app: Things3 }
+  - { k: "u", app: App Store } # Mnemonic: Updates
+  - { k: "w", app: Safari } # Mnemonic: Web
+  - { k: "y", app: Notes } # Mnemonic: Yellow notes
+  - k: space
+    app: /Applications/Alfred 5.app/Contents/Preferences/Alfred Preferences.app
