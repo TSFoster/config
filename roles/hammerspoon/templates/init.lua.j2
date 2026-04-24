@@ -4,38 +4,6 @@
 
 local hyper = {"cmd", "alt", "ctrl", "shift"}
 local meh = {"ctrl", "alt", "shift"}
---[[ DISABLED WHILE APPLE KEYBOARD UNUSED
-local hyperFor = {"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","1","2","3","4","5","6","7","8","9","0","-","=","§","`",",",".","/",";","'","\\","[","]","space","tab","delete","return","left","right","up","down"}
-
-
--- Bindings
-
-local modalHotkey = hs.hotkey.modal.new({}, "F17")
-
-for k1, key in pairs(hyperFor) do
-  modalHotkey:bind({}, key, nil, function()
-      modalHotkey.triggered = true
-      hs.eventtap.keyStroke(hyper, key)
-  end)
-end
-
-local pressedF18 = function()
-  modalHotkey.triggered = false
-  modalHotkey:enter()
-end
-
-local releasedF18 = function()
-  modalHotkey:exit()
-  -- Send Cmd + space if no other keys were pressed.
-  if not modalHotkey.triggered then
-    hs.eventtap.keyStroke({"cmd"}, "space")
-  end
-end
-
--- Bind the Hyper key to F18
-local f18 = hs.hotkey.bind({}, "F18", pressedF18, releasedF18)
-
---]]
 
 -- MENU ICON TOGGLE
 
