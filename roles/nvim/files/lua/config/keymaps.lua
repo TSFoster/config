@@ -495,10 +495,10 @@ local fterm = util.safe_require("FTerm")
 if fterm then
   local claude_term = fterm:new({ cmd = "claude" })
   local codex_term = fterm:new({ cmd = "codex" })
-  keymap.set({ "n", "t", "i" }, "<M-c>", function()
+  keymap.set({ "n", "t", "i" }, "<M-S-c>", function()
     claude_term:toggle()
   end, { desc = "Toggle Claude Code" })
-  keymap.set({ "n", "t", "i" }, "<M-S-c>", function()
+  keymap.set({ "n", "t", "i" }, "<M-c>", function()
     codex_term:toggle()
   end, { desc = "Toggle Codex" })
 end
