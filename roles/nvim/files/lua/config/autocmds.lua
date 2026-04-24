@@ -127,6 +127,19 @@ end
 do
   local group = vim.api.nvim_create_augroup("detection", { clear = true })
   vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
+    pattern = "*.j2",
+    group = group,
+    callback = function(args)
+      local path = args.file
+      local stem = path:gsub("%.j2$", "")
+      local base_ft = vim.filetype.match({ filename = vim.fs.basename(stem), buf = args.buf })
+        or vim.filetype.match({ filename = stem, buf = args.buf })
+
+      vim.b[args.buf].jinja_base_ft = base_ft or ""
+      vim.bo[args.buf].filetype = "jinja"
+    end,
+  })
+  vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
     pattern = "*.es6",
     command = "setfiletype javascript",
     group = group,
