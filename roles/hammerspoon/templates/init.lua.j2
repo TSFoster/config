@@ -103,6 +103,31 @@ end
 hs.hotkey.bind(hyper, "v", function() hs.eventtap.keyStrokes(hs.pasteboard.getContents()) end)
 
 
+-- WINDOW MANAGEMENT
+
+local windowModifiers = {"ctrl", "alt"}
+local function moveFocusedWindow(unit)
+  local win = hs.window.focusedWindow()
+  if win ~= nil then
+    win:moveToUnit(unit)
+  end
+end
+
+hs.hotkey.bind(windowModifiers, "up", function() moveFocusedWindow({x=0, y=0, w=1, h=0.5}) end)
+hs.hotkey.bind(windowModifiers, "right", function() moveFocusedWindow({x=0.5, y=0, w=0.5, h=1}) end)
+hs.hotkey.bind(windowModifiers, "left", function() moveFocusedWindow({x=0, y=0, w=0.5, h=1}) end)
+hs.hotkey.bind(windowModifiers, "down", function() moveFocusedWindow({x=0, y=0.5, w=1, h=0.5}) end)
+
+hs.hotkey.bind(windowModifiers, "d", function() moveFocusedWindow({x=0, y=0, w=1/3, h=1}) end)
+hs.hotkey.bind(windowModifiers, "f", function() moveFocusedWindow({x=1/3, y=0, w=1/3, h=1}) end)
+hs.hotkey.bind(windowModifiers, "g", function() moveFocusedWindow({x=2/3, y=0, w=1/3, h=1}) end)
+
+hs.hotkey.bind(windowModifiers, "e", function() moveFocusedWindow({x=0, y=0, w=2/3, h=1}) end)
+hs.hotkey.bind(windowModifiers, "t", function() moveFocusedWindow({x=1/3, y=0, w=2/3, h=1}) end)
+
+hs.hotkey.bind(windowModifiers, "return", function() moveFocusedWindow({x=0, y=0, w=1, h=1}) end)
+
+
 -- APP LAUNCHERS
 
 {% for launcher in hammerspoon_app_launchers %}
