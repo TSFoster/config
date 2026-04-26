@@ -81,7 +81,6 @@ if conform then
       sh = { "shfmt" },
       typescript = { "prettierd", "prettier" },
       typescriptreact = { "prettierd", "prettier" },
-      yaml = { "prettierd", "prettier" },
     },
     format_on_save = function(buffer)
       if vim.b[buffer].should_autoformat == false then
@@ -166,7 +165,13 @@ vim.lsp.config("tailwindcss", {
 vim.lsp.config("yamlls", {
   settings = {
     yaml = {
-      format = { enable = true },
+      format = {
+        enable = true,
+        singleQuote = false,
+        bracketSpacing = true,
+        proseWrap = "preserve",
+        printWidth = 80,
+      },
       schemas = {
         ["http://json.schemastore.org/ansible-stable-2.9"] = "/(playbooks|roles|tasks|handlers|defaults|vars|ansible)/*.(yml|yaml)",
       },
