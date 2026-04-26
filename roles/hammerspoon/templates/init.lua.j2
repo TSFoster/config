@@ -131,24 +131,72 @@ hs.hotkey.bind({% if launcher.k is match('^[A-Z]$') %}hyper{% else %}meh{% endif
 
 -- MENUBAR NOTIFICATIONS
 
+local menubarCheckers = {}
+
+local function debounce(seconds, fn)
+  local timer = nil
+
+  return function()
+    if timer ~= nil then
+      timer:stop()
+    end
+    timer = hs.timer.doAfter(seconds, fn)
+  end
+end
+
 local function addMenubarChecker(config)
-  local icon = hs.menubar.new():removeFromMenuBar()
-  local function setIcon()
+  local checker = {
+    icon = hs.menubar.new(true, config.name):removeFromMenuBar(),
+    pathwatchers = {},
+  }
+
+  function checker.setIcon()
     if config.shouldDisplay() then
-      icon:returnToMenuBar():setTitle(config.icon):setClickCallback(config.onClick)
+      checker.icon:returnToMenuBar():setTitle(config.icon):setClickCallback(config.onClick)
     else
-      icon:removeFromMenuBar()
+      checker.icon:removeFromMenuBar()
     end
   end
-  if config.path then hs.pathwatcher.new(config.path, setIcon):start() end
-  if config.seconds then hs.timer.doEvery(config.seconds, setIcon) end
-  setIcon()
+
+  checker.triggerUpdate = config.debounceSeconds and debounce(config.debounceSeconds, checker.setIcon) or checker.setIcon
+
+  if config.path then
+    table.insert(checker.pathwatchers, hs.pathwatcher.new(config.path, checker.triggerUpdate):start())
+  end
+
+  if config.paths then
+    for _, path in ipairs(config.paths) do
+      table.insert(checker.pathwatchers, hs.pathwatcher.new(path, checker.triggerUpdate):start())
+    end
+  end
+
+  if config.apps then
+    checker.appwatcher = hs.application.watcher.new(function(appName, eventType)
+      if hs.fnutils.contains(config.apps, appName) and (
+        eventType == hs.application.watcher.launching or
+        eventType == hs.application.watcher.launched or
+        eventType == hs.application.watcher.activated or
+        eventType == hs.application.watcher.unhidden or
+        eventType == hs.application.watcher.terminated
+      ) then
+        checker.triggerUpdate()
+      end
+    end):start()
+  end
+
+  if config.seconds then
+    checker.timer = hs.timer.doEvery(config.seconds, checker.setIcon)
+  end
+
+  table.insert(menubarCheckers, checker)
+  checker.setIcon()
 end
 
 addMenubarChecker{
   icon = "↓",
+  name = "DownloadsCount",
   path = "{{ hammerspoon_downloads_path }}",
-  seconds = 60,
+  debounceSeconds = 2,
   onClick = function()
     hs.open "{{ hammerspoon_downloads_path }}"
     hs.application.launchOrFocus "Finder"
@@ -165,7 +213,14 @@ addMenubarChecker{
 
 addMenubarChecker{
   icon = "↘︎",
-  seconds = 30,
+  name = "MailDraftsFolderCount",
+  paths = {
+    os.getenv("HOME") .. "/Library/Mail",
+    os.getenv("HOME") .. "/Library/Containers/com.apple.mail",
+  },
+  apps = {"Mail"},
+  debounceSeconds = 2,
+  seconds = 300,
   onClick = function()
     hs.execute("{{ hammerspoon_mailbox_count_binary }} Drafts --unread --activate")
     hs.application.launchOrFocus "Mail"
@@ -178,7 +233,14 @@ addMenubarChecker{
 
 addMenubarChecker{
   icon = "↑",
-  seconds = 30,
+  name = "MailUpdatesFolderCount",
+  paths = {
+    os.getenv("HOME") .. "/Library/Mail",
+    os.getenv("HOME") .. "/Library/Containers/com.apple.mail",
+  },
+  apps = {"Mail"},
+  debounceSeconds = 2,
+  seconds = 300,
   onClick = function()
     hs.execute("{{ hammerspoon_mailbox_count_binary }} Updates --unread --activate")
     hs.application.launchOrFocus "Mail"
