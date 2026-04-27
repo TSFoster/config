@@ -100,6 +100,13 @@ dev_tools_packages:
   - brew: tidy-html5
     pkg: tidy
 
+  # LLMs
+  - brew: chatgpt
+  - brew: claude
+  - brew: claude-code
+  - brew: codex-app
+  - brew: apfel
+
 # Global npm packages that belong to the dev_tools concern.
 # Note: neovim (Node.js neovim client) lives in the nvim role.
 # Note: alfred-fkill lives in the alfred role.
@@ -111,6 +118,7 @@ dev_tools_npm_packages:
   - netlify-cli
   - vercel
   - "@openai/codex"
+  - "@google/gemini-cli"
   - react-devtools
 
 # Global Python packages that belong to the dev_tools concern.
