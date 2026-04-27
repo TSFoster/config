@@ -60,9 +60,6 @@ shells_variables_base:
   - name: RIPGREP_CONFIG_PATH
     value: "{{ config_dir }}/ripgreprc"
     export: true
-  - name: BAT_THEME
-    value: Catppuccin Mocha
-    export: true
   - name: FZF_DEFAULT_COMMAND
     value: "fd --type file {{ shells_uv.fd_default }}"
     export: true

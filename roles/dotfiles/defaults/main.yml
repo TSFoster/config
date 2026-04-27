@@ -7,10 +7,13 @@ dotfiles_ghostty_config_dir: "{{ config_dir }}/ghostty"
 dotfiles_gh_config_dir: "{{ config_dir }}/gh"
 dotfiles_ripgrep_config_dir: "{{ config_dir }}"
 dotfiles_yazi_config_dir: "{{ config_dir }}/yazi"
+dotfiles_yazi_light_config_dir: "{{ config_dir }}/yazi-light"
 dotfiles_git_config_dir: "{{ config_dir }}/git"
 dotfiles_git_credentials_path: "{{ config_dir }}/git/credentials.gitconfig"
 dotfiles_warpd_config_dir: "{{ config_dir }}/warpd"
 dotfiles_bat_theme_base_url: https://raw.githubusercontent.com/catppuccin/bat/main/themes
+dotfiles_yazi_theme_base_url: https://raw.githubusercontent.com/catppuccin/yazi/main/themes
+dotfiles_yazi_catppuccin_accent: teal
 dotfiles_bat_themes:
   - Catppuccin Latte.tmTheme
   - Catppuccin Frappe.tmTheme

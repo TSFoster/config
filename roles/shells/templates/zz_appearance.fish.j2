@@ -1,0 +1,12 @@
+function __sync_terminal_appearance --on-variable fish_terminal_color_theme
+  switch "$fish_terminal_color_theme"
+    case light
+      set -gx BAT_THEME "Catppuccin Latte"
+      set -gx YAZI_CONFIG_HOME "$XDG_CONFIG_HOME/yazi-light"
+    case '*'
+      set -gx BAT_THEME "Catppuccin Mocha"
+      set -gx YAZI_CONFIG_HOME "$XDG_CONFIG_HOME/yazi"
+  end
+end
+
+__sync_terminal_appearance

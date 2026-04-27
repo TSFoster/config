@@ -202,9 +202,14 @@
     dest: "{{ shells_theme_config_path }}"
     mode: "0644"
     content: |
-      fish_config theme choose {{ shells_fish_theme_name }} --color-theme={{ shells_fish_theme_variant }} >/dev/null 2>/dev/null
+      fish_config theme choose {{ shells_fish_theme_name }} >/dev/null 2>/dev/null
   tags:
     - fisher
+- name: Set fish appearance integration
+  ansible.builtin.template:
+    src: zz_appearance.fish.j2
+    dest: "{{ shells_fish_conf_d_dir }}/zz_appearance.fish"
+    mode: "0644"
 - name: Add atuin config
   ansible.posix.synchronize:
     src: "{{ role_path }}/files/atuin/"

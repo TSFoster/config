@@ -38,13 +38,34 @@
     src: ripgreprc
     dest: "{{ dotfiles_ripgrep_config_dir }}/"
     mode: preserve
-- name: Add yazi config
-  ansible.posix.synchronize:
-    src: "{{ role_path }}/files/yazi/"
-    dest: "{{ dotfiles_yazi_config_dir }}/"
-    recursive: true
-    links: true
-    delete: true
+- name: Ensure yazi config directories exist
+  ansible.builtin.file:
+    state: directory
+    dest: "{{ item }}"
+    mode: "0755"
+  loop:
+    - "{{ dotfiles_yazi_config_dir }}"
+    - "{{ dotfiles_yazi_light_config_dir }}"
+- name: Download Catppuccin yazi themes
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    mode: "0644"
+  loop:
+    - url: "{{ dotfiles_yazi_theme_base_url }}/mocha/catppuccin-mocha-{{ dotfiles_yazi_catppuccin_accent }}.toml"
+      dest: "{{ dotfiles_yazi_config_dir }}/theme.toml"
+    - url: "{{ dotfiles_yazi_theme_base_url }}/latte/catppuccin-latte-{{ dotfiles_yazi_catppuccin_accent }}.toml"
+      dest: "{{ dotfiles_yazi_light_config_dir }}/theme.toml"
+- name: Set yazi syntect themes
+  ansible.builtin.lineinfile:
+    path: "{{ item.path }}"
+    regexp: "^syntect_theme = "
+    line: "{{ item.line }}"
+  loop:
+    - path: "{{ dotfiles_yazi_config_dir }}/theme.toml"
+      line: 'syntect_theme = "~/.config/bat/Catppuccin Mocha.tmTheme"'
+    - path: "{{ dotfiles_yazi_light_config_dir }}/theme.toml"
+      line: 'syntect_theme = "~/.config/bat/Catppuccin Latte.tmTheme"'
 - name: Add bat themes
   block:
     - name: Ensure bat config directory exists

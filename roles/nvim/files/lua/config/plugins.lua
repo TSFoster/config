@@ -9,7 +9,11 @@ end
 local catppuccin = util.safe_require("catppuccin")
 if catppuccin then
   catppuccin.setup({
-    flavour = "mocha",
+    flavour = "auto",
+    background = {
+      light = "latte",
+      dark = "mocha",
+    },
   })
 end
 

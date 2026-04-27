@@ -13,7 +13,6 @@ shells_fisher_installer_path: "{{ ansible_facts['env'].get('TMPDIR', '/tmp') }}/
 shells_theme_config_path: "{{ shells_fish_conf_d_dir }}/zz_theme.fish"
 shells_atuin_config_dir: "{{ config_dir }}/atuin"
 shells_fish_theme_name: catppuccin-mocha
-shells_fish_theme_variant: dark
 shells_op_command: op
 shells_op_plugin_run_prefix: "{{ shells_op_command }} plugin run --"
 shells_tabtab_fish_path: "{{ config_dir }}/tabtab/__tabtab.fish"
