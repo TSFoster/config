@@ -87,8 +87,8 @@ do
   caffeineMenubar:setClickCallback(turnOff)
   setCaffeine(hs.caffeinate.get("displayIdle"))
 
-  hs.hotkey.bind(hyper, "8", toggle)
-  hs.hotkey.bind(hyper, "9", extend)
+  hs.hotkey.bind(meh, "8", toggle)
+  hs.hotkey.bind(meh, "9", extend)
 end
 
 
@@ -128,6 +128,7 @@ hs.hotkey.bind(windowModifiers, "return", function() moveFocusedWindow({x=0, y=0
 hs.hotkey.bind({% if launcher.k is match('^[A-Z]$') %}hyper{% else %}meh{% endif %}, "{{ launcher.k | lower }}", function() hs.application.launchOrFocus "{{ launcher.app }}" end)
 {% endfor %}
 
+{#
 
 -- MENUBAR NOTIFICATIONS
 
@@ -251,6 +252,7 @@ addMenubarChecker{
   end,
 }
 
+#}
 
 -- CONFIG RELOAD
 
