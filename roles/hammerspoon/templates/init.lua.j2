@@ -96,6 +96,11 @@ end
 
 hs.hotkey.bind(hyper, "v", function() hs.eventtap.keyStrokes(hs.pasteboard.getContents()) end)
 
+-- DARK MODE TOGGLE
+
+hs.hotkey.bind(meh, "7", function() hs.osascript.applescript([[
+  tell application "System Events" to tell appearance preferences to set dark mode to not dark mode
+]]) end)
 
 -- WINDOW MANAGEMENT
 
