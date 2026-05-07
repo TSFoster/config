@@ -495,7 +495,7 @@ local fterm = util.safe_require("FTerm")
 if fterm then
   local claude_term = fterm:new({ cmd = "claude" })
   local codex_term = fterm:new({ cmd = "codex" })
-  local gemini_term = fterm:new({ cmd = "gemini" })
+  local gemini_term = fterm:new({ cmd = vim.fn.stdpath("config") .. "/bin/asdf-gemini" })
   keymap.set({ "n", "t", "i" }, "<M-S-c>", function()
     claude_term:toggle()
   end, { desc = "Toggle Claude Code" })
