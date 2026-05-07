@@ -402,8 +402,8 @@ keymap.set("n", "<Leader>f", function()
   lsp.format_buffer()
 end, { desc = "Format file" })
 keymap.set("x", "<Leader>f", function()
-  local start_line, start_col = unpack(vim.api.nvim_buf_get_mark(0, "<"))
-  local end_line, end_col = unpack(vim.api.nvim_buf_get_mark(0, ">"))
+  local start_line, start_col = table.unpack(vim.api.nvim_buf_get_mark(0, "<"))
+  local end_line, end_col = table.unpack(vim.api.nvim_buf_get_mark(0, ">"))
   lsp.format_buffer({
     start = { start_line, start_col },
     ["end"] = { end_line, end_col },
