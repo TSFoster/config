@@ -499,17 +499,41 @@ keymap.set("n", "<Leader>tt", cmd.terminal, { desc = "Open terminal session in w
 
 local fterm = util.safe_require("FTerm")
 if fterm then
-  local claude_term = fterm:new({ cmd = "claude" })
-  local codex_term = fterm:new({ cmd = "codex" })
-  local gemini_term = fterm:new({ cmd = vim.fn.stdpath("config") .. "/bin/asdf-gemini" })
+  local function protect_term_window(term)
+    if term.win and vim.api.nvim_win_is_valid(term.win) then
+      pcall(vim.api.nvim_set_option_value, "winfixbuf", true, { win = term.win })
+    end
+  end
+
+  local function toggle_or_focus(term)
+    if term.win and vim.api.nvim_win_is_valid(term.win) then
+      protect_term_window(term)
+
+      if vim.api.nvim_get_current_win() == term.win then
+        term:toggle()
+      else
+        vim.api.nvim_set_current_win(term.win)
+        cmd("startinsert")
+      end
+
+      return
+    end
+
+    term:toggle()
+    protect_term_window(term)
+  end
+
+  local claude_term = fterm:new({ cmd = "claude", width = 0.9, height = 0.9 })
+  local codex_term = fterm:new({ cmd = "codex", width = 0.9, height = 0.9 })
+  local gemini_term = fterm:new({ cmd = vim.fn.stdpath("config") .. "/bin/asdf-gemini", width = 0.9, height = 0.9 })
   keymap.set({ "n", "t", "i" }, "<M-S-c>", function()
-    claude_term:toggle()
+    toggle_or_focus(claude_term)
   end, { desc = "Toggle Claude Code" })
   keymap.set({ "n", "t", "i" }, "<M-c>", function()
-    codex_term:toggle()
+    toggle_or_focus(codex_term)
   end, { desc = "Toggle Codex" })
   keymap.set({ "n", "t", "i" }, "<M-g>", function()
-    gemini_term:toggle()
+    toggle_or_focus(gemini_term)
   end, { desc = "Toggle Gemini" })
 end
 
