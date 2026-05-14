@@ -1,9 +1,11 @@
+require("vim._core.ui2").enable({})
+
 local opt = vim.opt
 local g = vim.g
 
 opt.backupdir:remove(".")
 opt.showbreak = "... "
-opt.cmdheight = 2
+opt.cmdheight = 0
 opt.conceallevel = 2
 opt.expandtab = true
 opt.fixendofline = false
@@ -20,6 +22,7 @@ opt.updatetime = 300
 opt.shada = "'1000,f1,<500"
 opt.wildignorecase = true
 opt.wildmode = { "list", "full" }
+opt.wildoptions = "pum"
 opt.inccommand = "nosplit"
 opt.nrformats = { "bin", "hex", "unsigned", "blank" }
 opt.foldmethod = "expr"

@@ -31,13 +31,6 @@ if blink then
     appearance = {
       nerd_font_variant = "mono",
     },
-    cmdline = {
-      completion = {
-        menu = {
-          auto_show = true,
-        },
-      },
-    },
     completion = {
       trigger = {
         show_on_keyword = true,

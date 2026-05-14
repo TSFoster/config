@@ -189,15 +189,6 @@ if mini_clue then
   })
 end
 
-local mini_cmdline = util.safe_require("mini.cmdline")
-if mini_cmdline then
-  mini_cmdline.setup({
-    autocomplete = {
-      enable = false,
-    },
-  })
-end
-
 local mini_comment = util.safe_require("mini.comment")
 if mini_comment then
   mini_comment.setup()
