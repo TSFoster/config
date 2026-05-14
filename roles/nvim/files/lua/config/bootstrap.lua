@@ -47,7 +47,7 @@ local specs = {
   gh("lewis6991/gitsigns.nvim"),
   gh("stevearc/conform.nvim"),
   gh("neovim/nvim-lspconfig"),
-  gh("Saghen/blink.cmp", { version = "v1.9.1" }),
+  gh("Saghen/blink.cmp", { version = "v1" }),
   gh("nvim-treesitter/nvim-treesitter"),
   gh("nvim-treesitter/nvim-treesitter-context"),
   gh("nvim-treesitter/nvim-treesitter-textobjects"),
