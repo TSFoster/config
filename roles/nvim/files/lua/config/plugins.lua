@@ -83,6 +83,12 @@ if mini then
   end
 
   mini.setup({
+    mappings = {
+      around_next = "aN",
+      inside_next = "iN",
+      around_last = "aL",
+      inside_last = "iL",
+    },
     n_lines = 500,
     custom_textobjects = {
       l = line_textobject,
@@ -246,19 +252,7 @@ end
 
 local mini_operators = util.safe_require("mini.operators")
 if mini_operators then
-  mini_operators.setup({
-    evaluate = { prefix = "" },
-    exchange = { prefix = "" },
-    multiply = { prefix = "" },
-    replace = { prefix = "" },
-    sort = { prefix = "" },
-  })
-
-  mini_operators.make_mappings("sort", {
-    textobject = "go",
-    line = "gO",
-    selection = "go",
-  })
+  mini_operators.setup()
 end
 
 local mini_splitjoin = util.safe_require("mini.splitjoin")
