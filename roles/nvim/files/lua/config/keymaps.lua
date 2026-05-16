@@ -395,7 +395,7 @@ if not vim.env.SSH_CLIENT then
     keymap.set("v", "<Leader>/" .. char, Search[name], { desc = "Search " .. name .. " with selection" })
   end
 
-  make_search("/", "DuckDuckGo", "https://duckduckgo.com/?q=", true)
+  make_search("/", "Kagi", "https://kagi.com/search?q=", true)
   make_search("g", "Github", "https://github.com/", false)
   make_search("d", "Dict", "https://dictionary.reference.com/browse/", false)
   make_search("c", "CanIUse", "https://caniuse.com/#search=", true)
