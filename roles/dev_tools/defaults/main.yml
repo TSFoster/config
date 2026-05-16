@@ -92,6 +92,9 @@ dev_tools_packages:
   # Database
   - name: postgresql@18
   - name: sqlite
+  - brew: pgcli
+  - brew: mycli
+  - brew: litecli
 
   # Code analysis / formatting
   - brew: efm-langserver # no standard apt package
