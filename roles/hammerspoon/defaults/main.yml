@@ -14,8 +14,8 @@ hammerspoon_app_launchers:
   - { k: "d", app: Dash }
   - { k: "e", app: Mail }
   - { k: "f", app: Finder }
-  - { k: "F", app: Firefox Developer Edition }
-  - { k: "g", app: Google Chrome Dev }
+  - { k: "F", app: Firefox }
+  - { k: "g", app: Google Chrome }
   - { k: "h", app: Home }
   - { k: "i", app: Messages }
   - { k: "I", app: Photos } # Mnemonic: iPhoto

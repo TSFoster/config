@@ -63,9 +63,9 @@ macos_apps_casks:
   - ghostty
 
   # Browsers
-  - firefox@developer-edition
-  - google-chrome@dev
-  - opera-developer
+  - firefox
+  - google-chrome
+  - opera
 
   # Productivity
   - 1password
