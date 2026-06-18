@@ -7,19 +7,22 @@
     common_packages: "{{ nvim_python_module_packages }}"
 
 - name: Uninstall Neovim vim.pack packages
-  ansible.builtin.import_tasks: uninstall_package.yml
+  ansible.builtin.include_tasks: uninstall_package.yml
+  when: "'nvim_pack_uninstall' in ansible_run_tags"
   tags:
     - never
     - nvim_pack_uninstall
 
 - name: Update Neovim vim.pack packages
-  ansible.builtin.import_tasks: update_package.yml
+  ansible.builtin.include_tasks: update_package.yml
+  when: "'nvim_pack_update' in ansible_run_tags"
   tags:
     - never
     - nvim_pack_update
 
 - name: List Neovim vim.pack packages
-  ansible.builtin.import_tasks: list_package.yml
+  ansible.builtin.include_tasks: list_package.yml
+  when: "'nvim_pack_list' in ansible_run_tags"
   tags:
     - never
     - nvim_pack_list
