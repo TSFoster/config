@@ -542,9 +542,13 @@ if fterm then
 
   local yazi_term = fterm:new({ cmd = "yazi", width = 0.9, height = 0.9 })
   local claude_term = fterm:new({ cmd = "claude", width = 0.9, height = 0.9 })
-  local codex_term = fterm:new({ cmd = vim.fn.stdpath("config") .. "/bin/asdf-codex", width = 0.9, height = 0.9 })
-  local gemini_term = fterm:new({ cmd = vim.fn.stdpath("config") .. "/bin/asdf-gemini", width = 0.9, height = 0.9 })
-  keymap.set({ "n", "t", "i" }, "<M-f>", function()
+  local codex_term = fterm:new({
+    cmd = vim.fn.stdpath("config") .. "/bin/asdf-codex",
+    width = 0.9,
+    height = 0.9,
+  })
+  local gemini_term = fterm:new({ cmd = "agy", width = 0.9, height = 0.9 })
+  keymap.set({ "n", "t", "i" }, "<M-/>", function()
     toggle_or_focus(yazi_term)
   end, { desc = "Toggle Yazi" })
   keymap.set({ "n", "t", "i" }, "<M-S-c>", function()

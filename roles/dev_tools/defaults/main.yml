@@ -104,6 +104,9 @@ dev_tools_packages:
     pkg: tidy
 
   # LLMs
+  - brew: antigravity
+  - brew: antigravity-ide
+  - brew: antigravity-cli
   - brew: chatgpt
   - brew: claude
   - brew: claude-code
@@ -121,7 +124,6 @@ dev_tools_npm_packages:
   - netlify-cli
   - vercel
   - "@openai/codex"
-  - "@google/gemini-cli"
   - react-devtools
 
 # Global Python packages that belong to the dev_tools concern.
