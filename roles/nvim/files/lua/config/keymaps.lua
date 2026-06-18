@@ -604,6 +604,24 @@ keymap.set("n", "yoq", toggle.quickfix_list, { desc = "Toggle quickfix visibilit
 keymap.set("n", "[oq", util.mk_fn(toggle.quickfix_list, 1), { desc = "Show quickfix" })
 keymap.set("n", "]oq", util.mk_fn(toggle.quickfix_list, 0), { desc = "Hide quickfix" })
 
+keymap.set("n", "yom", function()
+  local mini_notify = util.safe_require("mini.notify")
+  if not mini_notify then
+    return
+  end
+
+  for _, win_id in ipairs(vim.api.nvim_list_wins()) do
+    local buf_id = vim.api.nvim_win_get_buf(win_id)
+    local buf_name = vim.api.nvim_buf_get_name(buf_id)
+    if buf_name:match("^mininotify://") then
+      vim.api.nvim_buf_delete(buf_id, { force = true })
+      return
+    end
+  end
+
+  mini_notify.show_history()
+end, { desc = "Toggle notification history" })
+
 keymap.set("n", "yol", toggle.location_list, { desc = "Toggle location list visibility" })
 keymap.set("n", "[ol", util.mk_fn(toggle.location_list, 1), { desc = "Show location list" })
 keymap.set("n", "]ol", util.mk_fn(toggle.location_list, 0), { desc = "Hide location list" })
