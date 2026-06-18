@@ -492,6 +492,29 @@ keymap.set("t", "<C-l>", "<C-\\><C-n><C-w>l", { desc = "Move window focus right"
 
 keymap.set("t", ";;", "<C-\\><C-n>:", { desc = "Enter ex command" })
 keymap.set("t", "jj", "<C-\\><C-n>", { desc = "Enter normal mode" })
+keymap.set("t", "<A-\\>", function()
+  local char = vim.fn.getchar()
+  local chan = vim.bo[vim.api.nvim_get_current_buf()].channel
+  local bytes
+  if type(char) == "number" and char > 0 then
+    if char >= 128 and char < 256 then
+      bytes = "\x1b" .. vim.fn.nr2char(char - 128)
+    else
+      bytes = vim.fn.nr2char(char)
+    end
+  elseif type(char) == "string" and char:sub(1, 2) == "\x80\xfc" then
+    -- \x80\xfc + modifier_byte + key: Vim's internal modifier-key encoding
+    local mod = char:byte(3)
+    local key = char:sub(4)
+    local is_ctrl = bit.band(mod, 0x04) ~= 0 -- MOD_MASK_CTRL
+    local is_alt = bit.band(mod, 0x08) ~= 0  -- MOD_MASK_ALT
+    local inner = is_ctrl and vim.fn.nr2char(string.byte(key) % 32) or key
+    bytes = is_alt and ("\x1b" .. inner) or inner
+  end
+  if bytes then
+    vim.fn.chansend(chan, bytes)
+  end
+end, { desc = "Send next keystroke literally to terminal" })
 keymap.set("t", "<A-Space>", "<C-\\><C-n><Leader>", { remap = true, desc = "Leader" })
 keymap.set("n", "<A-Space>", "<Leader>", { remap = true, desc = "Leader" })
 
