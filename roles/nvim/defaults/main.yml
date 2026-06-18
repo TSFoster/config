@@ -29,6 +29,7 @@ nvim_npm_packages:
   - pyright
   - "@tailwindcss/language-server"
   - tree-sitter-cli
+  - typescript
   - typescript-language-server
   - vscode-langservers-extracted
   - yaml-language-server
