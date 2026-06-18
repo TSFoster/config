@@ -224,7 +224,13 @@ keymap.set("n", "<Leader>gi", function()
 
   telescope_builtin.find_files({
     cwd = util.project_root(),
-    find_command = { "git", "ls-files", "--ignored", "--exclude-standard", "--others" },
+    find_command = {
+      "git",
+      "ls-files",
+      "--ignored",
+      "--exclude-standard",
+      "--others",
+    },
     prompt_title = "Git ignored files",
   })
 end, { desc = "Find git ignored files" })
@@ -355,8 +361,10 @@ keymap.set("n", "<Leader>cu", function()
   fn.setreg("+", fn.getreg('"', 1))
 end, { remap = true, desc = "Copy unnamed register to system clipboard" })
 keymap.set("t", "<A-r>", function()
-  return "<C-\\><C-N>" .. fn.nr2char(fn.getchar()) .. "pi"
-end, { expr = true, desc = "Insert register into terminal buffer" })
+  local char = fn.nr2char(fn.getchar())
+  local chan = vim.bo[vim.api.nvim_get_current_buf()].channel
+  vim.fn.chansend(chan, fn.getreg(char))
+end, { desc = "Insert register into terminal buffer" })
 
 if not vim.env.SSH_CLIENT then
   local function char_to_hex(char)
@@ -393,7 +401,12 @@ if not vim.env.SSH_CLIENT then
       if text then
         fn.setreg("@", text)
       else
-        cmd("normal! " .. ({ line = "'[V']y", char = "`[v`]y", block = "`[<C-v>`]y", visual = "y" })[kind])
+        cmd("normal! " .. ({
+          line = "'[V']y",
+          char = "`[v`]y",
+          block = "`[<C-v>`]y",
+          visual = "y",
+        })[kind])
       end
 
       local term = escape_selection and urlencode(fn.getreg("@", 0)) or fn.getreg("@", 0)
@@ -482,13 +495,21 @@ keymap.set("n", "]oF", function()
 end, { desc = "Turn on autoformatting on save for this buffer" })
 
 keymap.set("n", "<C-h>", "<C-w>h", { desc = "Move window focus left" })
-keymap.set("t", "<C-h>", "<C-\\><C-n><C-w>h", { desc = "Move window focus left" })
+keymap.set("t", "<C-h>", function()
+  vim.cmd("wincmd h")
+end, { desc = "Move window focus left" })
 keymap.set("n", "<C-j>", "<C-w>j", { desc = "Move window focus down" })
-keymap.set("t", "<C-j>", "<C-\\><C-n><C-w>j", { desc = "Move window focus down" })
+keymap.set("t", "<C-j>", function()
+  vim.cmd("wincmd j")
+end, { desc = "Move window focus down" })
 keymap.set("n", "<C-k>", "<C-w>k", { desc = "Move window focus up" })
-keymap.set("t", "<C-k>", "<C-\\><C-n><C-w>k", { desc = "Move window focus up" })
+keymap.set("t", "<C-k>", function()
+  vim.cmd("wincmd k")
+end, { desc = "Move window focus up" })
 keymap.set("n", "<C-l>", "<C-w>l", { desc = "Move window focus right" })
-keymap.set("t", "<C-l>", "<C-\\><C-n><C-w>l", { desc = "Move window focus right" })
+keymap.set("t", "<C-l>", function()
+  vim.cmd("wincmd l")
+end, { desc = "Move window focus right" })
 
 keymap.set("t", ";;", "<C-\\><C-n>:", { desc = "Enter ex command" })
 keymap.set("t", "jj", "<C-\\><C-n>", { desc = "Enter normal mode" })
@@ -586,15 +607,25 @@ if fterm then
 end
 
 keymap.set("n", "<A-h>", "<C-w><", { desc = "Resize window <" })
-keymap.set("t", "<A-h>", "<C-\\><C-n><C-w><i", { desc = "Resize window <" })
+keymap.set("t", "<A-h>", function()
+  vim.cmd("wincmd <")
+end, { desc = "Resize window <" })
 keymap.set("n", "<A-j>", "<C-w>-", { desc = "Resize window -" })
-keymap.set("t", "<A-j>", "<C-\\><C-n><C-w>-i", { desc = "Resize window -" })
+keymap.set("t", "<A-j>", function()
+  vim.cmd("wincmd -")
+end, { desc = "Resize window -" })
 keymap.set("n", "<A-k>", "<C-w>+", { desc = "Resize window +" })
-keymap.set("t", "<A-k>", "<C-\\><C-n><C-w>+i", { desc = "Resize window +" })
+keymap.set("t", "<A-k>", function()
+  vim.cmd("wincmd +")
+end, { desc = "Resize window +" })
 keymap.set("n", "<A-l>", "<C-w>>", { desc = "Resize window >" })
-keymap.set("t", "<A-l>", "<C-\\><C-n><C-w>>i", { desc = "Resize window >" })
+keymap.set("t", "<A-l>", function()
+  vim.cmd("wincmd >")
+end, { desc = "Resize window >" })
 keymap.set("n", "<A-=>", "<C-w>=", { desc = "Resize window =" })
-keymap.set("t", "<A-=>", "<C-\\><C-n><C-w>=i", { desc = "Resize window =" })
+keymap.set("t", "<A-=>", function()
+  vim.cmd("wincmd =")
+end, { desc = "Resize window =" })
 
 keymap.set("n", "yo<Tab>", toggle.tabs, { desc = "Toggle tabs/spaces" })
 keymap.set("n", "[o<Tab>", util.mk_fn(toggle.tabs, 1), { desc = "Use tabs" })
