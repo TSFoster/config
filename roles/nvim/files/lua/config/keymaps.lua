@@ -144,8 +144,25 @@ keymap.set(
 keymap.set("n", "<Leader>gre", function()
   cmd.Git("rebase -i HEAD~" .. v.count1)
 end, { desc = "Rebase git" })
-keymap.set("n", "<Leader>gv", util.mk_fn(cmd.GV), { desc = "Open GV" })
-keymap.set("n", "<Leader>gV", util.mk_fn(cmd.GV, { bang = true }), { desc = "Open GV for current file" })
+
+keymap.set("n", "<Leader>gv", function()
+  cmd("vertical topleft Git log --graph --oneline")
+  cmd("vertical resize 75")
+end, { desc = "Open git log" })
+keymap.set("n", "<Leader>gV", function()
+  cmd("vertical topleft Git log --graph --oneline -- %")
+  cmd("vertical resize 75")
+end, { desc = "Open git log for current file" })
+keymap.set("n", "<Leader>gf", function()
+  cmd("vertical topleft Git log --graph --oneline --stat")
+  cmd("vertical resize 75")
+end, { desc = "Open git log with stats" })
+keymap.set("n", "<Leader>gF", function()
+  cmd("vertical topleft Git log --graph --oneline --stat -- %")
+  cmd("vertical resize 75")
+end, { desc = "Open git log with stats for current file" })
+-- TODO Replace with https://github.com/rbong/vim-flog, maybe
+
 keymap.set("n", "<Leader>gl", util.mk_fn(cmd.GV, "?"), { desc = "Fill location list with file revisions" })
 
 keymap.set({ "x", "o" }, "i,", "<Plug>(swap-textobject-i)", { remap = true, desc = "Delimited item i text object" })

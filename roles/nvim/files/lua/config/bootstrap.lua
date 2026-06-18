@@ -55,7 +55,6 @@ local specs = {
   gh("fcpg/vim-kickfix"),
   gh("tpope/vim-fugitive"),
   gh("tpope/vim-repeat"),
-  gh("junegunn/gv.vim"),
   gh("mbbill/undotree"),
   gh("mogelbrod/vim-jsonpath"),
   gh("shumphrey/fugitive-gitlab.vim"),
