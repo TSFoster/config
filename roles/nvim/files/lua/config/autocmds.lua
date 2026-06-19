@@ -165,3 +165,14 @@ do
     end,
   })
 end
+
+do
+  local group = vim.api.nvim_create_augroup("statusline_refresh", { clear = true })
+  vim.api.nvim_create_autocmd({ "RecordingEnter", "RecordingLeave" }, {
+    group = group,
+    desc = "Refresh the statusline when macro recording changes",
+    callback = function()
+      vim.cmd.redrawstatus()
+    end,
+  })
+end

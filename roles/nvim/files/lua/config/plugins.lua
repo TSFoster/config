@@ -279,8 +279,38 @@ end
 
 local mini_statusline = util.safe_require("mini.statusline")
 if mini_statusline then
+  local function statusline_active()
+    local mode, mode_hl = mini_statusline.section_mode({ trunc_width = 120 })
+    local recording = vim.fn.reg_recording()
+    if recording ~= "" then
+      recording = ("REC @%s"):format(recording)
+    end
+
+    local git = mini_statusline.section_git({ trunc_width = 40 })
+    local diff = mini_statusline.section_diff({ trunc_width = 75 })
+    local diagnostics = mini_statusline.section_diagnostics({ trunc_width = 75 })
+    local lsp = mini_statusline.section_lsp({ trunc_width = 75 })
+    local filename = mini_statusline.section_filename({ trunc_width = 140 })
+    local fileinfo = mini_statusline.section_fileinfo({ trunc_width = 120 })
+    local location = mini_statusline.section_location({ trunc_width = 75 })
+    local search = mini_statusline.section_searchcount({ trunc_width = 75 })
+
+    return mini_statusline.combine_groups({
+      { hl = mode_hl, strings = { mode, recording } },
+      { hl = "MiniStatuslineDevinfo", strings = { git, diff, diagnostics, lsp } },
+      "%<",
+      { hl = "MiniStatuslineFilename", strings = { filename } },
+      "%=",
+      { hl = "MiniStatuslineFileinfo", strings = { fileinfo } },
+      { hl = mode_hl, strings = { search, location } },
+    })
+  end
+
   mini_statusline.setup({
     use_icons = true,
+    content = {
+      active = statusline_active,
+    },
   })
 end
 
