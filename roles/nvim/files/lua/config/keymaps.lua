@@ -163,8 +163,6 @@ keymap.set("n", "<Leader>gF", function()
 end, { desc = "Open git log with stats for current file" })
 -- TODO Replace with https://github.com/rbong/vim-flog, maybe
 
-keymap.set("n", "<Leader>gl", util.mk_fn(cmd.GV, "?"), { desc = "Fill location list with file revisions" })
-
 keymap.set({ "x", "o" }, "i,", "<Plug>(swap-textobject-i)", { remap = true, desc = "Delimited item i text object" })
 keymap.set({ "x", "o" }, "a,", "<Plug>(swap-textobject-a)", { remap = true, desc = "Delimited item a text object" })
 
@@ -528,7 +526,7 @@ keymap.set("t", "<A-\\>", function()
     local mod = char:byte(3)
     local key = char:sub(4)
     local is_ctrl = bit.band(mod, 0x04) ~= 0 -- MOD_MASK_CTRL
-    local is_alt = bit.band(mod, 0x08) ~= 0  -- MOD_MASK_ALT
+    local is_alt = bit.band(mod, 0x08) ~= 0 -- MOD_MASK_ALT
     local inner = is_ctrl and vim.fn.nr2char(string.byte(key) % 32) or key
     bytes = is_alt and ("\x1b" .. inner) or inner
   end
