@@ -87,6 +87,7 @@ macos_apps_casks:
   - transmission-remote-gui
 
   # Utilities
+  - gnome
   - karabiner-elements
   - utm
   - vyprvpn
@@ -94,7 +95,6 @@ macos_apps_casks:
   - swiftdefaultappsprefpane
   - bookmacster
   - thingsmacsandboxhelper
-  - keybase
   - syntax-highlight
   - zoom
 

@@ -13,6 +13,7 @@ dev_tools_packages:
   - name: glab # GitLab CLI
   - name: tig # git TUI
   - name: icdiff
+  - name: git-filter-repo
 
   # Mac App Store CLI — macOS only, must be present before macos_apps role
   - brew: mas
