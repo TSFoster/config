@@ -213,10 +213,21 @@ vim.api.nvim_create_autocmd("LspAttach", {
       vim.keymap.set(mode, lhs, rhs, { buffer = buffer, desc = desc })
     end
 
-    map("n", "gd", vim.lsp.buf.definition, "Go to definition")
-    map("n", "gy", vim.lsp.buf.type_definition, "Go to type definition")
-    map("n", "gi", vim.lsp.buf.implementation, "Go to implementation")
-    map("n", "gr", vim.lsp.buf.references, "List references")
+    local client = vim.lsp.get_client_by_id(event.data.client_id)
+    if client then
+      if client:supports_method("textDocument/definition", { bufnr = buffer }) then
+        map("n", "gd", vim.lsp.buf.definition, "Go to definition")
+      end
+      if client:supports_method("textDocument/typeDefinition", { bufnr = buffer }) then
+        map("n", "gy", vim.lsp.buf.type_definition, "Go to type definition")
+      end
+      if client:supports_method("textDocument/implementation", { bufnr = buffer }) then
+        map("n", "gI", vim.lsp.buf.implementation, "Go to implementation")
+      end
+      if client:supports_method("textDocument/references", { bufnr = buffer }) then
+        map("n", "gr", vim.lsp.buf.references, "List references")
+      end
+    end
     map("n", "<Leader>r", vim.lsp.buf.rename, "Rename symbol")
     map({ "n", "x" }, "<Leader>;", vim.lsp.buf.code_action, "Code action")
     map("n", "<Leader>;c", vim.lsp.buf.code_action, "Code action")
