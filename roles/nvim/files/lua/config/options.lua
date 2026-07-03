@@ -9,7 +9,6 @@ opt.cmdheight = 0
 opt.conceallevel = 2
 opt.expandtab = true
 opt.fixendofline = false
-opt.formatprg = "par rqw80"
 opt.hidden = true
 opt.lazyredraw = true
 opt.path:append("**")

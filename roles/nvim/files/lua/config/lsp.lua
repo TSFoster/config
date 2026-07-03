@@ -69,11 +69,23 @@ if conform then
       javascriptreact = { "prettierd", "prettier" },
       json = { "prettierd", "prettier" },
       lua = { "stylua" },
-      markdown = { "prettierd", "prettier" },
+      markdown = { "prettierd_markdown" },
       scss = { "prettierd", "prettier" },
       sh = { "shfmt" },
       typescript = { "prettierd", "prettier" },
       typescriptreact = { "prettierd", "prettier" },
+      ["_"] = { "par" },
+    },
+    formatters = {
+      prettierd_markdown = {
+        command = "prettierd",
+        args = { "$FILENAME" },
+      },
+      par = {
+        command = "par",
+        args = { "rqw100" },
+        stdin = true,
+      },
     },
     format_on_save = function(buffer)
       if vim.b[buffer].should_autoformat == false then

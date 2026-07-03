@@ -83,6 +83,14 @@
   tags:
     - nvim_files
 
+- name: Copy default prettierrc.json to home directory
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/prettierrc.json"
+    dest: "{{ ansible_env.HOME }}/.prettierrc.json"
+    mode: "0644"
+  tags:
+    - nvim_files
+
 - name: Add nvr completion in fish
   block:
     - name: Ensure fish completions directory exists
