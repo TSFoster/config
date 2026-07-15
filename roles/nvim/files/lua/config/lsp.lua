@@ -59,23 +59,26 @@ end
 
 local conform = util.safe_require("conform")
 if conform then
+  local formatters_by_ft = {
+    css = { "prettierd", "prettier" },
+    gohtmltmpl = { "prettierd", "prettier" },
+    html = { "prettierd", "prettier" },
+    javascript = { "prettierd", "prettier" },
+    javascriptreact = { "prettierd", "prettier" },
+    json = { "prettierd", "prettier" },
+    lua = { "stylua" },
+    markdown = { "prettierd_markdown" },
+    scss = { "prettierd", "prettier" },
+    sh = { "shfmt" },
+    text = { "par" },
+    typescript = { "prettierd", "prettier" },
+    typescriptreact = { "prettierd", "prettier" },
+    ["_"] = { "par" },
+  }
+
   conform.setup({
     notify_on_error = true,
-    formatters_by_ft = {
-      css = { "prettierd", "prettier" },
-      gohtmltmpl = { "prettierd", "prettier" },
-      html = { "prettierd", "prettier" },
-      javascript = { "prettierd", "prettier" },
-      javascriptreact = { "prettierd", "prettier" },
-      json = { "prettierd", "prettier" },
-      lua = { "stylua" },
-      markdown = { "prettierd_markdown" },
-      scss = { "prettierd", "prettier" },
-      sh = { "shfmt" },
-      typescript = { "prettierd", "prettier" },
-      typescriptreact = { "prettierd", "prettier" },
-      ["_"] = { "par" },
-    },
+    formatters_by_ft = formatters_by_ft,
     formatters = {
       prettierd_markdown = {
         command = "prettierd",
@@ -97,6 +100,11 @@ if conform then
       end
 
       if not vim.g.should_autoformat then
+        return
+      end
+
+      local ft = vim.bo[buffer].filetype
+      if not formatters_by_ft[ft] then
         return
       end
 
