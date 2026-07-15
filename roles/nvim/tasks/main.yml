@@ -86,7 +86,7 @@
 - name: Copy default prettierrc.json to home directory
   ansible.builtin.copy:
     src: "{{ role_path }}/files/prettierrc.json"
-    dest: "{{ ansible_env.HOME }}/.prettierrc.json"
+    dest: "{{ ansible_facts['env']['HOME'] }}/.prettierrc.json"
     mode: "0644"
   tags:
     - nvim_files
