@@ -142,7 +142,11 @@ keymap.set(
   { desc = "Amend git commit without edit" }
 )
 keymap.set("n", "<Leader>gre", function()
-  cmd.Git("rebase -i HEAD~" .. v.count1)
+  if v.count == 0 then
+    cmd.Git("rebase -i --root")
+  else
+    cmd.Git("rebase -i HEAD~" .. v.count)
+  end
 end, { desc = "Rebase git" })
 
 keymap.set("n", "<Leader>gv", function()
