@@ -19,3 +19,31 @@ dotfiles_bat_themes:
   - Catppuccin Frappe.tmTheme
   - Catppuccin Macchiato.tmTheme
   - Catppuccin Mocha.tmTheme
+
+# Native macOS notifications (via terminal-notifier) when Claude Code or
+# Antigravity CLI need input or finish a run.
+dotfiles_claude_settings_path: "{{ ansible_facts['env']['HOME'] }}/.claude/settings.json"
+dotfiles_claude_hooks_patch:
+  hooks:
+    Notification:
+      - hooks:
+          - type: command
+            command: "{{ dotfiles_bin_dir }}/agent-notify claude waiting"
+            timeout: 10
+    Stop:
+      - hooks:
+          - type: command
+            command: "{{ dotfiles_bin_dir }}/agent-notify claude done"
+            timeout: 10
+
+dotfiles_antigravity_config_dir: "{{ ansible_facts['env']['HOME'] }}/.gemini/antigravity-cli"
+dotfiles_antigravity_settings_path: "{{ dotfiles_antigravity_config_dir }}/settings.json"
+dotfiles_antigravity_hooks_path: "{{ dotfiles_antigravity_config_dir }}/hooks.json"
+dotfiles_antigravity_notifications_patch:
+  notifications: "on"
+dotfiles_antigravity_hooks_patch:
+  agent-notify:
+    Stop:
+      - type: command
+        command: "{{ dotfiles_bin_dir }}/agent-notify agy done"
+        timeout: 10

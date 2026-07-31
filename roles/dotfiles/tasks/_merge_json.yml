@@ -1,0 +1,38 @@
+---
+# Recursively merges dotfiles_merge_json_patch into the JSON file at
+# dotfiles_merge_json_dest, preserving any existing keys the patch doesn't
+# touch — e.g. state the target app itself grows at runtime (approvals,
+# plugin lists, oauth tokens). Creates the file/parent directory if missing.
+- name: "Ensure parent directory exists for {{ dotfiles_merge_json_dest }}"
+  ansible.builtin.file:
+    state: directory
+    dest: "{{ dotfiles_merge_json_dest | dirname }}"
+    mode: "0755"
+
+- name: "Check for existing {{ dotfiles_merge_json_dest }}"
+  ansible.builtin.stat:
+    path: "{{ dotfiles_merge_json_dest }}"
+  register: dotfiles_merge_json_stat
+  changed_when: false
+
+- name: "Read existing {{ dotfiles_merge_json_dest }}"
+  ansible.builtin.slurp:
+    src: "{{ dotfiles_merge_json_dest }}"
+  register: dotfiles_merge_json_raw
+  when: dotfiles_merge_json_stat.stat.exists
+  changed_when: false
+
+- name: "Compute merged contents for {{ dotfiles_merge_json_dest }}"
+  ansible.builtin.set_fact:
+    dotfiles_merge_json_current: >-
+      {{
+        (dotfiles_merge_json_raw.content | b64decode | from_json)
+        if dotfiles_merge_json_stat.stat.exists
+        else {}
+      }}
+
+- name: "Write {{ dotfiles_merge_json_dest }}"
+  ansible.builtin.copy:
+    content: "{{ (dotfiles_merge_json_current | combine(dotfiles_merge_json_patch, recursive=true) | to_nice_json) + \"\n\" }}"
+    dest: "{{ dotfiles_merge_json_dest }}"
+    mode: "0644"

@@ -111,3 +111,26 @@
     src: warpd
     dest: "{{ dotfiles_warpd_config_dir }}/config"
     mode: preserve
+- name: Add agent notification support (terminal-notifier is macOS only)
+  when: ansible_facts["system"] == "Darwin"
+  block:
+    - name: Add agent-notify script
+      ansible.builtin.copy:
+        src: agent-notify
+        dest: "{{ dotfiles_bin_dir }}/"
+        mode: preserve
+    - name: Add Claude Code notification hooks
+      ansible.builtin.include_tasks: _merge_json.yml
+      vars:
+        dotfiles_merge_json_dest: "{{ dotfiles_claude_settings_path }}"
+        dotfiles_merge_json_patch: "{{ dotfiles_claude_hooks_patch }}"
+    - name: Add Antigravity CLI Stop hook
+      ansible.builtin.include_tasks: _merge_json.yml
+      vars:
+        dotfiles_merge_json_dest: "{{ dotfiles_antigravity_hooks_path }}"
+        dotfiles_merge_json_patch: "{{ dotfiles_antigravity_hooks_patch }}"
+- name: Enable Antigravity CLI native notifications
+  ansible.builtin.include_tasks: _merge_json.yml
+  vars:
+    dotfiles_merge_json_dest: "{{ dotfiles_antigravity_settings_path }}"
+    dotfiles_merge_json_patch: "{{ dotfiles_antigravity_notifications_patch }}"

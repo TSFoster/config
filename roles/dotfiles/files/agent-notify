@@ -1,0 +1,38 @@
+#!/bin/bash
+# agent-notify <agent-name> <waiting|done>
+# Reads a hook payload JSON on stdin (Claude Code / Antigravity hook schema)
+# and fires a native macOS notification via terminal-notifier.
+set -euo pipefail
+
+agent="${1:?usage: agent-notify <agent> <waiting|done>}"
+event="${2:?usage: agent-notify <agent> <waiting|done>}"
+
+input="$(cat 2>/dev/null || true)"
+cwd="$(jq -r '.cwd // .workspacePaths[0] // empty' 2>/dev/null <<<"$input")"
+message="$(jq -r '.message // .terminationReason // empty' 2>/dev/null <<<"$input")"
+project="$(basename "${cwd:-$PWD}")"
+
+case "$event" in
+  waiting)
+    title="$agent needs input — $project"
+    sound="Ping"
+    ;;
+  done)
+    title="$agent is done — $project"
+    sound="Glass"
+    ;;
+  *)
+    title="$agent: $event — $project"
+    sound="Ping"
+    ;;
+esac
+
+body="${message:-$event}"
+
+terminal-notifier \
+  -title "$title" \
+  -message "$body" \
+  -sound "$sound" \
+  -group "agent-notify-$agent-$project" \
+  -activate "com.mitchellh.ghostty" \
+  >/dev/null
