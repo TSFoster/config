@@ -22,6 +22,8 @@ shells_path_entries_darwin:
   - "{{ homebrew_prefix }}/sbin"
   - "{{ homebrew_cask_appdir }}/opt/openjdk/bin"
   - /Applications/Setapp/Soulver.app/Contents/MacOS/CLI
+  - "{{ ansible_facts['env']['HOME'] }}/Library/Android/sdk/platform-tools"
+  - "{{ ansible_facts['env']['HOME'] }}/Library/Android/sdk/emulator"
 shells_uv:
   xdg_data: "{{ ansible_facts['env']['HOME'] }}/.local/share"
   fd_default:
@@ -93,6 +95,9 @@ shells_variables_base:
     export: true
     value: "{{ shells_uv.isMac | ternary(ansible_facts['env']['HOME'] + '/Library/Mobile Documents/iCloud~md~obsidian/Documents/Vault', omit) }}"
 shells_variables_darwin:
+  - name: ANDROID_HOME
+    value: "{{ ansible_facts['env']['HOME'] }}/Library/Android/sdk"
+    export: true
   - name: HOMEBREW_PREFIX
     value: "{{ homebrew_prefix }}"
     export: true

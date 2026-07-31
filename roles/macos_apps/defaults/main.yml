@@ -106,6 +106,8 @@ macos_apps_casks:
   # Developer GUI
   - docker
 
+  # Java/JDK
+  - zulu@17
 
 # Mac App Store apps — requires `mas` CLI (installed in dev_tools)
 macos_apps_mas:
