@@ -106,13 +106,13 @@ macos_apps_casks:
   # Developer GUI
   - docker
 
+
 # Mac App Store apps — requires `mas` CLI (installed in dev_tools)
 macos_apps_mas:
   - { id: 1365531024, name: "1Blocker" }
   - { id: 1435957248, name: "Drafts" }
   - { id: 414568915, name: "Key Codes" }
   - { id: 441258766, name: "Magnet" }
-  - { id: 639968404, name: "Parcel" }
   - { id: 1529448980, name: "Reeder Classic" }
   - { id: 693112260, name: "Sim Daltonism" }
   - { id: 904280696, name: "Things 3" }
