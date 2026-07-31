@@ -135,3 +135,26 @@
   vars:
     dotfiles_merge_json_dest: "{{ dotfiles_antigravity_settings_path }}"
     dotfiles_merge_json_patch: "{{ dotfiles_antigravity_notifications_patch }}"
+
+- name: Add Neovim integration rule block to CLAUDE.md and rules.md
+  block:
+    - name: Ensure LLM config directories exist
+      ansible.builtin.file:
+        state: directory
+        dest: "{{ item }}"
+        mode: "0755"
+      loop:
+        - "{{ dotfiles_claude_dir }}"
+        - "{{ dotfiles_gemini_dir }}"
+    - name: Ensure Neovim integration block is present in LLM rule files
+      ansible.builtin.blockinfile:
+        path: "{{ item }}"
+        create: true
+        mode: "0644"
+        marker: "<!-- {mark} ANSIBLE MANAGED BLOCK: Neovim Integration -->"
+        block: "{{ dotfiles_llm_neovim_rule_block }}"
+      loop:
+        - "{{ dotfiles_claude_rules_path }}"
+        - "{{ dotfiles_gemini_rules_path }}"
+
+

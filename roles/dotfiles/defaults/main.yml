@@ -22,7 +22,9 @@ dotfiles_bat_themes:
 
 # Native macOS notifications (via terminal-notifier) when Claude Code or
 # Antigravity CLI need input or finish a run.
-dotfiles_claude_settings_path: "{{ ansible_facts['env']['HOME'] }}/.claude/settings.json"
+dotfiles_claude_dir: "{{ ansible_facts['env']['HOME'] }}/.claude"
+dotfiles_claude_settings_path: "{{ dotfiles_claude_dir }}/settings.json"
+dotfiles_claude_rules_path: "{{ dotfiles_claude_dir }}/CLAUDE.md"
 dotfiles_claude_hooks_patch:
   hooks:
     Notification:
@@ -36,7 +38,9 @@ dotfiles_claude_hooks_patch:
             command: "{{ dotfiles_bin_dir }}/agent-notify claude done"
             timeout: 10
 
-dotfiles_antigravity_config_dir: "{{ ansible_facts['env']['HOME'] }}/.gemini/antigravity-cli"
+dotfiles_gemini_dir: "{{ ansible_facts['env']['HOME'] }}/.gemini"
+dotfiles_gemini_rules_path: "{{ dotfiles_gemini_dir }}/rules.md"
+dotfiles_antigravity_config_dir: "{{ dotfiles_gemini_dir }}/antigravity-cli"
 dotfiles_antigravity_settings_path: "{{ dotfiles_antigravity_config_dir }}/settings.json"
 dotfiles_antigravity_hooks_path: "{{ dotfiles_antigravity_config_dir }}/hooks.json"
 dotfiles_antigravity_notifications_patch:
@@ -47,3 +51,10 @@ dotfiles_antigravity_hooks_patch:
       - type: command
         command: "{{ dotfiles_bin_dir }}/agent-notify agy done"
         timeout: 10
+
+dotfiles_llm_neovim_rule_block: |
+  # Neovim Integration
+  When `$NVIM` is set in the environment, you are running inside a Neovim terminal session.
+  - When referring to visual selections or context from the active Neovim editor window, use `nvim_ref` (for file range `file.ext#L10-L20`) or `nvim_selection` (for JSON details & text content).
+  - Neovim remote expressions can also be evaluated directly using `nvim --server "$NVIM" --remote-expr 'luaeval(...)'`.
+
