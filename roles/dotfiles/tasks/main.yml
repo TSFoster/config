@@ -51,6 +51,7 @@
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
     mode: "0644"
+    force: false
   loop:
     - url: "{{ dotfiles_yazi_theme_base_url }}/mocha/catppuccin-mocha-{{ dotfiles_yazi_catppuccin_accent }}.toml"
       dest: "{{ dotfiles_yazi_config_dir }}/theme.toml"
