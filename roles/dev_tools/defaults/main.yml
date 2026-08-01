@@ -74,6 +74,8 @@ dev_tools_packages:
   - name: python3
 
   # Misc dev tools
+  - name: direnv
+  - brew: basecamp/tap/fizzy
   - name: shellcheck
   - name: yamllint
   - name: exercism

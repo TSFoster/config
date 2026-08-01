@@ -21,6 +21,9 @@ if [[ -o interactive ]]; then
 {% for entry in shells_uv.shell_path_entries_interactive %}
   path_append "./{{ entry }}"
 {% endfor %}
+  if command -v direnv >/dev/null 2>&1; then
+    eval "$(direnv hook zsh)"
+  fi
 fi
 
 unset -f path_append
