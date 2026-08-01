@@ -77,7 +77,7 @@ function M.setup()
   vim.bo[bufnr].modifiable = false
   vim.bo[bufnr].readonly = true
 
-  vim.keymap.set("n", "q", "<cmd>quit<cr>", {
+  vim.keymap.set("n", "q", vim.cmd.quit, {
     buffer = bufnr,
     silent = true,
   })
