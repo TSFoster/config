@@ -623,6 +623,10 @@ if fterm then
   end, { desc = "Close all Fterm windows" })
 end
 
+keymap.set({ "n", "t", "i" }, "<M-i>", "<Cmd>CodeCompanionChat Toggle<CR>", { desc = "Toggle CodeCompanion chat" })
+keymap.set("n", "<Leader>i", "<Cmd>CodeCompanionActions<CR>", { desc = "CodeCompanion actions" })
+keymap.set("x", "gi", "<Cmd>CodeCompanionChat Add<CR>", { desc = "Add selection to CodeCompanion chat" })
+
 keymap.set("n", "<A-h>", "<C-w><", { desc = "Resize window <" })
 keymap.set("t", "<A-h>", function()
   vim.cmd("wincmd <")

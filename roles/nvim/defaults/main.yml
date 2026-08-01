@@ -20,6 +20,7 @@ nvim_packages:
 # Includes the Node.js neovim provider, migrated here from the old npm role.
 nvim_npm_packages:
   - neovim
+  - "@agentclientprotocol/claude-agent-acp" # ACP bridge binary CodeCompanion's claude_code adapter spawns
   - "@ansible/ansible-language-server"
   - "@fsouza/prettierd"
   - bash-language-server
