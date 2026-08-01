@@ -44,7 +44,7 @@ dotfiles_antigravity_config_dir: "{{ dotfiles_gemini_dir }}/antigravity-cli"
 dotfiles_antigravity_settings_path: "{{ dotfiles_antigravity_config_dir }}/settings.json"
 dotfiles_antigravity_hooks_path: "{{ dotfiles_antigravity_config_dir }}/hooks.json"
 dotfiles_antigravity_notifications_patch:
-  notifications: "on"
+  notifications: true
 dotfiles_antigravity_hooks_patch:
   agent-notify:
     Stop:
