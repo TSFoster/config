@@ -594,18 +594,33 @@ if fterm then
     height = 0.9,
   })
   local gemini_term = fterm:new({ cmd = "agy", width = 0.9, height = 0.9 })
+  local terms = { yazi_term, claude_term, codex_term, gemini_term }
   keymap.set({ "n", "t", "i" }, "<M-/>", function()
     toggle_or_focus(yazi_term)
   end, { desc = "Toggle Yazi" })
-  keymap.set({ "n", "t", "i" }, "<M-S-c>", function()
+  keymap.set({ "n", "t", "i" }, "<M-c>", function()
     toggle_or_focus(claude_term)
   end, { desc = "Toggle Claude Code" })
-  keymap.set({ "n", "t", "i" }, "<M-c>", function()
+  keymap.set({ "n", "t", "i" }, "<M-o>", function()
     toggle_or_focus(codex_term)
   end, { desc = "Toggle Codex" })
   keymap.set({ "n", "t", "i" }, "<M-g>", function()
     toggle_or_focus(gemini_term)
   end, { desc = "Toggle Gemini" })
+  keymap.set({ "n", "t", "i" }, "<M-f>", function()
+    for _, term in ipairs(terms) do
+      term:close()
+    end
+    fterm.close()
+  end, { desc = "Close all defined Fterm windows" })
+  keymap.set({ "n", "t", "i" }, "<M-F>", function()
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+      local buf = vim.api.nvim_win_get_buf(win)
+      if vim.bo[buf].filetype == "FTerm" then
+        pcall(vim.api.nvim_win_close, win, true)
+      end
+    end
+  end, { desc = "Close all Fterm windows" })
 end
 
 keymap.set("n", "<A-h>", "<C-w><", { desc = "Resize window <" })
