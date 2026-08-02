@@ -586,15 +586,52 @@ if fterm then
     protect_term_window(term)
   end
 
+  -- Scope a zmx session name by tool + cwd, so each project gets its own
+  -- persistent session that can be reattached from outside nvim.
+  local function zmx_session_name(tool)
+    local slug = vim.fn.getcwd():gsub("^/", ""):gsub("/", "-")
+    return tool .. "-" .. slug
+  end
+
+  -- FTerm re-evaluates a function `cmd` every time it (re)spawns the job, so
+  -- the session name tracks the cwd at spawn time rather than at require-time.
+  local function zmx_wrap(tool, real_cmd)
+    return function()
+      return { "zmx", "attach", zmx_session_name(tool), real_cmd }
+    end
+  end
+
   local yazi_term = fterm:new({ cmd = "yazi", width = 0.9, height = 0.9 })
-  local claude_term = fterm:new({ cmd = "claude", width = 0.9, height = 0.9 })
+  local claude_term = fterm:new({ cmd = zmx_wrap("claude", "claude"), width = 0.9, height = 0.9 })
   local codex_term = fterm:new({
-    cmd = vim.fn.stdpath("config") .. "/bin/asdf-codex",
+    cmd = zmx_wrap("codex", vim.fn.stdpath("config") .. "/bin/asdf-codex"),
     width = 0.9,
     height = 0.9,
   })
-  local gemini_term = fterm:new({ cmd = "agy", width = 0.9, height = 0.9 })
+  local gemini_term = fterm:new({ cmd = zmx_wrap("gemini", "agy"), width = 0.9, height = 0.9 })
   local terms = { yazi_term, claude_term, codex_term, gemini_term }
+  local zmx_targets = {
+    { tool = "claude", term = claude_term },
+    { tool = "codex", term = codex_term },
+    { tool = "gemini", term = gemini_term },
+  }
+
+  vim.api.nvim_create_autocmd("VimLeavePre", {
+    desc = "Ask whether to kill zmx sessions backing any FTerm jobs spawned this session",
+    callback = function()
+      for _, target in ipairs(zmx_targets) do
+        -- `terminal` is only set once FTerm has actually spawned the job, so
+        -- this skips tools never opened (or already killed) this session.
+        if target.term.terminal then
+          local name = zmx_session_name(target.tool)
+          local choice = vim.fn.confirm("Kill zmx session '" .. name .. "'?", "&Kill\n&Leave running", 2)
+          if choice == 1 then
+            vim.system({ "zmx", "kill", name, "--force" }):wait()
+          end
+        end
+      end
+    end,
+  })
   keymap.set({ "n", "t", "i" }, "<M-/>", function()
     toggle_or_focus(yazi_term)
   end, { desc = "Toggle Yazi" })
