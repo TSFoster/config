@@ -601,14 +601,37 @@ if fterm then
     end
   end
 
+  -- ZMX_SESSION is inherited from the outer zmx session nvim itself runs in,
+  -- and its presence makes `zmx attach` switch the outer terminal's display
+  -- to the new session instead of attaching independently (neurosnap/zmx#151).
+  -- Dropping it via clear_env+env avoids going through an intermediary shell
+  -- (whose quoting rules would depend on Neovim's 'shell' option, not
+  -- necessarily matching the user's actual $SHELL/fish).
+  local zmx_safe_env = vim.fn.environ()
+  zmx_safe_env.ZMX_SESSION = nil
+
   local yazi_term = fterm:new({ cmd = "yazi", width = 0.9, height = 0.9 })
-  local claude_term = fterm:new({ cmd = zmx_wrap("claude", "claude"), width = 0.9, height = 0.9 })
-  local codex_term = fterm:new({
-    cmd = zmx_wrap("codex", vim.fn.stdpath("config") .. "/bin/asdf-codex"),
+  local claude_term = fterm:new({
+    cmd = zmx_wrap("claude", "claude"),
+    clear_env = true,
+    env = zmx_safe_env,
     width = 0.9,
     height = 0.9,
   })
-  local gemini_term = fterm:new({ cmd = zmx_wrap("gemini", "agy"), width = 0.9, height = 0.9 })
+  local codex_term = fterm:new({
+    cmd = zmx_wrap("codex", vim.fn.stdpath("config") .. "/bin/asdf-codex"),
+    clear_env = true,
+    env = zmx_safe_env,
+    width = 0.9,
+    height = 0.9,
+  })
+  local gemini_term = fterm:new({
+    cmd = zmx_wrap("gemini", "agy"),
+    clear_env = true,
+    env = zmx_safe_env,
+    width = 0.9,
+    height = 0.9,
+  })
   local terms = { yazi_term, claude_term, codex_term, gemini_term }
   local zmx_targets = {
     { tool = "claude", term = claude_term },
