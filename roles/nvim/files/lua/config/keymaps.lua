@@ -568,13 +568,11 @@ if fterm then
     end
   end
 
-  local function toggle_or_focus(term)
+  local function open_and_focus(term)
     if term.win and vim.api.nvim_win_is_valid(term.win) then
       protect_term_window(term)
 
-      if vim.api.nvim_get_current_win() == term.win then
-        term:toggle()
-      else
+      if vim.api.nvim_get_current_win() ~= term.win then
         vim.api.nvim_set_current_win(term.win)
         cmd("startinsert")
       end
@@ -582,7 +580,7 @@ if fterm then
       return
     end
 
-    term:toggle()
+    term:open()
     protect_term_window(term)
   end
 
@@ -656,17 +654,17 @@ if fterm then
     end,
   })
   keymap.set({ "n", "t", "i" }, "<M-/>", function()
-    toggle_or_focus(yazi_term)
-  end, { desc = "Toggle Yazi" })
+    open_and_focus(yazi_term)
+  end, { desc = "Open Yazi" })
   keymap.set({ "n", "t", "i" }, "<M-c>", function()
-    toggle_or_focus(claude_term)
-  end, { desc = "Toggle Claude Code" })
+    open_and_focus(claude_term)
+  end, { desc = "Open Claude Code" })
   keymap.set({ "n", "t", "i" }, "<M-o>", function()
-    toggle_or_focus(codex_term)
-  end, { desc = "Toggle Codex" })
+    open_and_focus(codex_term)
+  end, { desc = "Open Codex" })
   keymap.set({ "n", "t", "i" }, "<M-g>", function()
-    toggle_or_focus(gemini_term)
-  end, { desc = "Toggle Gemini" })
+    open_and_focus(gemini_term)
+  end, { desc = "Open Gemini" })
   keymap.set({ "n", "t", "i" }, "<M-f>", function()
     for _, term in ipairs(terms) do
       term:close()
