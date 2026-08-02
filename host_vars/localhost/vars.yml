@@ -8,3 +8,7 @@ config_dir: "{{ ansible_facts['env'].get('XDG_CONFIG_DIR', ansible_facts['env'][
 git_credentials_github_user: "{{ vault_git_credentials_github_user }}"
 git_credentials_github_token: "{{ vault_git_credentials_github_token }}"
 git_credentials_gitlab_token: "{{ vault_git_credentials_gitlab_token }}"
+
+pushover_user: "{{ vault_pushover_user }}"
+pushover_token: "{{ vault_pushover_token }}"
+

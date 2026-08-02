@@ -12,9 +12,13 @@
     - state
 - name: Add bin files
   ansible.builtin.copy:
-    src: mailbox-count
+    src: "{{ item }}"
     dest: "{{ dotfiles_bin_dir }}/"
     mode: preserve
+  loop:
+    - mailbox-count
+    - pushover
+    - afk
   when: ansible_facts["system"] == "Darwin"
 - name: Ensure ghostty config directory exists
   ansible.builtin.file:
@@ -112,6 +116,26 @@
     src: warpd
     dest: "{{ dotfiles_warpd_config_dir }}/config"
     mode: preserve
+- name: Add pushover credentials
+  block:
+    - name: Ensure pushover config directory exists
+      ansible.builtin.file:
+        state: directory
+        dest: "{{ dotfiles_pushover_config_dir }}"
+        mode: "0700"
+    - name: Add pushover user key
+      ansible.builtin.copy:
+        content: "{{ dotfiles_pushover_user }}"
+        dest: "{{ dotfiles_pushover_config_dir }}/user"
+        mode: "0600"
+      when: dotfiles_pushover_user != ""
+    - name: Add pushover token
+      ansible.builtin.copy:
+        content: "{{ dotfiles_pushover_token }}"
+        dest: "{{ dotfiles_pushover_config_dir }}/token"
+        mode: "0600"
+      when: dotfiles_pushover_token != ""
+
 - name: Add agent notification support (terminal-notifier is macOS only)
   when: ansible_facts["system"] == "Darwin"
   block:

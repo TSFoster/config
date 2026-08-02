@@ -1,0 +1,38 @@
+#!/bin/bash
+# pushover <message> [title]
+# Sends a notification via Pushover API
+set -euo pipefail
+
+message="${1:?usage: pushover <message> [title]}"
+title="${2:-Notification}"
+
+token_file="${PUSHOVER_TOKEN_FILE:-$HOME/.config/pushover/token}"
+user_file="${PUSHOVER_USER_FILE:-$HOME/.config/pushover/user}"
+
+token=""
+user=""
+
+if [[ -n "${PUSHOVER_TOKEN:-}" ]]; then
+  token="$PUSHOVER_TOKEN"
+elif [[ -f "$token_file" ]]; then
+  token="$(cat "$token_file" | tr -d '\r\n')"
+fi
+
+if [[ -n "${PUSHOVER_USER:-}" ]]; then
+  user="$PUSHOVER_USER"
+elif [[ -f "$user_file" ]]; then
+  user="$(cat "$user_file" | tr -d '\r\n')"
+fi
+
+if [[ -z "$token" || -z "$user" ]]; then
+  echo "Error: Pushover credentials not configured." >&2
+  echo "Please set PUSHOVER_TOKEN and PUSHOVER_USER, or populate $token_file and $user_file." >&2
+  exit 1
+fi
+
+curl -s \
+  --form-string "token=$token" \
+  --form-string "user=$user" \
+  --form-string "title=$title" \
+  --form-string "message=$message" \
+  https://api.pushover.net/1/messages.json >/dev/null

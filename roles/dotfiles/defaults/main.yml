@@ -11,6 +11,10 @@ dotfiles_yazi_light_config_dir: "{{ config_dir }}/yazi-light"
 dotfiles_git_config_dir: "{{ config_dir }}/git"
 dotfiles_git_credentials_path: "{{ config_dir }}/git/credentials.gitconfig"
 dotfiles_warpd_config_dir: "{{ config_dir }}/warpd"
+dotfiles_pushover_config_dir: "{{ config_dir }}/pushover"
+dotfiles_pushover_user: "{{ pushover_user | default('') }}"
+dotfiles_pushover_token: "{{ pushover_token | default('') }}"
+
 dotfiles_bat_theme_base_url: https://raw.githubusercontent.com/catppuccin/bat/main/themes
 dotfiles_yazi_theme_base_url: https://raw.githubusercontent.com/catppuccin/yazi/main/themes
 dotfiles_yazi_catppuccin_accent: teal

@@ -1,0 +1,19 @@
+#!/bin/bash
+# afk
+# Creates ~/.afk, awaits input, then deletes ~/.afk and exits.
+set -euo pipefail
+
+afk_file="$HOME/.afk"
+
+touch "$afk_file"
+echo "AFK mode active (~/.afk created). Agent notifications will be sent via Pushover."
+echo "Press Enter to resume (exit AFK mode)..."
+
+cleanup() {
+  rm -f "$afk_file"
+  echo "AFK mode deactivated (~/.afk removed)."
+}
+
+trap cleanup EXIT INT TERM
+
+read -r _ || true

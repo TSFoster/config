@@ -29,10 +29,15 @@ esac
 
 body="${message:-$event}"
 
-terminal-notifier \
-  -title "$title" \
-  -message "$body" \
-  -sound "$sound" \
-  -group "agent-notify-$agent-$project" \
-  -activate "com.mitchellh.ghostty" \
-  >/dev/null
+if [[ -f "$HOME/.afk" ]] && command -v pushover >/dev/null 2>&1; then
+  pushover "$body" "$title" >/dev/null
+else
+  terminal-notifier \
+    -title "$title" \
+    -message "$body" \
+    -sound "$sound" \
+    -group "agent-notify-$agent-$project" \
+    -activate "com.mitchellh.ghostty" \
+    >/dev/null
+fi
+
