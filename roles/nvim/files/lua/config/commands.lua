@@ -109,3 +109,13 @@ create_silent_grep_command("Grep", "grep", "Populate quickfix")
 create_silent_grep_command("Grepadd", "grepadd", "Add to quickfix")
 create_silent_grep_command("Lgrep", "lgrep", "Populate location list")
 create_silent_grep_command("Lgrepadd", "lgrepadd", "Add to location list")
+
+vim.api.nvim_create_user_command("CopyHTML", function(params)
+  local lines = vim.api.nvim_buf_get_lines(0, params.line1 - 1, params.line2, false)
+  util.copy_pandoc(table.concat(lines, "\n"), "html", params.reg)
+end, { range = "%", register = true, desc = "Copy buffer as HTML" })
+
+vim.api.nvim_create_user_command("CopyRTF", function(params)
+  local lines = vim.api.nvim_buf_get_lines(0, params.line1 - 1, params.line2, false)
+  util.copy_pandoc(table.concat(lines, "\n"), "rtf", params.reg)
+end, { range = "%", register = true, desc = "Copy buffer as RTF" })

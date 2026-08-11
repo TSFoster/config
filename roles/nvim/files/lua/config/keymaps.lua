@@ -440,6 +440,51 @@ if not vim.env.SSH_CLIENT then
   make_search("n", "NPM", "https://www.npmjs.com/search?q=", true)
 end
 
+PandocCopy = {}
+local function make_pandoc_copy(char, format, name)
+  PandocCopy[name] = function(kind)
+    local register = PandocCopy.last_register or (v.register == '"' and "*" or v.register)
+    PandocCopy.last_register = nil
+
+    local selection = vim.o.selection
+    local orig_reg_contents = fn.getreg("@", 1)
+    local orig_reg_type = fn.getregtype("@")
+    vim.o.selection = "inclusive"
+    kind = kind or "visual"
+
+    cmd.normal({
+      bang = true,
+      args = {
+        ({
+          line = "'[V']y",
+          char = "`[v`]y",
+          block = "`[<C-v>`]y",
+          visual = "y",
+        })[kind],
+      },
+    })
+
+    local text = fn.getreg("@", 0)
+
+    vim.o.selection = selection
+    fn.setreg("@", orig_reg_contents, orig_reg_type)
+
+    util.copy_pandoc(text, format, register)
+  end
+
+  local function operator()
+    PandocCopy.last_register = v.register == '"' and "*" or v.register
+    vim.o.operatorfunc = "v:lua.PandocCopy." .. name
+    return "g@"
+  end
+
+  keymap.set("n", "<Leader>c" .. char, operator, { expr = true, desc = "Copy " .. name .. " using motion" })
+  keymap.set("v", "<Leader>c" .. char, PandocCopy[name], { desc = "Copy " .. name .. " with selection" })
+end
+
+make_pandoc_copy("h", "html", "HTML")
+make_pandoc_copy("r", "rtf", "RTF")
+
 keymap.set("v", "<C-/>", "<Esc>/\\%V", { desc = "Search within current selection" })
 keymap.set("n", "<Leader>f", function()
   lsp.format_buffer()

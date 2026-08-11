@@ -114,5 +114,19 @@ function M.selection_ref()
   end
 end
 
-return M
+function M.copy_pandoc(text, format, reg)
+  local args = { "pandoc", "-f", "markdown", "-t", format }
+  if format == "rtf" then
+    table.insert(args, "-s")
+  end
+  local result = vim.fn.system(args, text)
+  if vim.v.shell_error == 0 then
+    local target_reg = (reg == "" or reg == nil) and "*" or reg
+    vim.fn.setreg(target_reg, result)
+    vim.notify("Copied " .. format:upper() .. " to register " .. target_reg)
+  else
+    vim.notify("Pandoc error: " .. result, vim.log.levels.ERROR)
+  end
+end
 
+return M
