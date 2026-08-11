@@ -94,6 +94,9 @@ shells_variables_base:
   - name: obsidian
     export: true
     value: "{{ shells_uv.isMac | ternary(ansible_facts['env']['HOME'] + '/Library/Mobile Documents/iCloud~md~obsidian/Documents/Vault', omit) }}"
+  - name: CLAUDE_CODE_DISABLE_TERMINAL_TITLE
+    export: true
+    value: "1"
 shells_variables_darwin:
   - name: ANDROID_HOME
     value: "{{ ansible_facts['env']['HOME'] }}/Library/Android/sdk"

@@ -567,6 +567,7 @@ local function toggle_tool(tool_name, cmd)
   local buf = tool_buffers[tool_name]
   local buf_exists = buf and vim.api.nvim_buf_is_valid(buf)
   local current_tab = vim.api.nvim_get_current_tabpage()
+  local cwd = vim.fn.getcwd()
 
   -- 1. Find or create the tools tab
   if tools_tab_id and vim.api.nvim_tabpage_is_valid(tools_tab_id) then
@@ -596,11 +597,16 @@ local function toggle_tool(tool_name, cmd)
     vim.cmd("enew")
     buf = vim.api.nvim_get_current_buf()
     tool_buffers[tool_name] = buf
-    
+
     -- Hide the buffer from :ls
     vim.api.nvim_set_option_value("buflisted", false, { buf = buf })
-    
-    vim.fn.termopen(cmd)
+
+    -- termopen() runs `cmd` directly rather than through a shell, so it never
+    -- emits the OSC 7 that terminal_osc7_cwd relies on to learn the cwd. Stash
+    -- it explicitly so titlebar_naming has a stable fallback instead of the
+    -- tool's own title (which e.g. claude rewrites continuously).
+    vim.b[buf].shell_cwd = cwd
+    vim.fn.termopen(cmd, { cwd = cwd })
   else
     vim.api.nvim_set_current_buf(buf)
   end
