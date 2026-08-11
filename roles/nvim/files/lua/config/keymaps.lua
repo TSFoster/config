@@ -623,6 +623,14 @@ keymap.set("t", "<A-=>", function()
   cmd.wincmd("=")
 end, { desc = "Resize window =" })
 
+for i = 1, 9 do
+  keymap.set({ "n", "t", "i" }, "<C-" .. i .. ">", function()
+    cmd.tabnext(i)
+  end, { desc = "Go to tab " .. i })
+end
+keymap.set({ "n", "t", "i" }, "<C-->", cmd.tabprevious, { desc = "Go to previous tab" })
+keymap.set({ "n", "t", "i" }, "<C-=>", cmd.tabnext, { desc = "Go to next tab" })
+
 keymap.set("n", "yo<Tab>", toggle.tabs, { desc = "Toggle tabs/spaces" })
 keymap.set("n", "[o<Tab>", util.mk_fn(toggle.tabs, 1), { desc = "Use tabs" })
 keymap.set("n", "]o<Tab>", util.mk_fn(toggle.tabs, 0), { desc = "Use spaces" })
