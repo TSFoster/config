@@ -590,9 +590,9 @@ keymap.set({ "n", "t", "i" }, "<M-d>", function()
   tools.focus("dev", dev_cmd)
 end, { desc = "Open dev server" })
 
-keymap.set({ "n", "t", "i" }, "<M-f>", tools.unfocus, { desc = "Leave the tools tab" })
+keymap.set({ "n", "t", "i" }, "<M-u>", tools.unfocus, { desc = "Leave the tools tab" })
 
-keymap.set({ "n", "t", "i" }, "<M-F>", tools.close_all, { desc = "Close all tools and tab" })
+keymap.set({ "n", "t", "i" }, "<M-U>", tools.close_all, { desc = "Close all tools and tab" })
 
 keymap.set({ "n", "t", "i" }, "<M-i>", function()
   cmd.CodeCompanionChat("Toggle")
