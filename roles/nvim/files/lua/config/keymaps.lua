@@ -663,3 +663,6 @@ keymap.set("n", "]ol", util.mk_fn(toggle.location_list, 0), { desc = "Hide locat
 
 keymap.set("", "[<BS>", "<Plug>(IndentWiseBlockScopeBoundaryBegin)", { desc = "Move to beginning of block" })
 keymap.set("", "]<BS>", "<Plug>(IndentWiseBlockScopeBoundaryEnd)", { desc = "Move to end of block" })
+
+keymap.set({ "n", "t", "i" }, "<M-v>", vim.cmd.vsplit, { desc = ":vsplit" })
+keymap.set({ "n", "t", "i" }, "<M-x>", vim.cmd.split, { desc = ":split" })
