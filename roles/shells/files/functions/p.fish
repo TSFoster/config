@@ -101,7 +101,7 @@ function p
   # If p is run without arguments
   if not count $argv > /dev/null
     set --local running_projects
-    for sock in $P_HOME/nvim-*.sock 2>/dev/null
+    for sock in $P_HOME/nvim-*.sock
       if test -S "$sock"
         set --local name (string match --regex 'nvim-(.*)\.sock$' (basename "$sock"))
         if test -n "$name[2]"
