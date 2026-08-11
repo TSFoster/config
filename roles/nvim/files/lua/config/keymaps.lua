@@ -1,4 +1,5 @@
 local toggle = require("config.toggle")
+local tools = require("config.tools")
 local lsp = require("config.lsp")
 local util = require("config.util")
 
@@ -559,139 +560,34 @@ keymap.set("n", "<Leader>th", util.mk_fn(cmd, "topleft vertical terminal"), { de
 keymap.set("n", "<Leader>tT", util.mk_fn(cmd, "tab terminal"), { desc = "Open terminal session in new tab" })
 keymap.set("n", "<Leader>tt", cmd.terminal, { desc = "Open terminal session in window" })
 
-local tools_tab_id = nil
-local tool_buffers = {}
-local previous_tab_id = nil
-
-local function toggle_tool(tool_name, cmd)
-  local buf = tool_buffers[tool_name]
-  local buf_exists = buf and vim.api.nvim_buf_is_valid(buf)
-  local current_tab = vim.api.nvim_get_current_tabpage()
-  local cwd = vim.fn.getcwd()
-
-  -- 1. Find or create the tools tab
-  if tools_tab_id and vim.api.nvim_tabpage_is_valid(tools_tab_id) then
-    if current_tab == tools_tab_id then
-      -- We are already in the tools tab.
-      local win_with_buf = nil
-      if buf_exists then
-        for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-          if vim.api.nvim_win_get_buf(win) == buf then
-            win_with_buf = win
-            break
-          end
-        end
-      end
-
-      if win_with_buf then
-        if vim.api.nvim_get_current_win() == win_with_buf then
-          -- If we are already focused on it, toggle back to previous tab.
-          if previous_tab_id and vim.api.nvim_tabpage_is_valid(previous_tab_id) then
-            vim.api.nvim_set_current_tabpage(previous_tab_id)
-          else
-            vim.cmd("tabprevious")
-          end
-          return
-        else
-          -- If it's visible in another pane, focus that pane.
-          vim.api.nvim_set_current_win(win_with_buf)
-          vim.cmd("startinsert")
-          return
-        end
-      end
-    else
-      previous_tab_id = current_tab
-      vim.api.nvim_set_current_tabpage(tools_tab_id)
-    end
-  else
-    previous_tab_id = current_tab
-    vim.cmd("tabnew")
-    tools_tab_id = vim.api.nvim_get_current_tabpage()
-  end
-
-  -- 2. Open or switch to the tool buffer
-  if not buf_exists then
-    vim.cmd("enew")
-    buf = vim.api.nvim_get_current_buf()
-    tool_buffers[tool_name] = buf
-
-    -- Hide the buffer from :ls
-    vim.api.nvim_set_option_value("buflisted", false, { buf = buf })
-
-    -- termopen() runs `cmd` directly rather than through a shell, so it never
-    -- emits the OSC 7 that terminal_osc7_cwd relies on to learn the cwd. Stash
-    -- it explicitly so titlebar_naming has a stable fallback instead of the
-    -- tool's own title (which e.g. claude rewrites continuously).
-    vim.b[buf].shell_cwd = cwd
-    vim.fn.termopen(cmd, { cwd = cwd })
-  else
-    local win_with_buf = nil
-    for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-      if vim.api.nvim_win_get_buf(win) == buf then
-        win_with_buf = win
-        break
-      end
-    end
-
-    if win_with_buf then
-      vim.api.nvim_set_current_win(win_with_buf)
-    else
-      vim.api.nvim_set_current_buf(buf)
-    end
-  end
-
-  vim.cmd("startinsert")
-end
-
 keymap.set({ "n", "t", "i" }, "<M-/>", function()
-  toggle_tool("yazi", "yazi")
+  tools.focus("yazi", "yazi")
 end, { desc = "Open Yazi" })
 keymap.set({ "n", "t", "i" }, "<M-c>", function()
-  toggle_tool("claude", "claude")
+  tools.focus("claude", "claude")
 end, { desc = "Open Claude Code" })
 keymap.set({ "n", "t", "i" }, "<M-o>", function()
-  toggle_tool("codex", vim.fn.stdpath("config") .. "/bin/asdf-codex")
+  tools.focus("codex", vim.fn.stdpath("config") .. "/bin/asdf-codex")
 end, { desc = "Open Codex" })
 keymap.set({ "n", "t", "i" }, "<M-g>", function()
-  toggle_tool("gemini", "agy")
+  tools.focus("gemini", "agy")
 end, { desc = "Open Gemini" })
 keymap.set({ "n", "t", "i" }, "<M-s>", function()
-  toggle_tool("shell_1", vim.env.SHELL or "bash")
+  tools.focus("shell_1", vim.env.SHELL or "bash")
 end, { desc = "Open Shell" })
 for i = 1, 9 do
   keymap.set({ "n", "t", "i" }, "<M-" .. i .. ">", function()
-    toggle_tool("shell_" .. i, vim.env.SHELL or "bash")
+    tools.focus("shell_" .. i, vim.env.SHELL or "bash")
   end, { desc = "Open Shell " .. i })
 end
 keymap.set({ "n", "t", "i" }, "<M-d>", function()
-  local cmd = vim.g.dev_cmd or "make dev"
-  toggle_tool("dev", cmd)
+  local dev_cmd = vim.g.dev_cmd or "make dev"
+  tools.focus("dev", dev_cmd)
 end, { desc = "Open dev server" })
 
-keymap.set({ "n", "t", "i" }, "<M-f>", function()
-  if tools_tab_id and vim.api.nvim_tabpage_is_valid(tools_tab_id) then
-    if vim.api.nvim_get_current_tabpage() == tools_tab_id then
-      if previous_tab_id and vim.api.nvim_tabpage_is_valid(previous_tab_id) then
-        vim.api.nvim_set_current_tabpage(previous_tab_id)
-      else
-        vim.cmd("tabprevious")
-      end
-    end
-  end
-end, { desc = "Hide tools tab" })
+keymap.set({ "n", "t", "i" }, "<M-f>", tools.unfocus, { desc = "Leave the tools tab" })
 
-keymap.set({ "n", "t", "i" }, "<M-F>", function()
-  for _, buf in pairs(tool_buffers) do
-    if vim.api.nvim_buf_is_valid(buf) then
-      vim.api.nvim_buf_delete(buf, { force = true })
-    end
-  end
-  tool_buffers = {}
-  if tools_tab_id and vim.api.nvim_tabpage_is_valid(tools_tab_id) then
-    vim.cmd("tabclose " .. vim.api.nvim_tabpage_get_number(tools_tab_id))
-  end
-  tools_tab_id = nil
-end, { desc = "Close all tools and tab" })
+keymap.set({ "n", "t", "i" }, "<M-F>", tools.close_all, { desc = "Close all tools and tab" })
 
 keymap.set({ "n", "t", "i" }, "<M-i>", function()
   vim.cmd.CodeCompanionChat("Toggle")
