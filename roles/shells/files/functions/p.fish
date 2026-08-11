@@ -175,11 +175,13 @@ function p
   else
     pushd $projectDir
     set --local sock "$P_HOME/nvim-$projectName.sock"
-    set --local load_session_cmd "lua if not pcall(require('mini.sessions').read, '$projectName') then require('mini.sessions').write('$projectName') end"
+    set --local load_session_cmd "lua local n='$projectName'; if not require('mini.sessions').detected[n] then require('mini.sessions').write(n) else require('mini.sessions').read(n) end"
 
     if test -S "$sock"
-      # Try to attach to the existing daemon
-      if nvim --server "$sock" --remote-ui
+      # Check if the daemon is still alive
+      if nvim --server "$sock" --remote-expr 'v:servername' >/dev/null 2>&1
+        # Attach to the existing daemon
+        nvim --server "$sock" --remote-ui
         popd
         return 0
       end
@@ -187,11 +189,8 @@ function p
       rm -f "$sock"
     end
 
-    # Start a fresh background daemon with our session command
+    # Start a fresh instance in the foreground, marked as detachable
     nvim --listen "$sock" -c "$load_session_cmd" -c 'silent detach!'
-    
-    # Connect our UI to the newly started daemon
-    nvim --server "$sock" --remote-ui
     
     popd
   end
