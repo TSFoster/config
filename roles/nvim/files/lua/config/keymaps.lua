@@ -597,7 +597,7 @@ local function toggle_tool(tool_name, cmd)
     buf = vim.api.nvim_get_current_buf()
     tool_buffers[tool_name] = buf
     
-    -- Hide the buffer from :ls (like FTerm does)
+    -- Hide the buffer from :ls
     vim.api.nvim_set_option_value("buflisted", false, { buf = buf })
     
     vim.fn.termopen(cmd)

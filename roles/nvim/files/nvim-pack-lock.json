@@ -4,10 +4,6 @@
       "rev": "e69b0024f8f63db10c5d0df26d4920760755d454",
       "src": "https://github.com/bkad/CamelCaseMotion"
     },
-    "FTerm.nvim": {
-      "rev": "d1320892cc2ebab472935242d9d992a2c9570180",
-      "src": "https://github.com/numToStr/FTerm.nvim"
-    },
     "ansi.nvim": {
       "rev": "195b64c3da1c22c2e95648dcbdc6ed075d507064",
       "src": "https://github.com/0xferrous/ansi.nvim"

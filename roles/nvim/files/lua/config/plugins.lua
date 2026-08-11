@@ -446,10 +446,7 @@ if treesitter_context then
   })
 end
 
-local fterm = util.safe_require("FTerm")
-if fterm then
-  fterm.setup({})
-end
+
 
 local ansi = util.safe_require("ansi")
 if ansi then

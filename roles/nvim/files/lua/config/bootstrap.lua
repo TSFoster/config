@@ -51,7 +51,6 @@ local specs = {
   gh("nvim-treesitter/nvim-treesitter"),
   gh("nvim-treesitter/nvim-treesitter-context"),
   gh("nvim-treesitter/nvim-treesitter-textobjects"),
-  gh("numToStr/FTerm.nvim"),
   gh("fcpg/vim-kickfix"),
   gh("tpope/vim-fugitive"),
   gh("tpope/vim-repeat"),
