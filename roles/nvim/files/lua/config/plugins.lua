@@ -446,8 +446,6 @@ if treesitter_context then
   })
 end
 
-
-
 local ansi = util.safe_require("ansi")
 if ansi then
   ansi.setup({
@@ -475,32 +473,9 @@ if obsidian then
   })
 end
 
-local function claude_oauth_token()
-  if vim.env.CLAUDE_CODE_OAUTH_TOKEN then
-    return vim.env.CLAUDE_CODE_OAUTH_TOKEN
-  end
-
-  local token = vim.fn.system({ "op", "read", "op://Personal/Claude Code OAuth Token/credential" }):gsub("%s+$", "")
-  if vim.v.shell_error ~= 0 or token == "" then
-    vim.notify("Couldn't read Claude Code OAuth token from 1Password", vim.log.levels.WARN)
-    return nil
-  end
-
-  return token
-end
-
 local codecompanion = util.safe_require("codecompanion")
 if codecompanion then
   codecompanion.setup({
-    adapters = {
-      acp = {
-        claude_code = function()
-          return require("codecompanion.adapters").extend("claude_code", {
-            env = { CLAUDE_CODE_OAUTH_TOKEN = claude_oauth_token() },
-          })
-        end,
-      },
-    },
     interactions = {
       chat = {
         adapter = "claude_code",

@@ -16,6 +16,9 @@ shells_fish_theme_name: catppuccin-mocha
 shells_op_command: op
 shells_op_plugin_run_prefix: "{{ shells_op_command }} plugin run --"
 shells_tabtab_fish_path: "{{ config_dir }}/tabtab/__tabtab.fish"
+# Keep in sync with CLAUDE_OAUTH_TOKEN_PATH in the Makefile. Populated by `make
+# claude_token_renew`; untracked and outside the repo on purpose.
+shells_claude_oauth_token_path: "{{ ansible_facts['env']['HOME'] }}/.local/state/claude-code/oauth_token"
 
 # Note: atuin is available in apt on Ubuntu 22.04+ but may require
 # the atuin apt repository on older distros. If it fails on Linux,

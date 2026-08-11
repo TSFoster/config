@@ -45,6 +45,7 @@
     dest: "{{ shells_zprofile_path }}"
     mode: "0644"
   tags:
+    - shells_env
     - shells_files
 - name: Add bash_profile
   ansible.builtin.template:
@@ -52,6 +53,7 @@
     dest: "{{ shells_bash_profile_path }}"
     mode: "0644"
   tags:
+    - shells_env
     - shells_files
 - name: Create fish_variables
   ansible.builtin.file:
@@ -61,6 +63,7 @@
     access_time: preserve
     mode: "0644"
   tags:
+    - shells_env
     - vars_debug
 - name: Set fish universal shell variables
   ansible.builtin.lineinfile:
@@ -105,6 +108,7 @@
   loop_control:
     label: "{{ item.name }}"
   tags:
+    - shells_env
     - vars_debug
 - name: Set fish abbreviations
   ansible.builtin.lineinfile:
