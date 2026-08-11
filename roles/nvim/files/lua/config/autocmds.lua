@@ -16,7 +16,7 @@ do
     desc = "Automatically enter insert mode in terminal if not scrolled back",
     callback = function()
       if vim.o.buftype == "terminal" and vim.fn.line("$") == vim.fn.line("w$") then
-        vim.cmd("startinsert")
+        vim.cmd.startinsert()
       end
     end,
   })
@@ -179,7 +179,7 @@ do
     callback = function()
       if #vim.fn.glob(vim.fn.getcwd() .. "/config.*") > 0 then
         vim.bo.filetype = "gohtmltmpl"
-        vim.cmd("runtime! ftdetect/html.vim")
+        vim.cmd.runtime({ args = { "ftdetect/html.vim" }, bang = true })
       end
     end,
   })

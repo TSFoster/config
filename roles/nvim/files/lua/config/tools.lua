@@ -60,7 +60,7 @@ function M.focus(tool_name, cmd)
     end
   end
 
-  vim.cmd("startinsert")
+  vim.cmd.startinsert()
 end
 
 -- Leave the tools tab and return to wherever focus was before it, if we're
@@ -77,7 +77,7 @@ function M.unfocus()
   if previous_tab_id and vim.api.nvim_tabpage_is_valid(previous_tab_id) then
     vim.api.nvim_set_current_tabpage(previous_tab_id)
   else
-    vim.cmd("tabprevious")
+    vim.cmd.tabprevious()
   end
 end
 
@@ -91,7 +91,7 @@ function M.close_all()
   tool_buffers = {}
 
   if tools_tab_id and vim.api.nvim_tabpage_is_valid(tools_tab_id) then
-    vim.cmd("tabclose " .. vim.api.nvim_tabpage_get_number(tools_tab_id))
+    vim.cmd.tabclose(vim.api.nvim_tabpage_get_number(tools_tab_id))
   end
   tools_tab_id = nil
 end

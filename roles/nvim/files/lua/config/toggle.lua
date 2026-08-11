@@ -28,14 +28,14 @@ function M.location_list(open)
 
   if open == nil or open == 0 then
     if window ~= 0 then
-      vim.cmd("silent! lclose")
-      vim.cmd("silent! lclose")
+      vim.cmd.lclose({ mods = { silent = true, emsg_silent = true } })
+      vim.cmd.lclose({ mods = { silent = true, emsg_silent = true } })
       return
     end
   end
 
   if open == nil or open == 1 then
-    local ok = pcall(vim.cmd, "silent! lopen")
+    local ok = pcall(vim.cmd.lopen, { mods = { silent = true, emsg_silent = true } })
     if not ok or vim.fn.getloclist(0, { winid = 0 }).winid == 0 then
       vim.api.nvim_echo({ { "No items in location list" } }, false, {})
     end

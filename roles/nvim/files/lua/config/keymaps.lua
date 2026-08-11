@@ -11,8 +11,8 @@ local v = vim.v
 local function restart_with_temp_session()
   local session_file = fn.tempname() .. ".vim"
 
-  cmd("mksession! " .. fn.fnameescape(session_file))
-  cmd("restart source " .. fn.fnameescape(session_file))
+  cmd.mksession({ args = { fn.fnameescape(session_file) }, bang = true })
+  cmd.restart({ args = { "source", fn.fnameescape(session_file) } })
 end
 
 -- Gracefully background the UI without pausing the Neovim process
@@ -64,13 +64,13 @@ keymap.set("c", "%r", function()
   return fn.fnameescape(fn.expand("%"))
 end, { expr = true, desc = "Expand current file's relative path" })
 
-keymap.set("n", "<Leader>w", vim.cmd.write, { desc = "Write buffer" })
-keymap.set("n", "<Leader><Leader>w", vim.cmd.wall, { desc = "Write all buffers" })
+keymap.set("n", "<Leader>w", cmd.write, { desc = "Write buffer" })
+keymap.set("n", "<Leader><Leader>w", cmd.wall, { desc = "Write all buffers" })
 keymap.set("n", "<Leader><Leader>R", restart_with_temp_session, { desc = "Restart and restore from temp session" })
-keymap.set("n", "<Leader>q", vim.cmd.quit, { desc = "Quit window" })
-keymap.set("n", "<Leader><Leader>q", vim.cmd.qall, { desc = "Quit all windows" })
-keymap.set("n", "<Leader>x", vim.cmd.xit, { desc = "Write and quit window" })
-keymap.set("n", "<Leader><Leader>x", vim.cmd.xall, { desc = "Write and quit all windows" })
+keymap.set("n", "<Leader>q", cmd.quit, { desc = "Quit window" })
+keymap.set("n", "<Leader><Leader>q", cmd.qall, { desc = "Quit all windows" })
+keymap.set("n", "<Leader>x", cmd.xit, { desc = "Write and quit window" })
+keymap.set("n", "<Leader><Leader>x", cmd.xall, { desc = "Write and quit all windows" })
 
 keymap.set("n", "<Leader>s", ":%s//g<Left><Left>", { desc = "Global substitution of whole buffer" })
 keymap.set("v", "<Leader>s", ":s//g<Left><Left>", { desc = "Global substitution of selection" })
@@ -150,20 +150,20 @@ keymap.set("n", "<Leader>gre", function()
 end, { desc = "Rebase git" })
 
 keymap.set("n", "<Leader>gv", function()
-  cmd("vertical topleft Git log --graph --oneline")
-  cmd("vertical resize 75")
+  cmd.Git({ mods = { vertical = true, split = "topleft" }, args = { "log --graph --oneline" } })
+  cmd.resize({ mods = { vertical = true }, args = { "75" } })
 end, { desc = "Open git log" })
 keymap.set("n", "<Leader>gV", function()
-  cmd("vertical topleft Git log --graph --oneline -- %")
-  cmd("vertical resize 75")
+  cmd.Git({ mods = { vertical = true, split = "topleft" }, args = { "log --graph --oneline -- %" } })
+  cmd.resize({ mods = { vertical = true }, args = { "75" } })
 end, { desc = "Open git log for current file" })
 keymap.set("n", "<Leader>gf", function()
-  cmd("vertical topleft Git log --graph --oneline --stat")
-  cmd("vertical resize 75")
+  cmd.Git({ mods = { vertical = true, split = "topleft" }, args = { "log --graph --oneline --stat" } })
+  cmd.resize({ mods = { vertical = true }, args = { "75" } })
 end, { desc = "Open git log with stats" })
 keymap.set("n", "<Leader>gF", function()
-  cmd("vertical topleft Git log --graph --oneline --stat -- %")
-  cmd("vertical resize 75")
+  cmd.Git({ mods = { vertical = true, split = "topleft" }, args = { "log --graph --oneline --stat -- %" } })
+  cmd.resize({ mods = { vertical = true }, args = { "75" } })
 end, { desc = "Open git log with stats for current file" })
 -- TODO Replace with https://github.com/rbong/vim-flog, maybe
 
@@ -350,10 +350,10 @@ keymap.set("n", "<M-S-p>", '"*P', { remap = true, desc = "Put before using syste
 keymap.set("n", "[<M-p>", ":put! *<CR>", { remap = true, desc = "Put before using system clipboard" })
 keymap.set("n", "]<M-p>", ":put *<CR>", { remap = true, desc = "Put after using system clipboard" })
 keymap.set("n", "[p", function()
-  vim.cmd("put! " .. vim.v.register)
+  cmd.put({ reg = v.register, bang = true })
 end, { desc = "Linewise put before" })
 keymap.set("n", "]p", function()
-  vim.cmd("put " .. vim.v.register)
+  cmd.put({ reg = v.register })
 end, { desc = "Linewise put after" })
 
 keymap.set("n", "<Leader>cc", function()
@@ -365,7 +365,7 @@ end, { remap = true, desc = "Copy unnamed register to system clipboard" })
 keymap.set("t", "<A-r>", function()
   local char = fn.nr2char(fn.getchar())
   local chan = vim.bo[vim.api.nvim_get_current_buf()].channel
-  vim.fn.chansend(chan, fn.getreg(char))
+  fn.chansend(chan, fn.getreg(char))
 end, { desc = "Insert register into terminal buffer" })
 
 if not vim.env.SSH_CLIENT then
@@ -403,12 +403,17 @@ if not vim.env.SSH_CLIENT then
       if text then
         fn.setreg("@", text)
       else
-        cmd("normal! " .. ({
-          line = "'[V']y",
-          char = "`[v`]y",
-          block = "`[<C-v>`]y",
-          visual = "y",
-        })[kind])
+        cmd.normal({
+          bang = true,
+          args = {
+            ({
+              line = "'[V']y",
+              char = "`[v`]y",
+              block = "`[<C-v>`]y",
+              visual = "y",
+            })[kind],
+          },
+        })
       end
 
       local term = escape_selection and urlencode(fn.getreg("@", 0)) or fn.getreg("@", 0)
@@ -498,32 +503,32 @@ end, { desc = "Turn on autoformatting on save for this buffer" })
 
 keymap.set("n", "<C-h>", "<C-w>h", { desc = "Move window focus left" })
 keymap.set("t", "<C-h>", function()
-  vim.cmd("wincmd h")
+  cmd.wincmd("h")
 end, { desc = "Move window focus left" })
 keymap.set("n", "<C-j>", "<C-w>j", { desc = "Move window focus down" })
 keymap.set("t", "<C-j>", function()
-  vim.cmd("wincmd j")
+  cmd.wincmd("j")
 end, { desc = "Move window focus down" })
 keymap.set("n", "<C-k>", "<C-w>k", { desc = "Move window focus up" })
 keymap.set("t", "<C-k>", function()
-  vim.cmd("wincmd k")
+  cmd.wincmd("k")
 end, { desc = "Move window focus up" })
 keymap.set("n", "<C-l>", "<C-w>l", { desc = "Move window focus right" })
 keymap.set("t", "<C-l>", function()
-  vim.cmd("wincmd l")
+  cmd.wincmd("l")
 end, { desc = "Move window focus right" })
 
 keymap.set("t", ";;", "<C-\\><C-n>:", { desc = "Enter ex command" })
 keymap.set("t", "jj", "<C-\\><C-n>", { desc = "Enter normal mode" })
 keymap.set("t", "<A-\\>", function()
-  local char = vim.fn.getchar()
+  local char = fn.getchar()
   local chan = vim.bo[vim.api.nvim_get_current_buf()].channel
   local bytes
   if type(char) == "number" and char > 0 then
     if char >= 128 and char < 256 then
-      bytes = "\x1b" .. vim.fn.nr2char(char - 128)
+      bytes = "\x1b" .. fn.nr2char(char - 128)
     else
-      bytes = vim.fn.nr2char(char)
+      bytes = fn.nr2char(char)
     end
   elseif type(char) == "string" and char:sub(1, 2) == "\x80\xfc" then
     -- \x80\xfc + modifier_byte + key: Vim's internal modifier-key encoding
@@ -531,11 +536,11 @@ keymap.set("t", "<A-\\>", function()
     local key = char:sub(4)
     local is_ctrl = bit.band(mod, 0x04) ~= 0 -- MOD_MASK_CTRL
     local is_alt = bit.band(mod, 0x08) ~= 0 -- MOD_MASK_ALT
-    local inner = is_ctrl and vim.fn.nr2char(string.byte(key) % 32) or key
+    local inner = is_ctrl and fn.nr2char(string.byte(key) % 32) or key
     bytes = is_alt and ("\x1b" .. inner) or inner
   end
   if bytes then
-    vim.fn.chansend(chan, bytes)
+    fn.chansend(chan, bytes)
   end
 end, { desc = "Send next keystroke literally to terminal" })
 keymap.set("t", "<A-Space>", "<C-\\><C-n><Leader>", { remap = true, desc = "Leader" })
@@ -567,7 +572,7 @@ keymap.set({ "n", "t", "i" }, "<M-c>", function()
   tools.focus("claude", "claude")
 end, { desc = "Open Claude Code" })
 keymap.set({ "n", "t", "i" }, "<M-o>", function()
-  tools.focus("codex", vim.fn.stdpath("config") .. "/bin/asdf-codex")
+  tools.focus("codex", fn.stdpath("config") .. "/bin/asdf-codex")
 end, { desc = "Open Codex" })
 keymap.set({ "n", "t", "i" }, "<M-g>", function()
   tools.focus("gemini", "agy")
@@ -590,32 +595,32 @@ keymap.set({ "n", "t", "i" }, "<M-f>", tools.unfocus, { desc = "Leave the tools 
 keymap.set({ "n", "t", "i" }, "<M-F>", tools.close_all, { desc = "Close all tools and tab" })
 
 keymap.set({ "n", "t", "i" }, "<M-i>", function()
-  vim.cmd.CodeCompanionChat("Toggle")
+  cmd.CodeCompanionChat("Toggle")
 end, { desc = "Toggle CodeCompanion chat" })
-keymap.set("n", "<Leader>i", vim.cmd.CodeCompanionActions, { desc = "CodeCompanion actions" })
+keymap.set("n", "<Leader>i", cmd.CodeCompanionActions, { desc = "CodeCompanion actions" })
 keymap.set("x", "gi", function()
-  vim.cmd.CodeCompanionChat("Add")
+  cmd.CodeCompanionChat("Add")
 end, { desc = "Add selection to CodeCompanion chat" })
 
 keymap.set("n", "<A-h>", "<C-w><", { desc = "Resize window <" })
 keymap.set("t", "<A-h>", function()
-  vim.cmd("wincmd <")
+  cmd.wincmd("<")
 end, { desc = "Resize window <" })
 keymap.set("n", "<A-j>", "<C-w>-", { desc = "Resize window -" })
 keymap.set("t", "<A-j>", function()
-  vim.cmd("wincmd -")
+  cmd.wincmd("-")
 end, { desc = "Resize window -" })
 keymap.set("n", "<A-k>", "<C-w>+", { desc = "Resize window +" })
 keymap.set("t", "<A-k>", function()
-  vim.cmd("wincmd +")
+  cmd.wincmd("+")
 end, { desc = "Resize window +" })
 keymap.set("n", "<A-l>", "<C-w>>", { desc = "Resize window >" })
 keymap.set("t", "<A-l>", function()
-  vim.cmd("wincmd >")
+  cmd.wincmd(">")
 end, { desc = "Resize window >" })
 keymap.set("n", "<A-=>", "<C-w>=", { desc = "Resize window =" })
 keymap.set("t", "<A-=>", function()
-  vim.cmd("wincmd =")
+  cmd.wincmd("=")
 end, { desc = "Resize window =" })
 
 keymap.set("n", "yo<Tab>", toggle.tabs, { desc = "Toggle tabs/spaces" })

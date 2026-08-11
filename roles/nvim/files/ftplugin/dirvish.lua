@@ -52,7 +52,7 @@ local function visual_target_paths()
 end
 
 local function refresh()
-  vim.cmd("Dirvish")
+  vim.cmd.Dirvish()
 end
 
 local function resolve_destination(input)
@@ -146,8 +146,8 @@ local function delete_paths(paths)
     end
 
     if vim.fn.argc() > 0 then
-      vim.cmd("arglocal")
-      vim.cmd("silent! argdelete *")
+      vim.cmd.arglocal()
+      vim.cmd.argdelete({ args = { "*" }, mods = { silent = true, emsg_silent = true } })
     end
 
     refresh()
