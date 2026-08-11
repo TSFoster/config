@@ -573,14 +573,31 @@ local function toggle_tool(tool_name, cmd)
   if tools_tab_id and vim.api.nvim_tabpage_is_valid(tools_tab_id) then
     if current_tab == tools_tab_id then
       -- We are already in the tools tab.
-      -- If the currently displayed buffer is this tool, toggle back to previous tab.
-      if buf_exists and vim.api.nvim_get_current_buf() == buf then
-        if previous_tab_id and vim.api.nvim_tabpage_is_valid(previous_tab_id) then
-          vim.api.nvim_set_current_tabpage(previous_tab_id)
-        else
-          vim.cmd("tabprevious")
+      local win_with_buf = nil
+      if buf_exists then
+        for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+          if vim.api.nvim_win_get_buf(win) == buf then
+            win_with_buf = win
+            break
+          end
         end
-        return
+      end
+
+      if win_with_buf then
+        if vim.api.nvim_get_current_win() == win_with_buf then
+          -- If we are already focused on it, toggle back to previous tab.
+          if previous_tab_id and vim.api.nvim_tabpage_is_valid(previous_tab_id) then
+            vim.api.nvim_set_current_tabpage(previous_tab_id)
+          else
+            vim.cmd("tabprevious")
+          end
+          return
+        else
+          -- If it's visible in another pane, focus that pane.
+          vim.api.nvim_set_current_win(win_with_buf)
+          vim.cmd("startinsert")
+          return
+        end
       end
     else
       previous_tab_id = current_tab
@@ -608,17 +625,39 @@ local function toggle_tool(tool_name, cmd)
     vim.b[buf].shell_cwd = cwd
     vim.fn.termopen(cmd, { cwd = cwd })
   else
-    vim.api.nvim_set_current_buf(buf)
+    local win_with_buf = nil
+    for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+      if vim.api.nvim_win_get_buf(win) == buf then
+        win_with_buf = win
+        break
+      end
+    end
+
+    if win_with_buf then
+      vim.api.nvim_set_current_win(win_with_buf)
+    else
+      vim.api.nvim_set_current_buf(buf)
+    end
   end
-  
+
   vim.cmd("startinsert")
 end
 
-keymap.set({ "n", "t", "i" }, "<M-/>", function() toggle_tool("yazi", "yazi") end, { desc = "Open Yazi" })
-keymap.set({ "n", "t", "i" }, "<M-c>", function() toggle_tool("claude", "claude") end, { desc = "Open Claude Code" })
-keymap.set({ "n", "t", "i" }, "<M-o>", function() toggle_tool("codex", vim.fn.stdpath("config") .. "/bin/asdf-codex") end, { desc = "Open Codex" })
-keymap.set({ "n", "t", "i" }, "<M-g>", function() toggle_tool("gemini", "agy") end, { desc = "Open Gemini" })
-keymap.set({ "n", "t", "i" }, "<M-s>", function() toggle_tool("shell", vim.env.SHELL or "bash") end, { desc = "Open Shell" })
+keymap.set({ "n", "t", "i" }, "<M-/>", function()
+  toggle_tool("yazi", "yazi")
+end, { desc = "Open Yazi" })
+keymap.set({ "n", "t", "i" }, "<M-c>", function()
+  toggle_tool("claude", "claude")
+end, { desc = "Open Claude Code" })
+keymap.set({ "n", "t", "i" }, "<M-o>", function()
+  toggle_tool("codex", vim.fn.stdpath("config") .. "/bin/asdf-codex")
+end, { desc = "Open Codex" })
+keymap.set({ "n", "t", "i" }, "<M-g>", function()
+  toggle_tool("gemini", "agy")
+end, { desc = "Open Gemini" })
+keymap.set({ "n", "t", "i" }, "<M-s>", function()
+  toggle_tool("shell", vim.env.SHELL or "bash")
+end, { desc = "Open Shell" })
 
 keymap.set({ "n", "t", "i" }, "<M-f>", function()
   if tools_tab_id and vim.api.nvim_tabpage_is_valid(tools_tab_id) then
