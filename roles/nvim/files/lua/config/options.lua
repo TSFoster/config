@@ -27,6 +27,7 @@ opt.nrformats = { "bin", "hex", "unsigned", "blank" }
 opt.foldmethod = "expr"
 opt.foldexpr = "nvim_treesitter#foldexpr()"
 opt.foldenable = false
+opt.exrc = true
 
 vim.filetype.add({
   extension = {
