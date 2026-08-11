@@ -166,11 +166,6 @@
     path: "{{ shells_fish_themes_dir }}"
     state: directory
     mode: "0755"
-- name: Remove legacy fish Homebrew config
-  ansible.builtin.file:
-    path: "{{ shells_fish_conf_d_dir }}/_0homebrew.fish"
-    state: absent
-  when: ansible_facts['system'] == 'Darwin'
 - name: Check fisher installed
   ansible.builtin.command:
     cmd: 'fish -c "functions -q fisher; and echo installed; exit 0"'
