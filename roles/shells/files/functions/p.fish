@@ -19,7 +19,7 @@ function p
     echo '    This help message.'
     echo ''
     echo 'p'
-    echo '    Look for a project associated with your pwd and launch that.'
+    echo '    List currently running projects.'
     echo ''
     echo 'p -l | --list'
     echo '    List all projects.'
@@ -100,21 +100,34 @@ function p
 
   # If p is run without arguments
   if not count $argv > /dev/null
-    set --local foundNames
-
-    for i in $indexes
-      string match --quiet $projectDirs[$i]'*' $PWD
-      and set foundNames[(string length $projectDirs[$i])] $projectNames[$i]
+    set --local running_projects
+    for sock in $P_HOME/nvim-*.sock 2>/dev/null
+      if test -S "$sock"
+        set --local name (string match --regex 'nvim-(.*)\.sock$' (basename "$sock"))
+        if test -n "$name[2]"
+          if nvim --server "$sock" --remote-expr 'v:servername' >/dev/null 2>&1
+            set -a running_projects $name[2]
+          else
+            rm -f "$sock"
+          end
+        end
+      end
     end
 
-    set --local c (count $foundNames)
-    if [ $c -eq 0 ]
-      echo 'What project should I start?' >&2
-      return 1
+    if test (count $running_projects) -eq 0
+      echo 'No projects are currently running.'
+      return 0
     end
 
-    echo Found project $foundNames[$c] >&2
-    set projectName $foundNames[$c]
+    for p in $running_projects
+      set --local path_msg ""
+      set --local i (contains --index $p $projectNames)
+      if test -n "$i"
+        set path_msg ": $projectDirs[$i]"
+      end
+      echo (set_color --bold)$p(set_color normal)$path_msg
+    end
+    return 0
   end
 
   set --local i (contains --index $projectName $projectNames)
@@ -161,7 +174,15 @@ function p
     echo $projectDir
   else
     pushd $projectDir
-    zmx attach nvim-$projectName nvim
+    set --local sock "$P_HOME/nvim-$projectName.sock"
+    if test -S "$sock"
+      if not nvim --server "$sock" --remote-ui
+        rm -f "$sock"
+        nvim --listen "$sock" -c 'silent detach!'
+      end
+    else
+      nvim --listen "$sock" -c 'silent detach!'
+    end
     popd
   end
 
