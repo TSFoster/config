@@ -30,6 +30,7 @@ hammerspoon_app_launchers:
   - { k: "s", app: Ghostty } # Mnemonic: Shell
   - { k: "t", app: Things3 }
   - { k: "u", app: App Store } # Mnemonic: Updates
+  - { k: "U", app: Setapp } # Mnemonic: Updates
   - { k: "v", app: Play } # Mnemonic: Videos
   - { k: "w", app: Safari } # Mnemonic: Web
   - { k: "W", app: WhatsApp }
