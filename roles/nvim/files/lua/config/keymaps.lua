@@ -14,9 +14,8 @@ local function restart_with_temp_session()
   cmd("restart source " .. fn.fnameescape(session_file))
 end
 
-if vim.env.ZMX_SESSION then
-  keymap.set({ "n", "v", "x", "s", "o", "i", "l", "c" }, "<C-z>", "<Nop>", { desc = "Disable suspend in ZMX session" })
-end
+-- Gracefully background the UI without pausing the Neovim process
+keymap.set({ "n", "v", "x", "s", "o", "i", "l", "c" }, "<C-z>", "<Cmd>detach<CR>", { desc = "Detach UI" })
 
 keymap.set("n", "<Leader>jp", fn["jsonpath#echo"], { desc = "Print JSON path" })
 keymap.set("n", "<Leader>jg", fn["jsonpath#goto"], { desc = "Go to JSON path" })
@@ -560,126 +559,85 @@ keymap.set("n", "<Leader>th", util.mk_fn(cmd, "topleft vertical terminal"), { de
 keymap.set("n", "<Leader>tT", util.mk_fn(cmd, "tab terminal"), { desc = "Open terminal session in new tab" })
 keymap.set("n", "<Leader>tt", cmd.terminal, { desc = "Open terminal session in window" })
 
-local fterm = util.safe_require("FTerm")
-if fterm then
-  local function protect_term_window(term)
-    if term.win and vim.api.nvim_win_is_valid(term.win) then
-      pcall(vim.api.nvim_set_option_value, "winfixbuf", true, { win = term.win })
-    end
-  end
+local tools_tab_id = nil
+local tool_buffers = {}
+local previous_tab_id = nil
 
-  local function open_and_focus(term)
-    if term.win and vim.api.nvim_win_is_valid(term.win) then
-      protect_term_window(term)
+local function toggle_tool(tool_name, cmd)
+  local buf = tool_buffers[tool_name]
+  local buf_exists = buf and vim.api.nvim_buf_is_valid(buf)
+  local current_tab = vim.api.nvim_get_current_tabpage()
 
-      if vim.api.nvim_get_current_win() ~= term.win then
-        vim.api.nvim_set_current_win(term.win)
-        cmd("startinsert")
-      end
-
-      return
-    end
-
-    term:open()
-    protect_term_window(term)
-  end
-
-  -- Scope a zmx session name by tool + cwd, so each project gets its own
-  -- persistent session that can be reattached from outside nvim.
-  local function zmx_session_name(tool)
-    local slug = vim.fn.getcwd():gsub("^/", ""):gsub("/", "-")
-    return tool .. "-" .. slug
-  end
-
-  -- FTerm re-evaluates a function `cmd` every time it (re)spawns the job, so
-  -- the session name tracks the cwd at spawn time rather than at require-time.
-  local function zmx_wrap(tool, real_cmd)
-    return function()
-      return { "zmx", "attach", zmx_session_name(tool), real_cmd }
-    end
-  end
-
-  -- ZMX_SESSION is inherited from the outer zmx session nvim itself runs in,
-  -- and its presence makes `zmx attach` switch the outer terminal's display
-  -- to the new session instead of attaching independently (neurosnap/zmx#151).
-  -- Dropping it via clear_env+env avoids going through an intermediary shell
-  -- (whose quoting rules would depend on Neovim's 'shell' option, not
-  -- necessarily matching the user's actual $SHELL/fish).
-  local zmx_safe_env = vim.fn.environ()
-  zmx_safe_env.ZMX_SESSION = nil
-
-  local yazi_term = fterm:new({ cmd = "yazi", width = 0.9, height = 0.9 })
-  local claude_term = fterm:new({
-    cmd = zmx_wrap("claude", "claude"),
-    clear_env = true,
-    env = zmx_safe_env,
-    width = 0.9,
-    height = 0.9,
-  })
-  local codex_term = fterm:new({
-    cmd = zmx_wrap("codex", vim.fn.stdpath("config") .. "/bin/asdf-codex"),
-    clear_env = true,
-    env = zmx_safe_env,
-    width = 0.9,
-    height = 0.9,
-  })
-  local gemini_term = fterm:new({
-    cmd = zmx_wrap("gemini", "agy"),
-    clear_env = true,
-    env = zmx_safe_env,
-    width = 0.9,
-    height = 0.9,
-  })
-  local terms = { yazi_term, claude_term, codex_term, gemini_term }
-  local zmx_targets = {
-    { tool = "claude", term = claude_term },
-    { tool = "codex", term = codex_term },
-    { tool = "gemini", term = gemini_term },
-  }
-
-  vim.api.nvim_create_autocmd("VimLeavePre", {
-    desc = "Ask whether to kill zmx sessions backing any FTerm jobs spawned this session",
-    callback = function()
-      for _, target in ipairs(zmx_targets) do
-        -- `terminal` is only set once FTerm has actually spawned the job, so
-        -- this skips tools never opened (or already killed) this session.
-        if target.term.terminal then
-          local name = zmx_session_name(target.tool)
-          local choice = vim.fn.confirm("Kill zmx session '" .. name .. "'?", "&Kill\n&Leave running", 2)
-          if choice == 1 then
-            vim.system({ "zmx", "kill", name, "--force" }):wait()
-          end
+  -- 1. Find or create the tools tab
+  if tools_tab_id and vim.api.nvim_tabpage_is_valid(tools_tab_id) then
+    if current_tab == tools_tab_id then
+      -- We are already in the tools tab.
+      -- If the currently displayed buffer is this tool, toggle back to previous tab.
+      if buf_exists and vim.api.nvim_get_current_buf() == buf then
+        if previous_tab_id and vim.api.nvim_tabpage_is_valid(previous_tab_id) then
+          vim.api.nvim_set_current_tabpage(previous_tab_id)
+        else
+          vim.cmd("tabprevious")
         end
+        return
       end
-    end,
-  })
-  keymap.set({ "n", "t", "i" }, "<M-/>", function()
-    open_and_focus(yazi_term)
-  end, { desc = "Open Yazi" })
-  keymap.set({ "n", "t", "i" }, "<M-c>", function()
-    open_and_focus(claude_term)
-  end, { desc = "Open Claude Code" })
-  keymap.set({ "n", "t", "i" }, "<M-o>", function()
-    open_and_focus(codex_term)
-  end, { desc = "Open Codex" })
-  keymap.set({ "n", "t", "i" }, "<M-g>", function()
-    open_and_focus(gemini_term)
-  end, { desc = "Open Gemini" })
-  keymap.set({ "n", "t", "i" }, "<M-f>", function()
-    for _, term in ipairs(terms) do
-      term:close()
+    else
+      previous_tab_id = current_tab
+      vim.api.nvim_set_current_tabpage(tools_tab_id)
     end
-    fterm.close()
-  end, { desc = "Close all defined Fterm windows" })
-  keymap.set({ "n", "t", "i" }, "<M-F>", function()
-    for _, win in ipairs(vim.api.nvim_list_wins()) do
-      local buf = vim.api.nvim_win_get_buf(win)
-      if vim.bo[buf].filetype == "FTerm" then
-        pcall(vim.api.nvim_win_close, win, true)
-      end
-    end
-  end, { desc = "Close all Fterm windows" })
+  else
+    previous_tab_id = current_tab
+    vim.cmd("tabnew")
+    tools_tab_id = vim.api.nvim_get_current_tabpage()
+  end
+
+  -- 2. Open or switch to the tool buffer
+  if not buf_exists then
+    vim.cmd("enew")
+    buf = vim.api.nvim_get_current_buf()
+    tool_buffers[tool_name] = buf
+    
+    -- Hide the buffer from :ls (like FTerm does)
+    vim.api.nvim_set_option_value("buflisted", false, { buf = buf })
+    
+    vim.fn.termopen(cmd)
+  else
+    vim.api.nvim_set_current_buf(buf)
+  end
+  
+  vim.cmd("startinsert")
 end
+
+keymap.set({ "n", "t", "i" }, "<M-/>", function() toggle_tool("yazi", "yazi") end, { desc = "Open Yazi" })
+keymap.set({ "n", "t", "i" }, "<M-c>", function() toggle_tool("claude", "claude") end, { desc = "Open Claude Code" })
+keymap.set({ "n", "t", "i" }, "<M-o>", function() toggle_tool("codex", vim.fn.stdpath("config") .. "/bin/asdf-codex") end, { desc = "Open Codex" })
+keymap.set({ "n", "t", "i" }, "<M-g>", function() toggle_tool("gemini", "agy") end, { desc = "Open Gemini" })
+keymap.set({ "n", "t", "i" }, "<M-s>", function() toggle_tool("shell", vim.env.SHELL or "bash") end, { desc = "Open Shell" })
+
+keymap.set({ "n", "t", "i" }, "<M-f>", function()
+  if tools_tab_id and vim.api.nvim_tabpage_is_valid(tools_tab_id) then
+    if vim.api.nvim_get_current_tabpage() == tools_tab_id then
+      if previous_tab_id and vim.api.nvim_tabpage_is_valid(previous_tab_id) then
+        vim.api.nvim_set_current_tabpage(previous_tab_id)
+      else
+        vim.cmd("tabprevious")
+      end
+    end
+  end
+end, { desc = "Hide tools tab" })
+
+keymap.set({ "n", "t", "i" }, "<M-F>", function()
+  for _, buf in pairs(tool_buffers) do
+    if vim.api.nvim_buf_is_valid(buf) then
+      vim.api.nvim_buf_delete(buf, { force = true })
+    end
+  end
+  tool_buffers = {}
+  if tools_tab_id and vim.api.nvim_tabpage_is_valid(tools_tab_id) then
+    vim.cmd("tabclose " .. vim.api.nvim_tabpage_get_number(tools_tab_id))
+  end
+  tools_tab_id = nil
+end, { desc = "Close all tools and tab" })
 
 keymap.set({ "n", "t", "i" }, "<M-i>", function()
   vim.cmd.CodeCompanionChat("Toggle")
