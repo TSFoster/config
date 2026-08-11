@@ -656,8 +656,13 @@ keymap.set({ "n", "t", "i" }, "<M-g>", function()
   toggle_tool("gemini", "agy")
 end, { desc = "Open Gemini" })
 keymap.set({ "n", "t", "i" }, "<M-s>", function()
-  toggle_tool("shell", vim.env.SHELL or "bash")
+  toggle_tool("shell_1", vim.env.SHELL or "bash")
 end, { desc = "Open Shell" })
+for i = 1, 9 do
+  keymap.set({ "n", "t", "i" }, "<M-" .. i .. ">", function()
+    toggle_tool("shell_" .. i, vim.env.SHELL or "bash")
+  end, { desc = "Open Shell " .. i })
+end
 keymap.set({ "n", "t", "i" }, "<M-d>", function()
   local cmd = vim.g.dev_cmd or "make dev"
   toggle_tool("dev", cmd)
