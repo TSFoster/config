@@ -8,7 +8,7 @@ LINT := ansible-lint
 TAGS ?=
 EXTRA_ARGS ?=
 
-.PHONY: help bootstrap collections install run check syntax lint lint-fix nvim_pack_list nvim_pack_update nvim_pack_uninstall shells dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp karabiner
+.PHONY: help bootstrap collections install run check syntax lint lint-fix nvim_pack_list nvim_pack_update nvim_pack_uninstall shells shells_files dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp karabiner
 
 help:
 	@printf '%s\n' \
@@ -63,5 +63,5 @@ nvim_pack_uninstall:
 	@test -n "$(strip $(PACKAGES))" || { printf '%s\n' "Set PACKAGES=<name1,name2>"; exit 1; }
 	$(ANSIBLE) $(PLAYBOOK) --tags nvim_pack_uninstall -e 'packages_to_uninstall=$(PACKAGES)' $(EXTRA_ARGS)
 
-shells dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp karabiner:
+shells shells_files dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp karabiner:
 	$(MAKE) run TAGS=$@ EXTRA_ARGS="$(EXTRA_ARGS)"

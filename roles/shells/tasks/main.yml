@@ -37,16 +37,22 @@
     modification_time: preserve
     access_time: preserve
     mode: "0644"
+  tags:
+    - shells_files
 - name: Add zprofile
   ansible.builtin.template:
     src: zprofile.j2
     dest: "{{ shells_zprofile_path }}"
     mode: "0644"
+  tags:
+    - shells_files
 - name: Add bash_profile
   ansible.builtin.template:
     src: bash_profile.j2
     dest: "{{ shells_bash_profile_path }}"
     mode: "0644"
+  tags:
+    - shells_files
 - name: Create fish_variables
   ansible.builtin.file:
     path: "{{ shells_fish_variables_path }}"
@@ -127,6 +133,8 @@
   tags:
     - vars_debug
 - name: Copy fish config
+  tags:
+    - shells_files
   block:
     - name: Sync dirs
       ansible.posix.synchronize:
@@ -210,6 +218,8 @@
     src: zz_appearance.fish.j2
     dest: "{{ shells_fish_conf_d_dir }}/zz_appearance.fish"
     mode: "0644"
+  tags:
+    - shells_files
 - name: Add atuin config
   ansible.posix.synchronize:
     src: "{{ role_path }}/files/atuin/"
@@ -217,3 +227,5 @@
     recursive: true
     links: true
     delete: true
+  tags:
+    - shells_files
