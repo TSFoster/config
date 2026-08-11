@@ -658,6 +658,10 @@ end, { desc = "Open Gemini" })
 keymap.set({ "n", "t", "i" }, "<M-s>", function()
   toggle_tool("shell", vim.env.SHELL or "bash")
 end, { desc = "Open Shell" })
+keymap.set({ "n", "t", "i" }, "<M-d>", function()
+  local cmd = vim.g.dev_cmd or "make dev"
+  toggle_tool("dev", cmd)
+end, { desc = "Open dev server" })
 
 keymap.set({ "n", "t", "i" }, "<M-f>", function()
   if tools_tab_id and vim.api.nvim_tabpage_is_valid(tools_tab_id) then
