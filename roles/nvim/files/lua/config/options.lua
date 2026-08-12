@@ -29,6 +29,11 @@ opt.foldexpr = "nvim_treesitter#foldexpr()"
 opt.foldenable = false
 opt.exrc = true
 
+-- Survive accidental disconnects (SSH drop, terminal closed, etc.): the server
+-- keeps running in the background instead of dying with the UI. No-op (and
+-- guarded) when there's no UI to mark, e.g. `nvim --headless`. See :h :detach!
+pcall(vim.cmd.detach, { bang = true })
+
 vim.filetype.add({
   extension = {
     gotmpl = "gotmpl",
