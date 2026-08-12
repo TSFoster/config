@@ -104,7 +104,7 @@ macos_apps_casks:
   - 8bitdo-firmware-updater
 
   # Developer GUI
-  - docker
+  - orbstack
 
   # Java/JDK
   - zulu@17

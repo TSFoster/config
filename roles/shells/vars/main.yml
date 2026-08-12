@@ -138,8 +138,6 @@ shells_abbreviations:
     value: ansible-playbook
   - name: d
     value: docker
-  - name: dm
-    value: docker-machine
   - name: dsw
     value: docker swarm
   - name: ds
@@ -166,8 +164,6 @@ shells_abbreviations:
     value: "{{ shells_op_plugin_run_prefix }} gh"
   - name: glab
     value: "{{ shells_op_plugin_run_prefix }} glab"
-  - name: doctl
-    value: "{{ shells_op_plugin_run_prefix }} doctl"
   - name: l
     value: ls
   - name: la

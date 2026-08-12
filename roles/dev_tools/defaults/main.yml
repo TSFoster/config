@@ -62,11 +62,12 @@ dev_tools_packages:
   - name: mkcert
 
   # Containers / DevOps
-  - name: podman
+  - brew: docker # CLI only — OrbStack (macos_apps cask) provides the daemon
+  - brew: docker-compose
+  - brew: docker-buildx
   - name: skopeo
   - brew: dive # Docker image explorer — no standard apt package
   - brew: diffoci
-  - brew: doctl # DigitalOcean CLI
 
   # Language-adjacent tooling
   - brew: openjdk
@@ -98,6 +99,7 @@ dev_tools_packages:
   - brew: pgcli
   - brew: mycli
   - brew: litecli
+  - brew: supabase # local Supabase dev stack CLI (wraps Docker)
 
   # Code analysis / formatting
   - brew: efm-langserver # no standard apt package
