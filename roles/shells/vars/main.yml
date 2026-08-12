@@ -31,7 +31,7 @@ shells_uv:
     --hidden
   iCloud: "{{ ansible_facts['env']['HOME'] }}/Library/Mobile Documents/com~apple~CloudDocs"
   isMac: "{{ ansible_facts['system'] == 'Darwin' }}"
-  editor: "zmx attach nvim-(random) nvim"
+  editor: "nvim"
   shell_path_entries: "{{ shells_path_entries + (lookup('vars', 'shells_path_entries_' + (ansible_facts['system'] | lower)) | default([])) }}"
   shell_path_entries_interactive: "{{ shells_path_entries_interactive }}"
 shells_variables_base:
