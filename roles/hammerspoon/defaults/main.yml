@@ -21,9 +21,11 @@ hammerspoon_app_launchers:
   - { k: "I", app: Photos } # Mnemonic: iPhoto
   - { k: "k", app: Keynote Creator Studio }
   - { k: "l", app: Preview } # Mnemonic: Loupe
+  - { k: "L", app: Unforgetful } # Mnemonic: Lighthouse
   - { k: "M", app: Maps }
   - { k: "m", app: Music }
   - { k: "n", app: Drafts }
+  - { k: "o", app: OrbStack }
   - { k: "p", app: Pages Creator Studio }
   - { k: "r", app: Reminders }
   - { k: "R", app: Reeder }
