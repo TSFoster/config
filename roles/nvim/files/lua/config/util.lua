@@ -114,10 +114,13 @@ function M.selection_ref()
   end
 end
 
-function M.copy_pandoc(text, format, reg)
+function M.copy_pandoc(text, format, reg, font_size)
   local args = { "pandoc", "-f", "markdown", "-t", format }
   if format == "rtf" then
     table.insert(args, "-s")
+    if font_size then
+      vim.list_extend(args, { "-V", "fontsize=" .. font_size })
+    end
   end
   local result = vim.fn.system(args, text)
   if vim.v.shell_error == 0 then

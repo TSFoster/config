@@ -441,7 +441,7 @@ if not vim.env.SSH_CLIENT then
 end
 
 PandocCopy = {}
-local function make_pandoc_copy(char, format, name)
+local function make_pandoc_copy(char, format, name, font_size)
   PandocCopy[name] = function(kind)
     local register = PandocCopy.last_register or (v.register == '"' and "*" or v.register)
     PandocCopy.last_register = nil
@@ -469,7 +469,7 @@ local function make_pandoc_copy(char, format, name)
     vim.o.selection = selection
     fn.setreg("@", orig_reg_contents, orig_reg_type)
 
-    util.copy_pandoc(text, format, register)
+    util.copy_pandoc(text, format, register, font_size)
   end
 
   local function operator()
@@ -483,7 +483,7 @@ local function make_pandoc_copy(char, format, name)
 end
 
 make_pandoc_copy("h", "html", "HTML")
-make_pandoc_copy("r", "rtf", "RTF")
+make_pandoc_copy("r", "rtf", "RTF", "16pt")
 
 keymap.set("v", "<C-/>", "<Esc>/\\%V", { desc = "Search within current selection" })
 keymap.set("n", "<Leader>f", function()
