@@ -31,6 +31,8 @@ function fish_prompt
   set -q fish_color_host
   and set docker_machine_color $fish_color_host
 
+  set docker_context_color $docker_machine_color
+
   set sshinfo_color $docker_machine_color
   set -q fish_color_user
   and set sshinfo_color $fish_color_user
@@ -79,6 +81,10 @@ function fish_prompt
   set --query DOCKER_MACHINE_NAME
   and set machineName "[$DOCKER_MACHINE_NAME]"
   set dockerinfo_length (string length "$machineName")
+
+  set --query DOCKER_CONTEXT
+  and set dockerContext "[$DOCKER_CONTEXT] "
+  set dockercontextinfo_length (string length "$dockerContext")
 
   set pathinfo (cat $pathinfofile)
   set pathinfo_length (string length (string join '' $pathinfo))
@@ -129,6 +135,8 @@ function fish_prompt
   set gitinfo_length (string length (string join '' $giticons))
 
   set second_line (
+    set_color --bold $docker_context_color
+    echo -n "$dockerContext"
     set_color $project_path_color
     echo -n "$pathinfo[1]"
     set_color $project_dir_color
@@ -144,7 +152,7 @@ function fish_prompt
       end
     end
     test "$COLUMNS" -gt 0 2> /dev/null
-    and printf '%-'(expr $COLUMNS - $pathinfo_length - $gitinfo_length - $dockerinfo_length - $sshinfo_length - 1)'s' ' '
+    and printf '%-'(expr $COLUMNS - $dockercontextinfo_length - $pathinfo_length - $gitinfo_length - $dockerinfo_length - $sshinfo_length - 1)'s' ' '
     set_color --bold $docker_machine_color
     echo -n "$machineName"
     set_color --bold $sshinfo_color
