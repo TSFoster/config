@@ -130,6 +130,7 @@ dev_tools_npm_packages:
   - vercel
   - "@openai/codex"
   - react-devtools
+  - git-open
 
 # Global Python packages that belong to the dev_tools concern.
 dev_tools_pip_packages:
