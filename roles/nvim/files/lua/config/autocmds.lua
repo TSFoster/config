@@ -186,6 +186,18 @@ do
 end
 
 do
+  local group = vim.api.nvim_create_augroup("selection_tracking", { clear = true })
+  vim.api.nvim_create_autocmd("ModeChanged", {
+    group = group,
+    pattern = "[vV\22]*:*",
+    desc = "Remember the buffer of the most recent visual selection, for util.selection_info()",
+    callback = function(args)
+      util.track_selection(args.buf)
+    end,
+  })
+end
+
+do
   local group = vim.api.nvim_create_augroup("statusline_refresh", { clear = true })
   vim.api.nvim_create_autocmd({ "RecordingEnter", "RecordingLeave" }, {
     group = group,

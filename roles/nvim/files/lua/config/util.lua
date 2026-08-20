@@ -50,25 +50,31 @@ function M.has_executable(command)
   return vim.fn.executable(command) == 1
 end
 
-function M.selection_info()
-  local cur_win = vim.api.nvim_get_current_win()
-  local prev_win = vim.fn.win_getid(vim.fn.winnr("#"))
-  local target_win = (prev_win > 0 and prev_win ~= cur_win) and prev_win or 0
+local last_selection_buf = nil
 
-  if target_win == 0 then
-    for _, w in ipairs(vim.api.nvim_list_wins()) do
-      if w ~= cur_win then
-        local b = vim.api.nvim_win_get_buf(w)
-        if vim.bo[b].buftype ~= "terminal" then
-          target_win = w
-          break
-        end
-      end
-    end
+local function is_selectable(buf)
+  return buf ~= nil and vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buftype ~= "terminal"
+end
+
+-- Called from an autocmd (see autocmds.lua) whenever visual mode is left, so
+-- selection_info() can find the last-made selection even after you've
+-- deselected and switched to another window/tab (e.g. a terminal buffer
+-- running an agent).
+function M.track_selection(buf)
+  if is_selectable(buf) then
+    last_selection_buf = buf
   end
-  if target_win == 0 then target_win = cur_win end
+end
 
-  local b = vim.api.nvim_win_get_buf(target_win)
+function M.selection_info()
+  local b = vim.api.nvim_get_current_buf()
+
+  -- Called from a terminal (e.g. an agent): report the last real selection
+  -- instead, if one has been tracked this session.
+  if vim.bo[b].buftype == "terminal" and is_selectable(last_selection_buf) then
+    b = last_selection_buf
+  end
+
   local name = vim.api.nvim_buf_get_name(b)
   local file = name ~= "" and vim.fn.fnamemodify(name, ":.") or "[No Name]"
 
@@ -83,10 +89,13 @@ function M.selection_info()
     local l = vim.api.nvim_buf_get_lines(b, math.min(ms[1], me[1]) - 1, math.max(ms[1], me[1]), false)
     text = table.concat(l, "\n")
   else
-    local cursor = vim.api.nvim_win_get_cursor(target_win)
-    start_line = cursor[1]
-    end_line = cursor[1]
-    local l = vim.api.nvim_buf_get_lines(b, cursor[1] - 1, cursor[1], false)
+    -- No selection recorded in this buffer; use its last cursor position
+    -- instead (buffer-local, so this works even if the buffer isn't
+    -- currently displayed in any window).
+    local cursor_mark = vim.api.nvim_buf_get_mark(b, ".")
+    start_line = cursor_mark[1] > 0 and cursor_mark[1] or 1
+    end_line = start_line
+    local l = vim.api.nvim_buf_get_lines(b, start_line - 1, start_line, false)
     text = l[1] or ""
   end
 
