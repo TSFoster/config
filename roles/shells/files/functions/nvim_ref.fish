@@ -4,5 +4,5 @@ function nvim_ref --description "Get visual selection or cursor context as file 
         return 1
     end
 
-    nvim --server "$NVIM" --remote-expr 'luaeval("require([[config.util]]).selection_ref()")'
+    nvr --servername "$NVIM" --remote-expr 'luaeval("require([[config.util]]).selection_ref()")'
 end

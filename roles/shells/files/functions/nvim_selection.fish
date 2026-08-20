@@ -4,5 +4,5 @@ function nvim_selection --description "Get visual selection or cursor context fr
         return 1
     end
 
-    nvim --server "$NVIM" --remote-expr 'luaeval("require([[config.util]]).selection_json()")'
+    nvr --servername "$NVIM" --remote-expr 'luaeval("require([[config.util]]).selection_json()")'
 end
