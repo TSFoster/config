@@ -130,7 +130,14 @@ hs.hotkey.bind(windowModifiers, "return", function() moveFocusedWindow({x=0, y=0
 -- APP LAUNCHERS
 
 {% for launcher in hammerspoon_app_launchers %}
-hs.hotkey.bind({% if launcher.k is match('^[A-Z]$') %}hyper{% else %}meh{% endif %}, "{{ launcher.k | lower }}", function() hs.application.launchOrFocus "{{ launcher.app }}" end)
+hs.hotkey.bind(
+  {% if launcher.k is match('^[A-Z]$') %}hyper{% else %}meh{% endif %},
+  "{{ launcher.k | lower }}",
+  function()
+    {# We use this over hs.application.launchOrFocus because that hangs when launching a big application #}
+    hs.task.new("/usr/bin/open", nil, {"-a", "{{ launcher.app }}"}):start()
+  end
+)
 {% endfor %}
 
 {#
