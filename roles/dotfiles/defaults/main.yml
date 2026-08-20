@@ -60,5 +60,6 @@ dotfiles_llm_neovim_rule_block: |
   # Neovim Integration
   When `$NVIM` is set in the environment, you are running inside a Neovim terminal session.
   - When referring to visual selections or context from the active Neovim editor window, use `nvim_ref` (for file range `file.ext#L10-L20`) or `nvim_selection` (for JSON details & text content).
-  - Neovim remote expressions can also be evaluated directly using `nvim --server "$NVIM" --remote-expr 'luaeval(...)'`.
+  - To read a Neovim register's contents (e.g. what was last yanked), use `nvim_register [register]` (defaults to register `0`, the yank register).
+  - Neovim remote expressions can also be evaluated directly using `nvr --servername "$NVIM" --remote-expr 'luaeval(...)'` (prefer `nvr` over `nvim --server ... --remote-expr`, which is unreliable here).
 
