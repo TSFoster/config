@@ -51,16 +51,33 @@
     - "{{ dotfiles_yazi_config_dir }}"
     - "{{ dotfiles_yazi_light_config_dir }}"
 - name: Download Catppuccin yazi themes
-  ansible.builtin.get_url:
-    url: "{{ item.url }}"
-    dest: "{{ item.dest }}"
-    mode: "0644"
-    force: false
-  loop:
-    - url: "{{ dotfiles_yazi_theme_base_url }}/mocha/catppuccin-mocha-{{ dotfiles_yazi_catppuccin_accent }}.toml"
-      dest: "{{ dotfiles_yazi_config_dir }}/theme.toml"
-    - url: "{{ dotfiles_yazi_theme_base_url }}/latte/catppuccin-latte-{{ dotfiles_yazi_catppuccin_accent }}.toml"
-      dest: "{{ dotfiles_yazi_light_config_dir }}/theme.toml"
+  vars:
+    dotfiles_yazi_themes:
+      - url: "{{ dotfiles_yazi_theme_base_url }}/mocha/catppuccin-mocha-{{ dotfiles_yazi_catppuccin_accent }}.toml"
+        dest: "{{ dotfiles_yazi_config_dir }}/theme.toml"
+      - url: "{{ dotfiles_yazi_theme_base_url }}/latte/catppuccin-latte-{{ dotfiles_yazi_catppuccin_accent }}.toml"
+        dest: "{{ dotfiles_yazi_light_config_dir }}/theme.toml"
+  block:
+    # get_url's `force: false` does NOT mean "skip if dest exists" — without a
+    # pinned `checksum:` it always re-fetches and compares content, so it
+    # clobbers the syntect_theme line the next task adds. Guard with `stat`
+    # instead so the theme is fetched once and left alone afterwards.
+    - name: Check for existing yazi theme files
+      ansible.builtin.stat:
+        path: "{{ item.dest }}"
+      loop: "{{ dotfiles_yazi_themes }}"
+      loop_control:
+        label: "{{ item.dest }}"
+      register: dotfiles_yazi_theme_stat
+    - name: Download missing Catppuccin yazi theme files
+      ansible.builtin.get_url:
+        url: "{{ item.item.url }}"
+        dest: "{{ item.item.dest }}"
+        mode: "0644"
+      loop: "{{ dotfiles_yazi_theme_stat.results }}"
+      loop_control:
+        label: "{{ item.item.dest }}"
+      when: not item.stat.exists
 - name: Set yazi syntect themes
   ansible.builtin.lineinfile:
     path: "{{ item.path }}"
