@@ -84,7 +84,6 @@ macos_apps_casks:
   - calibre
   - imageoptim
   - yattee
-  - transmission-remote-gui
 
   # Utilities
   - gnome
