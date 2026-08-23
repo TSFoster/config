@@ -33,3 +33,7 @@
   name = T.S. Foster
   email = hi@tsf.io
   signingkey = D037C418
+[url "git@github.com:"]
+    insteadOf = https://github.com/
+[url "git@gitlab.com:"]
+    insteadOf = https://gitlab.com/
