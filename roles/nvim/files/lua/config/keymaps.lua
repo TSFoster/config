@@ -8,13 +8,6 @@ local fn = vim.fn
 local keymap = vim.keymap
 local v = vim.v
 
-local function restart_with_temp_session()
-  local session_file = fn.tempname() .. ".vim"
-
-  cmd.mksession({ args = { fn.fnameescape(session_file) }, bang = true })
-  cmd.restart({ args = { "source", fn.fnameescape(session_file) } })
-end
-
 -- Gracefully background the UI without pausing the Neovim process
 keymap.set({ "n", "v", "x", "s", "o", "i", "l", "c" }, "<C-z>", "<Cmd>detach<CR>", { desc = "Detach UI" })
 
@@ -66,7 +59,6 @@ end, { expr = true, desc = "Expand current file's relative path" })
 
 keymap.set("n", "<Leader>w", cmd.write, { desc = "Write buffer" })
 keymap.set("n", "<Leader><Leader>w", cmd.wall, { desc = "Write all buffers" })
-keymap.set("n", "<Leader><Leader>R", restart_with_temp_session, { desc = "Restart and restore from temp session" })
 keymap.set("n", "<Leader>q", cmd.quit, { desc = "Quit window" })
 keymap.set("n", "<Leader><Leader>q", cmd.qall, { desc = "Quit all windows" })
 keymap.set("n", "<Leader>x", cmd.xit, { desc = "Write and quit window" })
