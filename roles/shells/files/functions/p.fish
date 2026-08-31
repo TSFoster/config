@@ -105,8 +105,9 @@ function p
       if test -S "$sock"
         set --local name (string match --regex 'nvim-(.*)\.sock$' (basename "$sock"))
         if test -n "$name[2]"
+          set --local unescaped_name (string unescape --style=url "$name[2]")
           if nvim --server "$sock" --remote-expr 'v:servername' >/dev/null 2>&1
-            set -a running_projects $name[2]
+            set -a running_projects $unescaped_name
           else
             rm -f "$sock"
           end
@@ -174,7 +175,8 @@ function p
     echo $projectDir
   else
     pushd $projectDir
-    set --local sock "$P_HOME/nvim-$projectName.sock"
+    set --local safeProjectName (string escape --style=url "$projectName")
+    set --local sock "$P_HOME/nvim-$safeProjectName.sock"
     set --local load_session_cmd "lua local n='$projectName'; if not require('mini.sessions').detected[n] then require('mini.sessions').write(n) else require('mini.sessions').read(n) end"
 
     if test -S "$sock"
