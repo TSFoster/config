@@ -16,3 +16,5 @@ tags.lock
 ctags.temp
 ctags.temp.tmp
 .hugo_build.lock
+.antigravitycli
+.envrc
