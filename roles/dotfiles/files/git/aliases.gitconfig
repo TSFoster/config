@@ -1,7 +1,9 @@
 [alias]
   h = help
   s = status
-  gr = log --graph --oneline
+
+  t = tree
+  tree = log --graph --oneline --all --decorate
 
   cl = clone
   a = add
