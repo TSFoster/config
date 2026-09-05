@@ -70,7 +70,6 @@ macos_apps_casks:
   # Productivity
   - 1password
   - keyboard-maestro
-  - hazel
   - choosy
   - openinterminal
   - obsidian
