@@ -77,7 +77,29 @@ function M.unfocus()
   if previous_tab_id and vim.api.nvim_tabpage_is_valid(previous_tab_id) then
     vim.api.nvim_set_current_tabpage(previous_tab_id)
   else
-    vim.cmd.tabprevious()
+    if #vim.api.nvim_list_tabpages() > 1 then
+      vim.cmd.tabprevious()
+    else
+      local target_buf = nil
+      local bufs = vim.api.nvim_list_bufs()
+      for i = #bufs, 1, -1 do
+        local b = bufs[i]
+        if vim.api.nvim_buf_is_valid(b) and vim.api.nvim_get_option_value("buflisted", { buf = b }) then
+          if vim.api.nvim_get_option_value("buftype", { buf = b }) == "" then
+            target_buf = b
+            break
+          elseif not target_buf then
+            target_buf = b
+          end
+        end
+      end
+
+      if target_buf then
+        vim.cmd("tab sbuffer " .. target_buf)
+      else
+        vim.cmd.tabnew()
+      end
+    end
   end
 end
 
