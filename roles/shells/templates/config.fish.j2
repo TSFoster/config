@@ -1,6 +1,8 @@
 # --------- INTERACTIVE OR NON-INTERACTIVE ---------
 
-
+if set -q SSH_CLIENT; or set -q SSH_TTY
+    set -gx OP_BIOMETRIC_UNLOCK_ENABLED false
+end
 
 
 
@@ -21,6 +23,10 @@ contains -- "./{{ entry }}" $PATH; or set -gxp PATH "./{{ entry }}"
 atuin init fish --disable-up-arrow | source
 command -v direnv >/dev/null 2>&1; and direnv hook fish | source
 set --export OP_PLUGIN_ALIASES_SOURCED 1
+
+if set -q SSH_CLIENT; or set -q SSH_TTY
+    alias opsignin="eval ({{ shells_op_command }} signin)"
+end
 
 
 # EDITOR
