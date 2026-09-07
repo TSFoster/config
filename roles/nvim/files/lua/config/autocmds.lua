@@ -22,20 +22,6 @@ do
   })
 end
 
-do
-  local group = vim.api.nvim_create_augroup("terminal_osc7_cwd", { clear = true })
-  vim.api.nvim_create_autocmd("TermRequest", {
-    group = group,
-    desc = "OSC 7: sync terminal buffer-local cwd (:bcd) to the shell's cwd",
-    callback = function(ev)
-      local dir, n = string.gsub(ev.data.sequence, "\027]7;file://[^/]*", "")
-      if n > 0 and vim.fn.isdirectory(dir) == 1 then
-        vim.b.shell_cwd = dir
-        vim.cmd.bcd(dir)
-      end
-    end,
-  })
-end
 
 do
   local timer_id = 0
@@ -62,7 +48,7 @@ do
     callback = function()
       vim.o.title = true
       if vim.o.buftype == "terminal" then
-        -- Prefer the shell's last-reported cwd (via OSC 7, see terminal_osc7_cwd)
+        -- Prefer the explicitly stashed cwd (vim.b.shell_cwd)
         -- over the terminal's own OSC 2 title (vim.b.term_title): foreground
         -- programs like `claude` continuously rewrite the latter, which clobbers
         -- the pwd that tools like Timing.app need in the window title.

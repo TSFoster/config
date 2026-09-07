@@ -38,9 +38,8 @@ function M.focus(tool_name, cmd)
     -- Hide the buffer from :ls
     vim.api.nvim_set_option_value("buflisted", false, { buf = buf })
 
-    -- termopen() runs `cmd` directly rather than through a shell, so it never
-    -- emits the OSC 7 that terminal_osc7_cwd relies on to learn the cwd. Stash
-    -- it explicitly so titlebar_naming has a stable fallback instead of the
+    -- termopen() runs `cmd` directly rather than through a shell. Stash
+    -- the cwd explicitly so titlebar_naming has a stable fallback instead of the
     -- tool's own title (which e.g. claude rewrites continuously).
     vim.b[buf].shell_cwd = cwd
     vim.fn.termopen(cmd, { cwd = cwd })
