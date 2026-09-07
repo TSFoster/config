@@ -164,12 +164,38 @@
         src: "config.fish.j2"
         dest: "{{ shells_fish_config_dir }}/config.fish"
         mode: "0644"
-    - name: Make op plugin fish functions
+- name: Manage op plugin wrapper executables
+  tags:
+    - shells_files
+  block:
+    - name: Ensure op plugin bin dir exists
+      ansible.builtin.file:
+        path: "{{ shells_op_plugin_bin_dir }}"
+        state: directory
+        mode: "0755"
+    - name: Make op plugin wrapper executables
       ansible.builtin.template:
-        src: "op_plugin.fish.j2"
-        dest: "{{ shells_fish_config_dir }}/functions/{{ item }}.fish"
-        mode: "0644"
+        src: "op_plugin.sh.j2"
+        dest: "{{ shells_op_plugin_bin_dir }}/{{ item }}"
+        mode: "0755"
       loop: "{{ shells_op_plugins }}"
+    - name: Find existing op plugin wrapper executables
+      ansible.builtin.find:
+        paths: "{{ shells_op_plugin_bin_dir }}"
+        file_type: file
+      register: shells_op_plugin_bin_existing
+      tags:
+        - vars_debug
+    - name: Remove op plugin wrapper executables no longer in use
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ shells_op_plugin_bin_existing.files }}"
+      loop_control:
+        label: "{{ item.path | basename }}"
+      when: (item.path | basename) not in shells_op_plugins
+      tags:
+        - vars_debug
 - name: Make conf.d dir
   ansible.builtin.file:
     path: "{{ shells_fish_conf_d_dir }}"

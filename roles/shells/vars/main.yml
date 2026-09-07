@@ -11,6 +11,7 @@ shells_path_entries_interactive:
   - bin
   - node_modules/.bin
 shells_path_entries:
+  - "{{ shells_op_plugin_bin_dir }}"
   - "{{ ansible_facts['env']['HOME'] }}/.asdf/shims"
   - "{{ ansible_facts['env']['HOME'] }}/.local/share/go/bin"
   - "{{ ansible_facts['env']['HOME'] }}/.local/bin"
