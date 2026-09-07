@@ -15,6 +15,12 @@
 alias {{ item.name }}={{ item.value | to_json }}
 {% endfor %}
 
+{% for plugin in shells_op_plugins %}
+{{ plugin }}() {
+  {{ shells_op_plugin_run_prefix }} {{ plugin }} "$@"
+}
+{% endfor %}
+
 if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ] || [ -n "$SSH_CONNECTION" ]; then
     export OP_BIOMETRIC_UNLOCK_ENABLED=false
     alias opsignin='eval $({{ shells_op_command }} signin)'

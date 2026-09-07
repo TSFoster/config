@@ -131,6 +131,9 @@ shells_fish_universal_variables:
     value_multiple: "{{ shells_uv.shell_path_entries }}"
     export: true
     path: true
+shells_op_plugins:
+  - gh
+  - glab
 shells_abbreviations:
   - name: an
     value: ansible
@@ -160,10 +163,6 @@ shells_abbreviations:
     value: git stash pop
   - name: gs
     value: git status
-  - name: gh
-    value: "{{ shells_op_plugin_run_prefix }} gh"
-  - name: glab
-    value: "{{ shells_op_plugin_run_prefix }} glab"
   - name: l
     value: ls
   - name: la

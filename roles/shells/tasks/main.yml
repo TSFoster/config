@@ -136,6 +136,14 @@
   loop: "{{ shells_abbreviations }}"
   tags:
     - vars_debug
+- name: Remove fish abbreviations replaced by op plugin functions
+  ansible.builtin.lineinfile:
+    path: "{{ shells_fish_variables_path }}"
+    regexp: "^SETUVAR _fish_abbr_{{ item }}:"
+    state: absent
+  loop: "{{ shells_op_plugins }}"
+  tags:
+    - vars_debug
 - name: Copy fish config
   tags:
     - shells_files
@@ -156,6 +164,12 @@
         src: "config.fish.j2"
         dest: "{{ shells_fish_config_dir }}/config.fish"
         mode: "0644"
+    - name: Make op plugin fish functions
+      ansible.builtin.template:
+        src: "op_plugin.fish.j2"
+        dest: "{{ shells_fish_config_dir }}/functions/{{ item }}.fish"
+        mode: "0644"
+      loop: "{{ shells_op_plugins }}"
 - name: Make conf.d dir
   ansible.builtin.file:
     path: "{{ shells_fish_conf_d_dir }}"
