@@ -10,6 +10,83 @@ local tools_tab_id = nil
 local tool_buffers = {}
 local previous_tab_id = nil
 
+-- `:restart`/`ZR` (see :h :restart, :h ZR) saves and restores a session
+-- across the process restart, terminal buffers included: each one is
+-- reopened by re-running its command, named `term://{cwd}//{pid}:{cmd}`,
+-- and (per :h terminal-start) that exact name -- old pid and all -- survives
+-- the round-trip even for buffers that were only hidden, not shown in a
+-- window, at save time; those just stay unloaded until next focused, which
+-- lazily reruns their command (the same mechanism `:edit term://...` uses
+-- to start one). So tool_buffers/tools_tab_id, which are plain Lua
+-- state and don't themselves survive the restart, can be rebuilt after one
+-- by matching buffer names back up -- *if* we squirrel away what each tool's
+-- buffer was named before the restart. `:mksession` can carry that for us
+-- via 'sessionoptions'+=globals, but only for String/Number globals (Lists
+-- and Dicts aren't saved), hence the JSON encoding here rather than a plain
+-- table.
+local SESSION_BUFFERS_VAR = "NvimToolBuffers"
+local SESSION_TAB_VAR = "NvimToolsTab"
+
+-- Snapshot tool_buffers/tools_tab_id into session-savable globals. Called
+-- whenever either changes, so a `:restart` mid-session always saves a
+-- current picture rather than needing its own save hook.
+local function save_session_state()
+  local names = {}
+  for tool_name, buf in pairs(tool_buffers) do
+    if vim.api.nvim_buf_is_valid(buf) then
+      names[tool_name] = vim.api.nvim_buf_get_name(buf)
+    end
+  end
+  vim.g[SESSION_BUFFERS_VAR] = vim.json.encode(names)
+
+  if tools_tab_id and vim.api.nvim_tabpage_is_valid(tools_tab_id) then
+    vim.g[SESSION_TAB_VAR] = vim.api.nvim_tabpage_get_number(tools_tab_id)
+  else
+    vim.g[SESSION_TAB_VAR] = nil
+  end
+end
+
+-- Reconstruct tool_buffers/tools_tab_id after a session restore, matching
+-- the tool-name -> buffer-name snapshot from before the restart against the
+-- buffers that actually came back. Registered on SessionLoadPost, which
+-- fires for `:restart`'s own restore as well as a manual :mksession/:source
+-- (e.g. via mini.sessions).
+local function restore_session_state()
+  local raw = vim.g[SESSION_BUFFERS_VAR]
+  if not raw then
+    return
+  end
+
+  local ok, names = pcall(vim.json.decode, raw)
+  if not ok or type(names) ~= "table" then
+    return
+  end
+
+  for tool_name, buf_name in pairs(names) do
+    -- mksession only restores a hidden buffer if it's buflisted, and tool
+    -- buffers deliberately aren't (to stay out of :ls) -- so at most the one
+    -- tool that was on-screen at save time comes back this way on its own.
+    -- bufadd() covers the rest: for a name mksession did already restore it
+    -- just returns that buffer, and for one it dropped it (re-)creates the
+    -- still-unloaded buffer under the exact name it had before, which Nvim's
+    -- term:// handling reruns {cmd} for lazily, the first time something
+    -- actually switches to it -- same as a freshly badd'ed one would.
+    local buf = vim.fn.bufadd(buf_name)
+    if buf > 0 then
+      vim.bo[buf].buflisted = false
+      tool_buffers[tool_name] = buf
+    end
+  end
+
+  local tab_number = vim.g[SESSION_TAB_VAR]
+  local tab = tab_number and vim.api.nvim_list_tabpages()[tab_number]
+  if tab and vim.api.nvim_tabpage_is_valid(tab) then
+    tools_tab_id = tab
+  end
+end
+
+vim.api.nvim_create_autocmd("SessionLoadPost", { callback = restore_session_state })
+
 -- Ordered oldest->newest list of live pager buffers, plus a lookup set of the
 -- same, and a per-window memory of the buffer a pager display replaced (so
 -- closing a pager can restore it) keyed by window id.
@@ -106,6 +183,7 @@ function M.focus(tool_name, cmd)
     focus_buf_in_tab(buf)
   end
 
+  save_session_state()
   vim.cmd.startinsert()
 end
 
@@ -245,6 +323,8 @@ function M.close_all()
     vim.cmd.tabclose(vim.api.nvim_tabpage_get_number(tools_tab_id))
   end
   tools_tab_id = nil
+
+  save_session_state()
 end
 
 return M

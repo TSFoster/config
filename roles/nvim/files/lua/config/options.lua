@@ -4,6 +4,10 @@ local opt = vim.opt
 local g = vim.g
 
 opt.backupdir:remove(".")
+-- Let :mksession (and thus :restart/ZR) save String/Number global variables,
+-- so config/tools.lua can persist which buffer belongs to which tool across
+-- a restart.
+opt.sessionoptions:append("globals")
 opt.showbreak = "... "
 opt.cmdheight = 0
 opt.conceallevel = 2
