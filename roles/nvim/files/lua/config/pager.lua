@@ -63,7 +63,7 @@ function M.setup()
   local bufnr = vim.api.nvim_get_current_buf()
 
   vim.bo[bufnr].buftype = "nofile"
-  vim.bo[bufnr].bufhidden = "wipe"
+  vim.bo[bufnr].bufhidden = "hide"
   vim.bo[bufnr].swapfile = false
   vim.bo[bufnr].modifiable = true
   vim.bo[bufnr].readonly = false
@@ -76,11 +76,43 @@ function M.setup()
 
   vim.bo[bufnr].modifiable = false
   vim.bo[bufnr].readonly = true
+  vim.api.nvim_set_option_value("buflisted", false, { buf = bufnr })
 
-  vim.keymap.set("n", "q", vim.cmd.quit, {
-    buffer = bufnr,
-    silent = true,
-  })
+  -- True only when nvim was launched fresh just to display this piped
+  -- content (no running editor session to fold it into) rather than via
+  -- nvr talking to an already-running instance.
+  local is_standalone = #vim.api.nvim_list_bufs() == 1
+
+  vim.keymap.set("n", "q", function()
+    if is_standalone then
+      vim.cmd("quitall!")
+    else
+      require("config.tools").close_pager(bufnr)
+    end
+  end, { buffer = bufnr, silent = true, desc = "Quit pager" })
+
+  if not is_standalone then
+    -- nvr opened this buffer in a throwaway new tab (via --remote-tab-wait),
+    -- inserted immediately after wherever the user actually was. Recover
+    -- that tab before folding this buffer into the tools tab, since by now
+    -- "current tab" means the throwaway one, not the user's tab.
+    local origin_tab = vim.api.nvim_get_current_tabpage()
+    local origin_win = vim.api.nvim_get_current_win()
+
+    local source_tab = nil
+    for i, tab in ipairs(vim.api.nvim_list_tabpages()) do
+      if tab == origin_tab then
+        source_tab = vim.api.nvim_list_tabpages()[i - 1]
+        break
+      end
+    end
+
+    require("config.tools").add_pager(bufnr, source_tab)
+
+    if vim.api.nvim_tabpage_is_valid(origin_tab) and origin_tab ~= vim.api.nvim_get_current_tabpage() then
+      pcall(vim.api.nvim_win_close, origin_win, true)
+    end
+  end
 end
 
 return M

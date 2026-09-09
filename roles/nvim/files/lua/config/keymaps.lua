@@ -627,6 +627,16 @@ keymap.set({ "n", "t", "i" }, "<M-d>", function()
   tools.focus("dev", dev_cmd)
 end, { desc = "Open dev server" })
 
+keymap.set({ "n", "t", "i" }, "<M-\\>", function()
+  tools.pager_latest()
+end, { desc = "Jump to most recent paged output" })
+keymap.set({ "n", "t", "i" }, "<M-]>", function()
+  tools.pager_cycle(1)
+end, { desc = "Next paged output" })
+keymap.set({ "n", "t", "i" }, "<M-[>", function()
+  tools.pager_cycle(-1)
+end, { desc = "Previous paged output" })
+
 keymap.set({ "n", "t", "i" }, "<M-u>", tools.unfocus, { desc = "Leave the tools tab" })
 
 keymap.set({ "n", "t", "i" }, "<M-U>", tools.close_all, { desc = "Close all tools and tab" })
