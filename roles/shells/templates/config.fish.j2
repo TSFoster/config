@@ -8,6 +8,10 @@ end
 
 # ---------------- INTERACTIVE ONLY ----------------
 
+if [ "$NVIM" ]
+set --global --export EDITOR nvr --remote-tab-wait
+set --global --export PAGER nvr +PagerInit --remote-tab-wait -
+end
 
 status is-interactive; or exit 0
 
@@ -18,6 +22,7 @@ contains -- "./{{ entry }}" $PATH; or set -gxp PATH "./{{ entry }}"
 
 # TOOL SETUP
 
+fclones complete fish | source
 {{ shells_op_command }} completion fish | source
 [ -f {{ shells_tabtab_fish_path }} ]; and source {{ shells_tabtab_fish_path }}
 atuin init fish --disable-up-arrow | source
@@ -33,8 +38,6 @@ end
 
 # This overwrites the universal variables in this shell session only
 if [ "$NVIM" ]
-set --global --export EDITOR nvr --remote-tab-wait
-set --global --export PAGER nvr +PagerInit --remote-tab-wait -
 abbr --add --global e nvr
 abbr --add --global v "$EDITOR"
 end
