@@ -637,9 +637,7 @@ keymap.set({ "n", "t", "i" }, "<M-[>", function()
   tools.pager_cycle(-1)
 end, { desc = "Previous paged output" })
 
-keymap.set({ "n", "t", "i" }, "<M-u>", tools.unfocus, { desc = "Leave the tools tab" })
-
-keymap.set({ "n", "t", "i" }, "<M-U>", tools.close_all, { desc = "Close all tools and tab" })
+keymap.set({ "n", "t", "i" }, "<M-u>", tools.unfocus, { desc = "Unfocus tool to last used buffer" })
 
 keymap.set({ "n", "t", "i" }, "<M-i>", function()
   cmd.CodeCompanionChat("Toggle")
@@ -713,3 +711,18 @@ keymap.set("", "]<BS>", "<Plug>(IndentWiseBlockScopeBoundaryEnd)", { desc = "Mov
 
 keymap.set({ "n", "t", "i" }, "<M-v>", vim.cmd.vsplit, { desc = ":vsplit" })
 keymap.set({ "n", "t", "i" }, "<M-x>", vim.cmd.split, { desc = ":split" })
+keymap.set({ "n", "t", "i" }, "<M-t>", function()
+  local win = vim.api.nvim_get_current_win()
+  local cur = vim.api.nvim_get_current_buf()
+  local alt = fn.bufnr("#")
+  cmd("tab split")
+  if alt > 0 and alt ~= cur and vim.api.nvim_buf_is_valid(alt) then
+    vim.api.nvim_win_set_buf(win, alt)
+  else
+    local fallback = vim.api.nvim_create_buf(true, false)
+    vim.api.nvim_win_set_buf(win, fallback)
+  end
+  if vim.bo.buftype == "terminal" then
+    vim.cmd.startinsert()
+  end
+end, { desc = "Open buffer in new tab and switch current window to alternate file" })

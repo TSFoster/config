@@ -10,7 +10,7 @@ end
 
 if [ "$NVIM" ]
 set --global --export EDITOR nvr --remote-tab-wait
-set --global --export PAGER nvr +PagerInit --remote-tab-wait -
+set --global --export PAGER nvr +PagerInit --remote-wait -
 end
 
 status is-interactive; or exit 0

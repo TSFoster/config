@@ -24,6 +24,7 @@ opt.undoreload = 1000
 opt.updatetime = 300
 opt.shada = "'1000,f1,<500"
 opt.wildignorecase = true
+opt.wildignore:append({ "*/node_modules/*", "*/.git/*", "*/.DS_Store" })
 opt.wildmode = { "list", "full" }
 opt.wildoptions = "pum"
 opt.inccommand = "nosplit"

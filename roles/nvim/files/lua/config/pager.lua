@@ -92,26 +92,7 @@ function M.setup()
   end, { buffer = bufnr, silent = true, desc = "Quit pager" })
 
   if not is_standalone then
-    -- nvr opened this buffer in a throwaway new tab (via --remote-tab-wait),
-    -- inserted immediately after wherever the user actually was. Recover
-    -- that tab before folding this buffer into the tools tab, since by now
-    -- "current tab" means the throwaway one, not the user's tab.
-    local origin_tab = vim.api.nvim_get_current_tabpage()
-    local origin_win = vim.api.nvim_get_current_win()
-
-    local source_tab = nil
-    for i, tab in ipairs(vim.api.nvim_list_tabpages()) do
-      if tab == origin_tab then
-        source_tab = vim.api.nvim_list_tabpages()[i - 1]
-        break
-      end
-    end
-
-    require("config.tools").add_pager(bufnr, source_tab)
-
-    if vim.api.nvim_tabpage_is_valid(origin_tab) and origin_tab ~= vim.api.nvim_get_current_tabpage() then
-      pcall(vim.api.nvim_win_close, origin_win, true)
-    end
+    require("config.tools").add_pager(bufnr)
   end
 end
 

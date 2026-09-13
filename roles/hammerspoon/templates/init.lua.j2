@@ -164,10 +164,19 @@ local function addMenubarChecker(config)
   }
 
   function checker.setIcon()
-    if config.shouldDisplay() then
-      checker.icon:returnToMenuBar():setTitle(config.icon):setClickCallback(config.onClick)
-    else
-      checker.icon:removeFromMenuBar()
+    local result = config.shouldDisplay(function(should)
+      if should then
+        checker.icon:returnToMenuBar():setTitle(config.icon):setClickCallback(config.onClick)
+      else
+        checker.icon:removeFromMenuBar()
+      end
+    end)
+    if result ~= nil then
+      if result then
+        checker.icon:returnToMenuBar():setTitle(config.icon):setClickCallback(config.onClick)
+      else
+        checker.icon:removeFromMenuBar()
+      end
     end
   end
 
@@ -235,12 +244,14 @@ addMenubarChecker{
   debounceSeconds = 2,
   seconds = 300,
   onClick = function()
-    hs.execute("{{ hammerspoon_mailbox_count_binary }} Drafts --unread --activate")
+    hs.task.new("{{ hammerspoon_mailbox_count_binary }}", nil, {"Drafts", "--unread", "--activate"}):start()
     hs.application.launchOrFocus "Mail"
   end,
-  shouldDisplay = function()
-    local count = tonumber(string.gsub(hs.execute("{{ hammerspoon_mailbox_count_binary }} Drafts"), "%D", ""), 10)
-    return count and count > 0
+  shouldDisplay = function(callback)
+    hs.task.new("{{ hammerspoon_mailbox_count_binary }}", function(exitCode, stdOut, stdErr)
+      local count = tonumber(string.gsub(stdOut, "%D", ""), 10)
+      callback(count and count > 0)
+    end, {"Drafts"}):start()
   end,
 }
 
@@ -255,12 +266,14 @@ addMenubarChecker{
   debounceSeconds = 2,
   seconds = 300,
   onClick = function()
-    hs.execute("{{ hammerspoon_mailbox_count_binary }} Updates --unread --activate")
+    hs.task.new("{{ hammerspoon_mailbox_count_binary }}", nil, {"Updates", "--unread", "--activate"}):start()
     hs.application.launchOrFocus "Mail"
   end,
-  shouldDisplay = function()
-    local count = tonumber(string.gsub(hs.execute("{{ hammerspoon_mailbox_count_binary }} Updates --unread"), "%D", ""), 10)
-    return count and count > 0
+  shouldDisplay = function(callback)
+    hs.task.new("{{ hammerspoon_mailbox_count_binary }}", function(exitCode, stdOut, stdErr)
+      local count = tonumber(string.gsub(stdOut, "%D", ""), 10)
+      callback(count and count > 0)
+    end, {"Updates", "--unread"}):start()
   end,
 }
 
