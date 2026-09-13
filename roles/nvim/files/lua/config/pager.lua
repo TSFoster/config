@@ -76,7 +76,16 @@ function M.setup()
 
   vim.bo[bufnr].modifiable = false
   vim.bo[bufnr].readonly = true
-  vim.api.nvim_set_option_value("buflisted", false, { buf = bufnr })
+
+  -- Deliberately left listed (no `buflisted = false` here): unlisting a
+  -- buffer that is both "hidden on abandon" (via bufhidden=hide, or just
+  -- 'hidden' being on globally) and the current buffer of its window makes
+  -- Neovim swap in a replacement buffer for that window, which fires a
+  -- *second* BufDelete for this bufnr even though it's never actually
+  -- unloaded. `nvr --remote-wait` only waits for one BufDelete per buffer
+  -- it opens, so that phantom event makes it return immediately instead of
+  -- waiting for the user to actually close the pager. Showing up in :ls is
+  -- the tradeoff for `nvr +PagerInit --remote-wait -` (i.e. $PAGER) working.
 
   -- True only when nvim was launched fresh just to display this piped
   -- content (no running editor session to fold it into) rather than via
