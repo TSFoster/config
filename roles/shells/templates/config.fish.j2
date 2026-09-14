@@ -22,8 +22,6 @@ contains -- "./{{ entry }}" $PATH; or set -gxp PATH "./{{ entry }}"
 
 # TOOL SETUP
 
-atuin init fish --disable-up-arrow | source
-command -v direnv >/dev/null 2>&1; and direnv hook fish | source
 set --export OP_PLUGIN_ALIASES_SOURCED 1
 
 if set -q SSH_CLIENT; or set -q SSH_TTY

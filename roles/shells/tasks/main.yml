@@ -167,7 +167,7 @@
 - name: Regenerate stale fish completions
   ansible.builtin.shell: |
     set -e
-    bin=$(command -v {{ item.cmd }}) || exit 0
+    bin=$(command -v {{ item.cmd }}) || { echo "{{ item.cmd }}: command not found" >&2; exit 1; }
     dest="{{ shells_fish_config_dir }}/completions/{{ item.name | default(item.cmd) }}.fish"
     if [ ! -e "$dest" ] || [ "$bin" -nt "$dest" ]; then
       {{ item.generate }} > "$dest"
@@ -219,6 +219,28 @@
     path: "{{ shells_fish_conf_d_dir }}"
     state: directory
     mode: "0755"
+- name: Regenerate stale fish conf.d snippets
+  ansible.builtin.shell: |
+    set -e
+    bin=$(command -v {{ item.cmd }}) || { echo "{{ item.cmd }}: command not found" >&2; exit 1; }
+    dest="{{ shells_fish_conf_d_dir }}/{{ item.name | default(item.cmd) }}.fish"
+    if [ ! -e "$dest" ] || [ "$bin" -nt "$dest" ]; then
+      {% if item.interactive_only | default(false) %}
+      { echo 'status is-interactive; or exit 0'; {{ item.generate }}; } > "$dest"
+      {% else %}
+      {{ item.generate }} > "$dest"
+      {% endif %}
+      echo changed
+    fi
+  args:
+    executable: /bin/bash
+  register: shells_conf_d_result
+  loop: "{{ shells_fish_conf_d }}"
+  loop_control:
+    label: "{{ item.name | default(item.cmd) }}"
+  changed_when: "'changed' in shells_conf_d_result.stdout"
+  tags:
+    - shells_files
 - name: Make themes dir
   ansible.builtin.file:
     path: "{{ shells_fish_themes_dir }}"

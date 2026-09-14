@@ -145,6 +145,12 @@ shells_fish_completions:
     generate: supabase completion fish
   - cmd: wrangler
     generate: wrangler complete fish
+shells_fish_conf_d:
+  - cmd: atuin
+    generate: atuin init fish --disable-up-arrow
+    interactive_only: true
+  - cmd: direnv
+    generate: direnv hook fish
 shells_abbreviations:
   - name: an
     value: ansible
