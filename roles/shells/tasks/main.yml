@@ -164,6 +164,24 @@
         src: "config.fish.j2"
         dest: "{{ shells_fish_config_dir }}/config.fish"
         mode: "0644"
+- name: Regenerate stale fish completions
+  ansible.builtin.shell: |
+    set -e
+    bin=$(command -v {{ item.cmd }}) || exit 0
+    dest="{{ shells_fish_config_dir }}/completions/{{ item.name | default(item.cmd) }}.fish"
+    if [ ! -e "$dest" ] || [ "$bin" -nt "$dest" ]; then
+      {{ item.generate }} > "$dest"
+      echo changed
+    fi
+  args:
+    executable: /bin/bash
+  register: shells_completion_result
+  loop: "{{ shells_fish_completions }}"
+  loop_control:
+    label: "{{ item.name | default(item.cmd) }}"
+  changed_when: "'changed' in shells_completion_result.stdout"
+  tags:
+    - shells_files
 - name: Manage op plugin wrapper executables
   tags:
     - shells_files

@@ -135,6 +135,16 @@ shells_fish_universal_variables:
 shells_op_plugins:
   - gh
   - glab
+shells_fish_completions:
+  - cmd: fclones
+    generate: fclones complete fish
+  - cmd: "{{ shells_op_command }}"
+    name: op
+    generate: "{{ shells_op_command }} completion fish"
+  - cmd: supabase
+    generate: supabase completion fish
+  - cmd: wrangler
+    generate: wrangler complete fish
 shells_abbreviations:
   - name: an
     value: ansible
