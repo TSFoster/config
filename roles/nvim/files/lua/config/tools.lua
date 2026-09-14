@@ -116,7 +116,10 @@ local function get_mru_non_tool_buf()
   return nil
 end
 
--- Focus the given tool, launching `cmd` in a terminal buffer if needed.
+-- Focus the given tool, launching `cmd` in a terminal buffer if needed. `cmd`
+-- is a single executable name/path, or a list of it plus its args -- never a
+-- shell string, since jobstart() runs a list argv directly with no shell to
+-- split it on spaces.
 -- If already loaded in a window, switches to that window; otherwise loads in current window.
 function M.focus(tool_name, cmd)
   local buf = tool_buffers[tool_name]
@@ -131,11 +134,12 @@ function M.focus(tool_name, cmd)
     -- Hide the buffer from :ls
     vim.api.nvim_set_option_value("buflisted", false, { buf = buf })
 
-    -- termopen() runs `cmd` directly rather than through a shell. Stash
+    -- jobstart() runs the list directly rather than through a shell. Stash
     -- the cwd explicitly so titlebar_naming has a stable fallback instead of the
     -- tool's own title (which e.g. claude rewrites continuously).
     vim.b[buf].shell_cwd = cwd
-    vim.fn.termopen(cmd, { cwd = cwd })
+    local cmd_list = type(cmd) == "table" and cmd or { cmd }
+    vim.fn.jobstart(vim.list_extend({ "direnv", "exec", cwd }, cmd_list), { cwd = cwd, term = true })
   else
     show_buffer(buf)
   end
