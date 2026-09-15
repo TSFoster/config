@@ -88,7 +88,7 @@ do
   setCaffeine(hs.caffeinate.get("displayIdle"))
 
   hs.hotkey.bind(meh, "8", toggle)
-  hs.hotkey.bind(meh, "9", extend)
+  hs.hotkey.bind(hyper, "8", extend)
 end
 
 
@@ -101,6 +101,11 @@ hs.hotkey.bind(hyper, "v", function() hs.eventtap.keyStrokes(hs.pasteboard.getCo
 hs.hotkey.bind(meh, "7", function() hs.osascript.applescript([[
   tell application "System Events" to tell appearance preferences to set dark mode to not dark mode
 ]]) end)
+
+-- HS MENU ICON
+
+hs.menuIcon(false)
+hs.hotkey.bind(meh, "9", function() hs.menuIcon(not hs.menuIcon()) end)
 
 -- WINDOW MANAGEMENT
 
