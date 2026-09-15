@@ -199,22 +199,4 @@ function M.pager_cycle(delta)
   show_buffer(pager_list[new_idx])
 end
 
--- Close a pager buffer, dropping it from the cycle.
-function M.close_pager(bufnr)
-  for i, buf in ipairs(pager_list) do
-    if buf == bufnr then
-      table.remove(pager_list, i)
-      break
-    end
-  end
-  pager_set[bufnr] = nil
-
-  if vim.api.nvim_buf_is_valid(bufnr) then
-    if vim.api.nvim_get_current_buf() == bufnr then
-      M.unfocus()
-    end
-    vim.api.nvim_buf_delete(bufnr, { force = true })
-  end
-end
-
 return M

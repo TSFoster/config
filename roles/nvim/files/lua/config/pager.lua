@@ -94,9 +94,9 @@ function M.setup()
 
   vim.keymap.set("n", "q", function()
     if is_standalone then
-      vim.cmd("quitall!")
+      vim.cmd.quitall({ bang = true })
     else
-      require("config.tools").close_pager(bufnr)
+      vim.cmd.Bd({ bang = true })
     end
   end, { buffer = bufnr, silent = true, desc = "Quit pager" })
 
