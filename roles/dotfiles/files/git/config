@@ -4,12 +4,19 @@
   interactive = auto
   status = auto
   ui = auto
+[commit]
+  verbose = true
 [core]
   autocrlf = input
 [diff]
   tool = nvr
+  algorithm = histogram
 [difftool "nvr"]
   cmd = nvr -s -d $LOCAL $REMOTE
+[fetch]
+  fsckobjects = true
+[help]
+  autocorrect = 10
 [include]
   path = credentials.gitconfig
   path = aliases.gitconfig
@@ -18,6 +25,7 @@
   defaultBranch = main
 [merge]
   tool = nvr
+  conflictstyle = zdiff3
 [mergetool]
   keepBackup = false
 [mergetool "nvr"]
@@ -26,9 +34,17 @@
   ff = only
 [push]
   default = simple
+  autoSetupRemote = true
+[rebase]
+  autosquash = true
+  autostash = true
+[receive]
+  fsckObjects = true
 [rerere]
   enabled = true
   autoupdate = true
+[transfer]
+  fsckobjects = true
 [user]
   name = T.S. Foster
   email = hi@tsf.io
