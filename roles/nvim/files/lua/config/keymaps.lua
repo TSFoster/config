@@ -602,9 +602,7 @@ keymap.set("n", "<Leader>th", util.mk_fn(cmd, "topleft vertical terminal"), { de
 keymap.set("n", "<Leader>tT", util.mk_fn(cmd, "tab terminal"), { desc = "Open terminal session in new tab" })
 keymap.set("n", "<Leader>tt", cmd.terminal, { desc = "Open terminal session in window" })
 
-keymap.set({ "n", "t", "i" }, "<M-/>", function()
-  tools.focus("yazi", "yazi")
-end, { desc = "Open Yazi" })
+keymap.set({ "n", "t", "i" }, "<M-/>", util.mk_fn(cmd.Yazi, "toggle"), { desc = "Open Yazi" })
 keymap.set({ "n", "t", "i" }, "<M-c>", function()
   tools.focus("claude", "claude")
 end, { desc = "Open Claude Code" })

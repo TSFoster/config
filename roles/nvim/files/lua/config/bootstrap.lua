@@ -78,6 +78,7 @@ local specs = {
   gh("chrisbra/csv.vim"),
   gh("0xferrous/ansi.nvim"),
   gh("obsidian-nvim/obsidian.nvim"),
+  gh("mikavilpas/yazi.nvim"),
   gh("olimorris/codecompanion.nvim"),
 }
 

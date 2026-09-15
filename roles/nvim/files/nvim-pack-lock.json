@@ -161,6 +161,10 @@
     "vim-swap": {
       "rev": "9358bfdc5e377aa13e7c2c2dd8699ba32b0dcf83",
       "src": "https://github.com/machakann/vim-swap"
+    },
+    "yazi.nvim": {
+      "rev": "82d287b80b504b3da4686d17f59b1bb2c9e47ac9",
+      "src": "https://github.com/mikavilpas/yazi.nvim"
     }
   }
 }

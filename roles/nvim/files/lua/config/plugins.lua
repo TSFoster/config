@@ -473,6 +473,11 @@ if obsidian then
   })
 end
 
+local yazi = util.safe_require("yazi")
+if yazi then
+  yazi.setup()
+end
+
 local codecompanion = util.safe_require("codecompanion")
 if codecompanion then
   codecompanion.setup({
