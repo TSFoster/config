@@ -64,6 +64,28 @@ keymap.set("n", "<Leader><Leader>q", cmd.qall, { desc = "Quit all windows" })
 keymap.set("n", "<Leader>x", cmd.xit, { desc = "Write and quit window" })
 keymap.set("n", "<Leader><Leader>x", cmd.xall, { desc = "Write and quit all windows" })
 
+-- Close tool buffers before :restart actually runs -- it saves the session
+-- (tool buffer names included) before tearing anything down, so cleaning up
+-- afterwards via VimLeavePre would be too late.
+keymap.set("n", "ZR", function()
+  tools.close_all()
+  -- Mirror :h ZR's own count handling: [1-8] => restart without
+  -- saving/restoring the session, 9 => also skip the "changed buffers" check.
+  if v.count == 9 then
+    cmd("restart! +qall!")
+  elseif v.count >= 1 then
+    cmd("restart! +qall")
+  else
+    cmd.restart()
+  end
+end, { desc = "Close tool buffers, then :restart" })
+
+vim.api.nvim_create_user_command("Restart", function(opts)
+  tools.close_all()
+  cmd(("restart%s %s"):format(opts.bang and "!" or "", opts.args))
+end, { bang = true, nargs = "*", desc = "Close tool buffers, then :restart" })
+cmd("cnoreabbrev restart Restart")
+
 keymap.set("n", "<Leader>s", ":%s//g<Left><Left>", { desc = "Global substitution of whole buffer" })
 keymap.set("v", "<Leader>s", ":s//g<Left><Left>", { desc = "Global substitution of selection" })
 keymap.set("n", "<Leader>S", ":%S//g<Left><Left>", { desc = "Case-sensitive substitution of whole buffer" })
@@ -290,7 +312,6 @@ keymap.set("n", "]v", function()
   end
 end, { desc = "Newer visited file in cwd" })
 keymap.set("n", "<Leader>he", telescope("help_tags"), { desc = "Help tags" })
-keymap.set("n", "<Leader>ta", telescope("tags"), { desc = "Tags" })
 keymap.set("n", "<Leader>b", telescope("buffers"), { desc = "Buffers" })
 keymap.set("n", "<Leader>B", telescope("current_buffer_fuzzy_find"), { desc = "Search lines in current buffer" })
 keymap.set("n", "<Leader>l", telescope("live_grep"), { desc = "Telescope live grep" })
@@ -590,50 +611,53 @@ keymap.set("n", "<Leader>nh", util.mk_fn(cmd, "leftabove vnew"), { desc = "Open 
 keymap.set("n", "<Leader>nn", cmd.enew, { desc = "Open new buffer in window" })
 keymap.set("n", "<Leader>nN", cmd.tabnew, { desc = "Open new buffer in new tab" })
 
-keymap.set("n", "<Leader>tj", util.mk_fn(cmd, "botright horizontal terminal"), { desc = "Open terminal session below" })
-keymap.set("n", "<Leader>tk", util.mk_fn(cmd, "topleft horizontal terminal"), { desc = "Open terminal session above" })
-keymap.set(
-  "n",
-  "<Leader>tl",
-  util.mk_fn(cmd, "botright vertical terminal"),
-  { desc = "Open terminal session to right" }
-)
-keymap.set("n", "<Leader>th", util.mk_fn(cmd, "topleft vertical terminal"), { desc = "Open terminal session to left" })
-keymap.set("n", "<Leader>tT", util.mk_fn(cmd, "tab terminal"), { desc = "Open terminal session in new tab" })
-keymap.set("n", "<Leader>tt", cmd.terminal, { desc = "Open terminal session in window" })
+keymap.set("n", "<Leader>t", function()
+  tools.new_shell(vim.env.SHELL or "bash")
+end, { desc = "Open new shell tool in first available slot" })
 
 keymap.set({ "n", "t", "i" }, "<M-/>", util.mk_fn(cmd.Yazi, "toggle"), { desc = "Open Yazi" })
 keymap.set({ "n", "t", "i" }, "<M-c>", function()
-  tools.focus("claude", "claude")
+  tools.focus_with_placement("claude", "claude")
 end, { desc = "Open Claude Code" })
 keymap.set({ "n", "t", "i" }, "<M-o>", function()
-  tools.focus("codex", fn.stdpath("config") .. "/bin/asdf-codex")
+  tools.focus_with_placement("codex", fn.stdpath("config") .. "/bin/asdf-codex")
 end, { desc = "Open Codex" })
 keymap.set({ "n", "t", "i" }, "<M-g>", function()
-  tools.focus("gemini", "agy")
+  tools.focus_with_placement("gemini", "agy")
 end, { desc = "Open Gemini" })
 keymap.set({ "n", "t", "i" }, "<M-s>", function()
-  tools.focus("shell_1", vim.env.SHELL or "bash")
-end, { desc = "Open Shell" })
+  tools.focus_mru_shell(vim.env.SHELL or "bash")
+end, { desc = "Open most recently used shell" })
 for i = 1, 9 do
   keymap.set({ "n", "t", "i" }, "<M-" .. i .. ">", function()
-    tools.focus("shell_" .. i, vim.env.SHELL or "bash")
-  end, { desc = "Open Shell " .. i })
+    tools.focus_shell(i, vim.env.SHELL or "bash")
+  end, { desc = "Open shell " .. i })
 end
+keymap.set({ "n", "t", "i" }, "<M-{>", function()
+  tools.cycle_shell(-1, vim.env.SHELL or "bash")
+end, { desc = "Previous shell" })
+keymap.set({ "n", "t", "i" }, "<M-}>", function()
+  tools.cycle_shell(1, vim.env.SHELL or "bash")
+end, { desc = "Next shell" })
 keymap.set({ "n", "t", "i" }, "<M-d>", function()
   local dev_cmd = vim.g.dev_cmd or "make dev"
-  tools.focus("dev", dev_cmd)
+  tools.focus_with_placement("dev", dev_cmd)
 end, { desc = "Open dev server" })
 
 keymap.set({ "n", "t", "i" }, "<M-\\>", function()
   tools.pager_latest()
 end, { desc = "Jump to most recent paged output" })
-keymap.set({ "n", "t", "i" }, "<M-]>", function()
+keymap.set({ "n", "t", "i" }, "<M-S-}>", function()
   tools.pager_cycle(1)
 end, { desc = "Next paged output" })
-keymap.set({ "n", "t", "i" }, "<M-[>", function()
+keymap.set({ "n", "t", "i" }, "<M-S-{>", function()
   tools.pager_cycle(-1)
 end, { desc = "Previous paged output" })
+for i = 1, 9 do
+  keymap.set({ "n", "t", "i" }, "<M-S-" .. i .. ">", function()
+    tools.pager_goto(i)
+  end, { desc = "Jump to paged output " .. i })
+end
 
 keymap.set({ "n", "t", "i" }, "<M-u>", tools.unfocus, { desc = "Unfocus tool to last used buffer" })
 
@@ -707,8 +731,12 @@ keymap.set("n", "]ol", util.mk_fn(toggle.location_list, 0), { desc = "Hide locat
 keymap.set("", "[<BS>", "<Plug>(IndentWiseBlockScopeBoundaryBegin)", { desc = "Move to beginning of block" })
 keymap.set("", "]<BS>", "<Plug>(IndentWiseBlockScopeBoundaryEnd)", { desc = "Move to end of block" })
 
-keymap.set({ "n", "t", "i" }, "<M-v>", vim.cmd.vsplit, { desc = ":vsplit" })
-keymap.set({ "n", "t", "i" }, "<M-x>", vim.cmd.split, { desc = ":split" })
+keymap.set({ "n", "t", "i" }, "<M-v>", function()
+  vim.cmd.vsplit("#")
+end, { desc = ":vsplit" })
+keymap.set({ "n", "t", "i" }, "<M-x>", function()
+  vim.cmd.split("#")
+end, { desc = ":split" })
 keymap.set({ "n", "t", "i" }, "<M-t>", function()
   local win = vim.api.nvim_get_current_win()
   local cur = vim.api.nvim_get_current_buf()
