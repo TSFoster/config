@@ -133,6 +133,16 @@
     src: warpd
     dest: "{{ dotfiles_warpd_config_dir }}/config"
     mode: preserve
+- name: Ensure direnv config directory exists
+  ansible.builtin.file:
+    state: directory
+    dest: "{{ dotfiles_direnv_config_dir }}"
+    mode: "0755"
+- name: Add direnv config
+  ansible.builtin.copy:
+    src: direnv.toml
+    dest: "{{ dotfiles_direnv_config_dir }}/direnv.toml"
+    mode: preserve
 - name: Add pushover credentials
   block:
     - name: Ensure pushover config directory exists
