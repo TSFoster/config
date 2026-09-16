@@ -64,28 +64,6 @@ keymap.set("n", "<Leader><Leader>q", cmd.qall, { desc = "Quit all windows" })
 keymap.set("n", "<Leader>x", cmd.xit, { desc = "Write and quit window" })
 keymap.set("n", "<Leader><Leader>x", cmd.xall, { desc = "Write and quit all windows" })
 
--- Close tool buffers before :restart actually runs -- it saves the session
--- (tool buffer names included) before tearing anything down, so cleaning up
--- afterwards via VimLeavePre would be too late.
-keymap.set("n", "ZR", function()
-  tools.close_all()
-  -- Mirror :h ZR's own count handling: [1-8] => restart without
-  -- saving/restoring the session, 9 => also skip the "changed buffers" check.
-  if v.count == 9 then
-    cmd("restart! +qall!")
-  elseif v.count >= 1 then
-    cmd("restart! +qall")
-  else
-    cmd.restart()
-  end
-end, { desc = "Close tool buffers, then :restart" })
-
-vim.api.nvim_create_user_command("Restart", function(opts)
-  tools.close_all()
-  cmd(("restart%s %s"):format(opts.bang and "!" or "", opts.args))
-end, { bang = true, nargs = "*", desc = "Close tool buffers, then :restart" })
-cmd("cnoreabbrev restart Restart")
-
 keymap.set("n", "<Leader>s", ":%s//g<Left><Left>", { desc = "Global substitution of whole buffer" })
 keymap.set("v", "<Leader>s", ":s//g<Left><Left>", { desc = "Global substitution of selection" })
 keymap.set("n", "<Leader>S", ":%S//g<Left><Left>", { desc = "Case-sensitive substitution of whole buffer" })

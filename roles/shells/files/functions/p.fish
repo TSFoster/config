@@ -177,7 +177,6 @@ function p
     pushd $projectDir
     set --local safeProjectName (string escape --style=url "$projectName")
     set --local sock "$P_HOME/nvim-$safeProjectName.sock"
-    set --local load_session_cmd "lua local n='$projectName'; if not require('mini.sessions').detected[n] then require('mini.sessions').write(n) else require('mini.sessions').read(n) end"
 
     if test -S "$sock"
       # Check if the daemon is still alive
@@ -191,8 +190,11 @@ function p
       rm -f "$sock"
     end
 
-    # Start a fresh instance in the foreground, marked as detachable
-    nvim --listen "$sock" -c "$load_session_cmd" -c 'silent detach!'
+    # Start a fresh instance in the foreground, marked as detachable. Session
+    # load/save (keyed by cwd, not $projectName) is handled inside nvim
+    # itself -- see config/plugins.lua -- gated on `--listen` being present
+    # here, so it stays scoped to project instances like this one.
+    nvim --listen "$sock" -c 'silent detach!'
     
     popd
   end

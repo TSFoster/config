@@ -255,8 +255,56 @@ local mini_sessions = util.safe_require("mini.sessions")
 if mini_sessions then
   mini_sessions.setup({
     autoread = false,
-    autowrite = true,
+    autowrite = false,
   })
+
+  -- Auto-manage a per-directory session, keyed by cwd rather than any
+  -- project name -- so it works for any `--listen`ing instance (e.g. the `p`
+  -- project launcher), not just ones that go through a project registry.
+  -- Scoped to `--listen`ing instances specifically (checked via v:argv, not
+  -- e.g. v:servername, which is always set) so plain one-off `nvim file`
+  -- invocations -- commit messages, quick edits, the pager -- don't get a
+  -- session file.
+  --
+  -- Skipped entirely on a `:restart`/ZR-driven start (v:startreason) and
+  -- exit (v:exitreason): `:restart` already saves and restores the live
+  -- session itself (see keymaps.lua), so reading our on-disk copy on the way
+  -- in would clobber that with a stale snapshot, and writing it on the way
+  -- out is redundant work on every single restart.
+  local function project_session_name()
+    return (vim.fn.getcwd():gsub("/", "%%"))
+  end
+
+  local function is_listening_instance()
+    return vim.tbl_contains(vim.v.argv, "--listen")
+  end
+
+  local RESTART_REASONS = { restart = true, ["restart!"] = true }
+
+  if is_listening_instance() then
+    if not RESTART_REASONS[vim.v.startreason] then
+      vim.api.nvim_create_autocmd("VimEnter", {
+        once = true,
+        callback = function()
+          local name = project_session_name()
+          if mini_sessions.detected[name] then
+            mini_sessions.read(name)
+          else
+            mini_sessions.write(name)
+          end
+        end,
+      })
+    end
+
+    vim.api.nvim_create_autocmd("VimLeavePre", {
+      callback = function()
+        if RESTART_REASONS[vim.v.exitreason] then
+          return
+        end
+        pcall(mini_sessions.write, project_session_name(), { force = true, verbose = false })
+      end,
+    })
+  end
 end
 
 local mini_snippets = util.safe_require("mini.snippets")

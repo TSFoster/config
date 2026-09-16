@@ -239,28 +239,6 @@ function M.pager_goto(n)
   end
 end
 
--- Kill every tracked tool's buffer (and its job, if any). Runs on every exit
--- (see the VimLeavePre autocmd below), and is also called explicitly by the
--- `ZR`/`:restart` wiring in keymaps.lua *before* they run the real
--- `:restart`: `:restart` saves the session first and only then does its
--- `:qall` (see :h :restart), so relying on VimLeavePre alone would be too
--- late for that path -- the stale buffer names would already be captured in
--- the saved session. Left alone, they come back after the restart as inert
--- placeholders: valid buffers with no process behind them, since the
--- term:// respawn-on-load trick only applies to buffers `:mksession` itself
--- knew were terminals at save time.
-function M.close_all()
-  for tool_name, buf in pairs(tool_buffers) do
-    if vim.api.nvim_buf_is_valid(buf) then
-      pcall(vim.api.nvim_buf_delete, buf, { force = true })
-    end
-    tool_buffers[tool_name] = nil
-  end
-  save_session_state()
-end
-
-vim.api.nvim_create_autocmd("VimLeavePre", { callback = M.close_all })
-
 local SHELL_SLOT_COUNT = 9
 
 local function shell_slot_name(n)
