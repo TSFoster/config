@@ -719,18 +719,23 @@ end, { desc = ":split" })
 keymap.set({ "n", "t", "i" }, "<M-t>", function()
   local win = vim.api.nvim_get_current_win()
   local cur = vim.api.nvim_get_current_buf()
-  local alt = fn.bufnr("#")
-  cmd("tab split")
-  if alt > 0 and alt ~= cur and vim.api.nvim_buf_is_valid(alt) then
-    vim.api.nvim_win_set_buf(win, alt)
+  local was_float = vim.api.nvim_win_get_config(win).relative ~= ""
+
+  if was_float then
+    vim.cmd.tabnew("%")
   else
-    local fallback = vim.api.nvim_create_buf(true, false)
-    vim.api.nvim_win_set_buf(win, fallback)
+    local alt = fn.bufnr("#")
+    cmd("tab split")
+    if alt > 0 and alt ~= cur and vim.api.nvim_buf_is_valid(alt) then
+      vim.api.nvim_win_set_buf(win, alt)
+    else
+      local fallback = vim.api.nvim_create_buf(true, false)
+      vim.api.nvim_win_set_buf(win, fallback)
+    end
   end
-  if vim.bo.buftype == "terminal" then
-    vim.cmd.startinsert()
-  end
-end, { desc = "Open buffer in new tab and switch current window to alternate file" })
+
+  tools.note_unfloat(cur)
+end, { desc = "Open buffer in new tab, popping it out of a floating window if it was in one" })
 keymap.set({ "n", "t", "i" }, "<M-f>", function()
   local win = vim.api.nvim_get_current_win()
   local buf = vim.api.nvim_get_current_buf()
@@ -738,16 +743,17 @@ keymap.set({ "n", "t", "i" }, "<M-f>", function()
 
   local float_win = window_placement.open_float()
   vim.api.nvim_win_set_buf(float_win, buf)
-  tools.note_float(buf, float_win)
+  tools.note_float(buf)
 
-  if alt > 0 and alt ~= buf and vim.api.nvim_buf_is_valid(alt) then
-    vim.api.nvim_win_set_buf(win, alt)
-  else
-    local fallback = vim.api.nvim_create_buf(true, false)
-    vim.api.nvim_win_set_buf(win, fallback)
-  end
-
-  if vim.bo.buftype == "terminal" then
-    vim.cmd.startinsert()
+  -- If `win` was itself a floating tool, opening the new float above just
+  -- blurred and auto-hid it (see window_placement.open_float), invalidating
+  -- it -- nothing left to repurpose with the alt buffer in that case.
+  if vim.api.nvim_win_is_valid(win) then
+    if alt > 0 and alt ~= buf and vim.api.nvim_buf_is_valid(alt) then
+      vim.api.nvim_win_set_buf(win, alt)
+    else
+      local fallback = vim.api.nvim_create_buf(true, false)
+      vim.api.nvim_win_set_buf(win, fallback)
+    end
   end
 end, { desc = "Open buffer in floating window and switch current window to alternate file" })

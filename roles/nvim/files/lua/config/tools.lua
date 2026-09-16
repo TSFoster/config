@@ -5,8 +5,11 @@ local M = {}
 local window_placement = require("config.window_placement")
 
 local tool_buffers = {}
--- Which tools were last placed in a floating window (see setup_float_autohide
--- and the M.focus/M.focus_with_placement/M.unfocus float handling below).
+-- Which tools were last placed in a floating window (see note_float below,
+-- and the M.focus/M.focus_with_placement/M.unfocus float handling). Actual
+-- hide-on-blur behavior for floats lives in window_placement.open_float --
+-- this table is only bookkeeping so a later M.focus resume knows to reopen
+-- the tool as a float rather than in the current window.
 local tool_float = {}
 local pager_list = {}
 local pager_set = {}
@@ -113,41 +116,36 @@ local function is_live_tool_buf(buf)
   return ok and chan and chan > 0 and vim.fn.jobwait({ chan }, 0)[1] == -1
 end
 
--- Auto-hide a tool's floating window -- closing the window, not the
--- buffer/job behind it, same "hide, don't kill" contract as M.unfocus --
--- the moment focus leaves it, so switching to another window dismisses it
--- without needing <M-u>. Checks that `win` itself is the one being left
--- (WinLeave fires on every window leave, not just this one) and, once it
--- has, deletes its own augroup rather than using `once = true`, since a
--- leave of some other window shouldn't consume/disarm this one.
-local function setup_float_autohide(win)
-  local group = vim.api.nvim_create_augroup("ToolFloatAutohide" .. win, { clear = true })
-  vim.api.nvim_create_autocmd("WinLeave", {
-    group = group,
-    callback = function()
-      if vim.api.nvim_get_current_win() == win then
-        pcall(vim.api.nvim_win_hide, win)
-        pcall(vim.api.nvim_del_augroup_by_id, group)
-      end
-    end,
-  })
-end
-
--- If `buf` belongs to a named tool, remember it as floating (so a later
+-- If `buf` belongs to a named tool, remember it as floating so a later
 -- M.focus resume reopens a float, same as tool_float set in
--- M.focus_with_placement) and wire up the same auto-hide-on-blur behavior as
--- a tool opened directly into a float.
-local function note_float(buf, win)
+-- M.focus_with_placement. Hide-on-blur itself is already wired up by
+-- window_placement.open_float() for whatever window `buf` was just placed
+-- into -- this is purely tool bookkeeping, not float behavior.
+local function note_float(buf)
   for name, tool_buf in pairs(tool_buffers) do
     if tool_buf == buf then
       tool_float[name] = true
-      setup_float_autohide(win)
       return
     end
   end
 end
 
 M.note_float = note_float
+
+-- If `buf` belongs to a named tool, forget that it was floating -- the
+-- inverse of note_float above -- so a later M.focus resume shows it in
+-- place (e.g. a tab it was just popped out into) rather than reopening a
+-- float.
+local function note_unfloat(buf)
+  for name, tool_buf in pairs(tool_buffers) do
+    if tool_buf == buf then
+      tool_float[name] = nil
+      return
+    end
+  end
+end
+
+M.note_unfloat = note_unfloat
 
 -- Focus the given tool, launching `cmd` in a terminal buffer if needed. `cmd`
 -- is a single executable name/path, or a list of it plus its args -- never a
@@ -179,23 +177,20 @@ function M.focus(tool_name, cmd)
       cmd_list = vim.list_extend({ "direnv", "exec", cwd }, cmd_list)
     end
     vim.fn.jobstart(cmd_list, { cwd = cwd, term = true })
-
-    if tool_float[tool_name] then
-      setup_float_autohide(vim.api.nvim_get_current_win())
-    end
+    -- If this was placed via window_placement.apply's "f" case, that
+    -- already made the float current and wired up its auto-hide-on-blur --
+    -- nothing more to do here.
   elseif tool_float[tool_name] and #vim.fn.win_findbuf(buf) == 0 then
     -- Floating tools are hidden outright (window closed, not just
     -- unfocused) on blur/<M-u>, so resuming one that isn't showing in any
     -- window means reopening a fresh float in "the same configuration"
-    -- rather than dumping it into the current window.
+    -- rather than dumping it into the current window. open_float() wires up
+    -- its own auto-hide-on-blur.
     local win = window_placement.open_float()
     vim.api.nvim_win_set_buf(win, buf)
-    setup_float_autohide(win)
   else
     show_buffer(buf)
   end
-
-  vim.cmd.startinsert()
 end
 
 -- Return to the most recently used non-tool buffer -- or, if the current
@@ -417,7 +412,6 @@ function M.focus_mru_shell(cmd)
   end)
 
   show_buffer(bufs[1])
-  vim.cmd.startinsert()
 end
 
 -- Focus shell slot N (with placement, if it doesn't exist yet), first
@@ -469,7 +463,6 @@ function M.cycle_shell(delta, cmd)
 
   local new_idx = ((idx - 1 + delta) % #bufs) + 1
   show_buffer(bufs[new_idx])
-  vim.cmd.startinsert()
 end
 
 return M

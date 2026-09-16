@@ -415,9 +415,41 @@ end
 
 local telescope = util.safe_require("telescope")
 if telescope then
+  -- Open the current selection (a buffer or a file) in a floating window,
+  -- same placement telescope's built-in <C-v>/<C-x>/<C-t> offer for
+  -- splits/tabs, just with no equivalent of their own (see the "TODO:
+  -- consider adding float!" in telescope.actions.init). Closing the picker
+  -- first (rather than after) matters: window_placement.open_float() makes
+  -- the float current, and actions.close() would otherwise stomp that by
+  -- restoring focus to wherever the picker was invoked from.
+  local function select_float(prompt_bufnr)
+    local actions = require("telescope.actions")
+    local action_state = require("telescope.actions.state")
+    local window_placement = require("config.window_placement")
+    local tools = require("config.tools")
+
+    local entry = action_state.get_selected_entry()
+    actions.close(prompt_bufnr)
+    if not entry then
+      return
+    end
+
+    local win = window_placement.open_float()
+    if entry.bufnr then
+      vim.api.nvim_win_set_buf(win, entry.bufnr)
+      tools.note_float(entry.bufnr)
+    else
+      vim.cmd.edit(vim.fn.fnameescape(entry.path or entry.filename or entry.value))
+    end
+  end
+
   telescope.setup({
     defaults = {
       path_display = { "truncate" },
+      mappings = {
+        i = { ["<C-f>"] = select_float },
+        n = { ["<C-f>"] = select_float },
+      },
     },
   })
 end

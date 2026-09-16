@@ -25,11 +25,34 @@ local BASE_LEGEND = {
 
 local FLOAT_SCALE = 0.85
 
+-- Auto-hide a floating window -- closing the window, not whatever buffer/job
+-- is behind it -- the moment focus leaves it, so switching to another window
+-- dismisses it without needing an explicit unfocus command. Checks that
+-- `win` itself is the one being left (WinLeave fires on every window leave,
+-- not just this one) and, once it has, deletes its own augroup rather than
+-- using `once = true`, since a leave of some other window shouldn't
+-- consume/disarm this one. Every window M.open_float() creates gets this
+-- wired up automatically, so any caller's floated buffer hides on blur, not
+-- just tool buffers.
+function M.autohide(win)
+  local group = vim.api.nvim_create_augroup("FloatAutohide" .. win, { clear = true })
+  vim.api.nvim_create_autocmd("WinLeave", {
+    group = group,
+    callback = function()
+      if vim.api.nvim_get_current_win() == win then
+        pcall(vim.api.nvim_win_hide, win)
+        pcall(vim.api.nvim_del_augroup_by_id, group)
+      end
+    end,
+  })
+end
+
 -- Open a centered floating scratch window sized to FLOAT_SCALE of the
--- editor, make it current, and return its window id. The scratch buffer is
--- disposable -- callers (e.g. M.apply's "f" case, or tools.lua reopening a
--- previously-hidden floating tool) immediately replace it with their own
--- buffer, same as e.g. the "t" case replaces tabnew()'s initial buffer.
+-- editor, make it current, wire up auto-hide-on-blur, and return its window
+-- id. The scratch buffer is disposable -- callers (e.g. M.apply's "f" case,
+-- or tools.lua reopening a previously-hidden floating tool) immediately
+-- replace it with their own buffer, same as e.g. the "t" case replaces
+-- tabnew()'s initial buffer.
 function M.open_float()
   local width = math.floor(vim.o.columns * FLOAT_SCALE)
   local height = math.floor(vim.o.lines * FLOAT_SCALE)
@@ -37,7 +60,7 @@ function M.open_float()
   local buf = vim.api.nvim_create_buf(false, true)
   vim.bo[buf].bufhidden = "wipe"
 
-  return vim.api.nvim_open_win(buf, true, {
+  local win = vim.api.nvim_open_win(buf, true, {
     relative = "editor",
     width = width,
     height = height,
@@ -46,6 +69,8 @@ function M.open_float()
     style = "minimal",
     border = "rounded",
   })
+  M.autohide(win)
+  return win
 end
 
 -- Show a small floating "Where?" prompt (with a legend of the keys below,
