@@ -133,6 +133,22 @@ local function setup_float_autohide(win)
   })
 end
 
+-- If `buf` belongs to a named tool, remember it as floating (so a later
+-- M.focus resume reopens a float, same as tool_float set in
+-- M.focus_with_placement) and wire up the same auto-hide-on-blur behavior as
+-- a tool opened directly into a float.
+local function note_float(buf, win)
+  for name, tool_buf in pairs(tool_buffers) do
+    if tool_buf == buf then
+      tool_float[name] = true
+      setup_float_autohide(win)
+      return
+    end
+  end
+end
+
+M.note_float = note_float
+
 -- Focus the given tool, launching `cmd` in a terminal buffer if needed. `cmd`
 -- is a single executable name/path, or a list of it plus its args -- never a
 -- shell string, since jobstart() runs a list argv directly with no shell to

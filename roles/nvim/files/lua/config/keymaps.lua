@@ -2,6 +2,7 @@ local toggle = require("config.toggle")
 local tools = require("config.tools")
 local lsp = require("config.lsp")
 local util = require("config.util")
+local window_placement = require("config.window_placement")
 
 local cmd = vim.cmd
 local fn = vim.fn
@@ -730,3 +731,23 @@ keymap.set({ "n", "t", "i" }, "<M-t>", function()
     vim.cmd.startinsert()
   end
 end, { desc = "Open buffer in new tab and switch current window to alternate file" })
+keymap.set({ "n", "t", "i" }, "<M-f>", function()
+  local win = vim.api.nvim_get_current_win()
+  local buf = vim.api.nvim_get_current_buf()
+  local alt = fn.bufnr("#")
+
+  local float_win = window_placement.open_float()
+  vim.api.nvim_win_set_buf(float_win, buf)
+  tools.note_float(buf, float_win)
+
+  if alt > 0 and alt ~= buf and vim.api.nvim_buf_is_valid(alt) then
+    vim.api.nvim_win_set_buf(win, alt)
+  else
+    local fallback = vim.api.nvim_create_buf(true, false)
+    vim.api.nvim_win_set_buf(win, fallback)
+  end
+
+  if vim.bo.buftype == "terminal" then
+    vim.cmd.startinsert()
+  end
+end, { desc = "Open buffer in floating window and switch current window to alternate file" })
