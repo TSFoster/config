@@ -334,65 +334,7 @@ local function get_all_shell_bufs()
   return all
 end
 
-local PLACEMENT_LEGEND = {
-  "Where?",
-  "h    to left",
-  "j    below",
-  "k    above",
-  "l    to right",
-  "w    current window",
-  "t    new tab",
-  "z    background",
-}
-
--- Show a small floating "Where?" prompt (with a legend of the keys below)
--- in the middle of the screen and call `callback` with the next keystroke
--- (h/j/k/l/w/t/z); cancelled (e.g. <Esc>) keystrokes just don't call it at
--- all.
-local function prompt_placement(callback)
-  local width = 0
-  for _, line in ipairs(PLACEMENT_LEGEND) do
-    width = math.max(width, #line)
-  end
-  width = width + 2
-
-  local lines = {}
-  for _, line in ipairs(PLACEMENT_LEGEND) do
-    table.insert(lines, (" %-" .. (width - 2) .. "s "):format(line))
-  end
-
-  local buf = vim.api.nvim_create_buf(false, true)
-  vim.bo[buf].bufhidden = "wipe"
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-  vim.api.nvim_buf_add_highlight(buf, -1, "Title", 0, 0, -1)
-
-  local win = vim.api.nvim_open_win(buf, false, {
-    relative = "editor",
-    width = width,
-    height = #lines,
-    row = math.floor((vim.o.lines - #lines) / 2),
-    col = math.floor((vim.o.columns - width) / 2),
-    style = "minimal",
-    border = "rounded",
-    focusable = false,
-    noautocmd = true,
-  })
-
-  vim.cmd.redraw()
-  local ok, char = pcall(vim.fn.getcharstr)
-  pcall(vim.api.nvim_win_close, win, true)
-
-  if ok then
-    callback(char)
-  end
-end
-
-local PLACEMENT_SPLIT_COMMANDS = {
-  h = "leftabove vsplit",
-  j = "rightbelow split",
-  k = "leftabove split",
-  l = "rightbelow vsplit",
-}
+local window_placement = require("config.window_placement")
 
 -- Like `M.focus`, but if the tool doesn't have a buffer yet, asks where to
 -- open it (left/below/above/right of the current window, the current
@@ -404,19 +346,15 @@ function M.focus_with_placement(tool_name, cmd)
     return
   end
 
-  prompt_placement(function(char)
-    if char == "w" or char == " " or char == "\n" then
-      M.focus(tool_name, cmd)
-    elseif char == "t" then
-      vim.cmd.tabnew()
-      M.focus(tool_name, cmd)
-    elseif char == "z" then
+  window_placement.prompt(function(char)
+    if char == "z" then
       M.focus_background(tool_name, cmd)
-    elseif PLACEMENT_SPLIT_COMMANDS[char] then
-      vim.cmd(PLACEMENT_SPLIT_COMMANDS[char])
-      M.focus(tool_name, cmd)
+    else
+      window_placement.apply(char, function()
+        M.focus(tool_name, cmd)
+      end)
     end
-  end)
+  end, { "z    background" })
 end
 
 -- Like `M.focus`, but creates the tool's buffer/job without displaying it or

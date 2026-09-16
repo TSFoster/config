@@ -475,7 +475,30 @@ end
 
 local yazi = util.safe_require("yazi")
 if yazi then
-  yazi.setup()
+  -- yazi.nvim's own open_and_pick_window action is hardcoded to
+  -- snacks.picker.util.pick_win(), which throws if snacks.nvim isn't
+  -- installed (it isn't, here). Disable it and rebind <c-o> to our own
+  -- placement prompt instead.
+  yazi.setup({
+    keymaps = {
+      open_and_pick_window = false,
+    },
+    set_keymappings_function = function(yazi_buffer, config, context)
+      local window_placement = require("config.window_placement")
+      vim.keymap.set("t", "<c-o>", function()
+        require("yazi.keybinding_helpers").select_current_file_and_close_yazi(config, {
+          api = context.api,
+          on_file_opened = function(chosen_file)
+            window_placement.prompt(function(char)
+              window_placement.apply(char, function()
+                require("yazi.openers").open_file(chosen_file)
+              end)
+            end)
+          end,
+        })
+      end, { buffer = yazi_buffer })
+    end,
+  })
 end
 
 local codecompanion = util.safe_require("codecompanion")
