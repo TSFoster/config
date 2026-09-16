@@ -94,6 +94,7 @@ dev_tools_packages:
     pkg: libusb-dev
   - brew: libuv
     pkg: libuv1-dev
+  - brew: googleworkspace-cli
 
   # Database
   - name: postgresql@18
