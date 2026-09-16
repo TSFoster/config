@@ -1,5 +1,5 @@
 -- Shared "where should this go?" window-placement prompt: a small floating
--- legend in the middle of the screen that reads one keystroke (h/j/k/l/w/t)
+-- legend in the middle of the screen that reads one keystroke (h/j/k/l/w/t/f)
 -- and places a new window accordingly. Used by tools.lua for tool buffers,
 -- and by the yazi.nvim integration for opening files -- yazi.nvim's own
 -- open_and_pick_window action requires snacks.nvim, which we don't install.
@@ -20,7 +20,33 @@ local BASE_LEGEND = {
   "l    to right",
   "w    current window",
   "t    new tab",
+  "f    floating window",
 }
+
+local FLOAT_SCALE = 0.85
+
+-- Open a centered floating scratch window sized to FLOAT_SCALE of the
+-- editor, make it current, and return its window id. The scratch buffer is
+-- disposable -- callers (e.g. M.apply's "f" case, or tools.lua reopening a
+-- previously-hidden floating tool) immediately replace it with their own
+-- buffer, same as e.g. the "t" case replaces tabnew()'s initial buffer.
+function M.open_float()
+  local width = math.floor(vim.o.columns * FLOAT_SCALE)
+  local height = math.floor(vim.o.lines * FLOAT_SCALE)
+
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.bo[buf].bufhidden = "wipe"
+
+  return vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    width = width,
+    height = height,
+    row = math.floor((vim.o.lines - height) / 2),
+    col = math.floor((vim.o.columns - width) / 2),
+    style = "minimal",
+    border = "rounded",
+  })
+end
 
 -- Show a small floating "Where?" prompt (with a legend of the keys below,
 -- plus any caller-supplied `extra_legend` lines) in the middle of the screen
@@ -69,7 +95,7 @@ function M.prompt(callback, extra_legend)
   end
 end
 
--- Places `char` (h/j/k/l/w/t, or space/enter as an alias for "w") and calls
+-- Places `char` (h/j/k/l/w/t/f, or space/enter as an alias for "w") and calls
 -- `open` in the resulting window. Returns true if `char` was recognized and
 -- handled, false otherwise -- so callers can still handle their own extra
 -- legend chars (e.g. tools.lua's "z" for background).
@@ -79,6 +105,10 @@ function M.apply(char, open)
     return true
   elseif char == "t" then
     vim.cmd.tabnew()
+    open()
+    return true
+  elseif char == "f" then
+    M.open_float()
     open()
     return true
   elseif M.split_commands[char] then

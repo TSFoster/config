@@ -2,61 +2,32 @@
 -- each pinned to its own persistent buffer so re-focusing a tool resumes its
 -- running process instead of starting a new one.
 local M = {}
+local window_placement = require("config.window_placement")
 
 local tool_buffers = {}
+-- Which tools were last placed in a floating window (see setup_float_autohide
+-- and the M.focus/M.focus_with_placement/M.unfocus float handling below).
+local tool_float = {}
 local pager_list = {}
 local pager_set = {}
 
--- `:restart`/`ZR` (see :h :restart, :h ZR) saves and restores a session
--- across the process restart, terminal buffers included: each one is
--- reopened by re-running its command, named `term://{cwd}//{pid}:{cmd}`,
--- and (per :h terminal-start) that exact name -- old pid and all -- survives
--- the round-trip even for buffers that were only hidden, not shown in a
--- window, at save time; those just stay unloaded until next focused, which
--- lazily reruns their command (the same mechanism `:edit term://...` uses
--- to start one). So tool_buffers, which is plain Lua state and doesn't
--- itself survive the restart, can be rebuilt after one by matching buffer
--- names back up -- *if* we squirrel away what each tool's buffer was named
--- before the restart. `:mksession` can carry that for us via
--- 'sessionoptions'+=globals, but only for String/Number globals (Lists
--- and Dicts aren't saved), hence the JSON encoding here.
-local SESSION_BUFFERS_VAR = "NvimToolBuffers"
-
-local function save_session_state()
-  local names = {}
-  for tool_name, buf in pairs(tool_buffers) do
-    if vim.api.nvim_buf_is_valid(buf) then
-      names[tool_name] = vim.api.nvim_buf_get_name(buf)
-    end
-  end
-  vim.g[SESSION_BUFFERS_VAR] = vim.json.encode(names)
-end
-
-local function restore_session_state()
-  local raw = vim.g[SESSION_BUFFERS_VAR]
-  if not raw then
-    return
-  end
-
-  local ok, names = pcall(vim.json.decode, raw)
-  if not ok or type(names) ~= "table" then
-    return
-  end
-
-  for tool_name, buf_name in pairs(names) do
-    -- mksession only restores a hidden buffer if it's buflisted, and tool
-    -- buffers deliberately aren't (to stay out of :ls) -- so at most the one
-    -- tool that was on-screen at save time comes back this way on its own.
-    -- bufadd() covers the rest.
-    local buf = vim.fn.bufadd(buf_name)
-    if buf > 0 then
-      vim.bo[buf].buflisted = false
-      tool_buffers[tool_name] = buf
-    end
-  end
-end
-
-vim.api.nvim_create_autocmd("SessionLoadPost", { callback = restore_session_state })
+-- `:restart`/`ZR` (see :h :restart, :h ZR) carries nothing about tools
+-- across the process restart: 'sessionoptions' here deliberately excludes
+-- "terminal" (see config/options.lua), and it doesn't include "globals"
+-- either -- that's never been added, and it isn't Neovim's default -- so
+-- there's no way to smuggle `tool_buffers` itself across via a saved global.
+-- A restart just forgets every tool outright: tool_buffers comes back empty,
+-- and each one gets a genuinely fresh buffer/job (new pid) the next time
+-- M.focus is called for it, same as if it had never been opened.
+--
+-- Excluding "terminal" from 'sessionoptions' still matters even though
+-- nothing is being restored: without it, Neovim's own session-restore would
+-- try to auto-respawn each terminal buffer itself from its saved name
+-- (`term://{cwd}//{pid}:{cmd}`, per :h terminal-start) -- and since that name
+-- only encodes a list-form command's argv[1], a tool started with args (e.g.
+-- the `direnv exec <cwd> claude` this module launches non-shell tools with)
+-- would come back running plain `direnv` with no arguments at all. Better to
+-- skip that and let M.focus relaunch it properly instead.
 
 local function is_tool_buf(bufnr)
   if pager_set[bufnr] then
@@ -121,10 +92,10 @@ local function get_mru_non_tool_buf()
 end
 
 -- Whether `buf` is a loaded terminal buffer with a still-running job. A
--- buffer restored via restore_session_state() (below) or left behind by a
--- tool process that already exited is still `nvim_buf_is_valid` -- Neovim
--- never invalidates a bufnr just because it's unloaded or its job died -- so
--- that check alone can't tell a genuinely resumable tool from a dead one.
+-- buffer left behind by a tool process that already exited is still
+-- `nvim_buf_is_valid` -- Neovim never invalidates a bufnr just because it's
+-- unloaded or its job died -- so that check alone can't tell a genuinely
+-- resumable tool from a dead one.
 -- Trusting it as "already open" would silently reuse a stale/ghost buffer
 -- instead of prompting to relaunch: for a list-argv tool (e.g. the
 -- `direnv exec <cwd> claude` this module launches non-shell tools with),
@@ -140,6 +111,26 @@ local function is_live_tool_buf(buf)
     return vim.bo[buf].channel
   end)
   return ok and chan and chan > 0 and vim.fn.jobwait({ chan }, 0)[1] == -1
+end
+
+-- Auto-hide a tool's floating window -- closing the window, not the
+-- buffer/job behind it, same "hide, don't kill" contract as M.unfocus --
+-- the moment focus leaves it, so switching to another window dismisses it
+-- without needing <M-u>. Checks that `win` itself is the one being left
+-- (WinLeave fires on every window leave, not just this one) and, once it
+-- has, deletes its own augroup rather than using `once = true`, since a
+-- leave of some other window shouldn't consume/disarm this one.
+local function setup_float_autohide(win)
+  local group = vim.api.nvim_create_augroup("ToolFloatAutohide" .. win, { clear = true })
+  vim.api.nvim_create_autocmd("WinLeave", {
+    group = group,
+    callback = function()
+      if vim.api.nvim_get_current_win() == win then
+        pcall(vim.api.nvim_win_hide, win)
+        pcall(vim.api.nvim_del_augroup_by_id, group)
+      end
+    end,
+  })
 end
 
 -- Focus the given tool, launching `cmd` in a terminal buffer if needed. `cmd`
@@ -172,17 +163,38 @@ function M.focus(tool_name, cmd)
       cmd_list = vim.list_extend({ "direnv", "exec", cwd }, cmd_list)
     end
     vim.fn.jobstart(cmd_list, { cwd = cwd, term = true })
+
+    if tool_float[tool_name] then
+      setup_float_autohide(vim.api.nvim_get_current_win())
+    end
+  elseif tool_float[tool_name] and #vim.fn.win_findbuf(buf) == 0 then
+    -- Floating tools are hidden outright (window closed, not just
+    -- unfocused) on blur/<M-u>, so resuming one that isn't showing in any
+    -- window means reopening a fresh float in "the same configuration"
+    -- rather than dumping it into the current window.
+    local win = window_placement.open_float()
+    vim.api.nvim_win_set_buf(win, buf)
+    setup_float_autohide(win)
   else
     show_buffer(buf)
   end
 
-  save_session_state()
   vim.cmd.startinsert()
 end
 
--- Return to the most recently used non-tool buffer.
+-- Return to the most recently used non-tool buffer -- or, if the current
+-- window is a floating tool (e.g. its blur-triggered autohide didn't fire,
+-- such as a <M-u> press without ever leaving the window), hide that float
+-- instead of repurposing it with a non-tool buffer.
 function M.unfocus()
-  if not is_tool_buf(vim.api.nvim_get_current_buf()) then
+  local buf = vim.api.nvim_get_current_buf()
+  if not is_tool_buf(buf) then
+    return
+  end
+
+  local win = vim.api.nvim_get_current_win()
+  if vim.api.nvim_win_get_config(win).relative ~= "" then
+    pcall(vim.api.nvim_win_hide, win)
     return
   end
 
@@ -245,9 +257,8 @@ local function shell_slot_name(n)
   return "shell_" .. n
 end
 
--- Adopt orphaned terminal buffers (e.g. from a restored session, or opened
--- directly via :terminal) into any empty shell_N slots, lowest buffer number
--- first.
+-- Adopt orphaned terminal buffers (e.g. opened directly via :terminal) into
+-- any empty shell_N slots, lowest buffer number first.
 local function reconcile_shells()
   local used = {}
   for i = 1, SHELL_SLOT_COUNT do
@@ -312,8 +323,6 @@ local function get_all_shell_bufs()
   return all
 end
 
-local window_placement = require("config.window_placement")
-
 -- Like `M.focus`, but if the tool doesn't have a buffer yet, asks where to
 -- open it (left/below/above/right of the current window, the current
 -- window, a new tab, or in the background) before launching it there.
@@ -325,6 +334,11 @@ function M.focus_with_placement(tool_name, cmd)
   end
 
   window_placement.prompt(function(char)
+    -- Remembered so a later M.focus() resume (re-pressing the same keymap
+    -- after the float hides itself, or after M.unfocus hides it) knows to
+    -- reopen a float instead of showing the tool in the current window.
+    tool_float[tool_name] = char == "f"
+
     if char == "z" then
       M.focus_background(tool_name, cmd)
     else
@@ -366,7 +380,6 @@ function M.focus_background(tool_name, cmd)
 
   vim.api.nvim_win_set_buf(win, orig_buf)
   vim.cmd.stopinsert()
-  save_session_state()
 end
 
 -- Focus the most recently used shell terminal buffer (any of them, not just
@@ -388,7 +401,6 @@ function M.focus_mru_shell(cmd)
   end)
 
   show_buffer(bufs[1])
-  save_session_state()
   vim.cmd.startinsert()
 end
 
@@ -441,7 +453,6 @@ function M.cycle_shell(delta, cmd)
 
   local new_idx = ((idx - 1 + delta) % #bufs) + 1
   show_buffer(bufs[new_idx])
-  save_session_state()
   vim.cmd.startinsert()
 end
 
