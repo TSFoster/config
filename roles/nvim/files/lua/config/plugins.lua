@@ -285,6 +285,14 @@ if mini_sessions then
     if not RESTART_REASONS[vim.v.startreason] then
       vim.api.nvim_create_autocmd("VimEnter", {
         once = true,
+        -- Without `nested`, the :edit/:buffer commands mini_sessions.read()
+        -- runs via :mksession's generated script don't trigger their own
+        -- BufReadPost/FileType autocmds -- autocommands don't nest by
+        -- default, and this whole read already happens inside one (this
+        -- very VimEnter). Buffers still come back with the right content
+        -- and name, just with 'filetype' (and anything else normally set by
+        -- ftdetect) silently empty.
+        nested = true,
         callback = function()
           local name = project_session_name()
           if mini_sessions.detected[name] then
