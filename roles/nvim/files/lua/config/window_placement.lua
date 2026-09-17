@@ -23,7 +23,7 @@ local BASE_LEGEND = {
   "f    floating window",
 }
 
-local FLOAT_SCALE = 0.85
+local FLOAT_SCALE = 0.95
 
 -- Auto-hide a floating window -- closing the window, not whatever buffer/job
 -- is behind it -- the moment focus leaves it, so switching to another window
