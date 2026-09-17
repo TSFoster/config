@@ -1,0 +1,47 @@
+#!/bin/sh
+# POSIX /bin/sh script — works seamlessly from bash, zsh, fish, scripts, or subshells
+
+passthrough=0
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -p|--print|-t|--tee|--passthrough)
+      passthrough=1
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      printf 'Usage: %s [-p|--print] [text...]\n' "$0" >&2
+      exit 1
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+tmp=$(mktemp "${TMPDIR:-/tmp}/remote_clipboard.XXXXXX")
+trap 'rm -f "$tmp"' EXIT INT HUP TERM
+
+if [ $# -gt 0 ]; then
+  printf '%s' "$*" > "$tmp"
+else
+  cat > "$tmp"
+fi
+
+# Pass through clean text to stdout if requested
+if [ "$passthrough" -eq 1 ]; then
+  cat "$tmp"
+fi
+
+# Emit OSC 52 sequence to the terminal (/dev/tty fallback to stdout)
+target_tty="/dev/tty"
+if [ ! -w "$target_tty" ]; then
+  target_tty="/dev/stdout"
+fi
+
+encoded=$(base64 < "$tmp" | tr -d '\r\n')
+printf '\033]52;c;%s\007' "$encoded" > "$target_tty"

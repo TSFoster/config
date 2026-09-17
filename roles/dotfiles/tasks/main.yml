@@ -10,16 +10,23 @@
     - lib
     - share
     - state
-- name: Add bin files
+- name: Add macOS-only bin files
   ansible.builtin.copy:
     src: "{{ item }}"
     dest: "{{ dotfiles_bin_dir }}/"
     mode: preserve
   loop:
     - mailbox-count
+  when: ansible_facts["system"] == "Darwin"
+- name: Add bin files
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ dotfiles_bin_dir }}/"
+    mode: preserve
+  loop:
+    - remote_clipboard
     - pushover
     - afk
-  when: ansible_facts["system"] == "Darwin"
 - name: Ensure ghostty config directory exists
   ansible.builtin.file:
     state: directory
