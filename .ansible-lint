@@ -1,3 +1,4 @@
 ---
 exclude_paths:
   - host_vars/localhost/vault.yml
+  - host_vars/home_server/vault.yml
