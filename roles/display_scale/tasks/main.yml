@@ -1,0 +1,25 @@
+---
+- name: Install dconf-cli
+  ansible.builtin.package:
+    name: dconf-cli
+    state: present
+  become: true
+
+- name: Register local dconf profile
+  ansible.builtin.lineinfile:
+    path: /etc/dconf/profile/user
+    line: "{{ item }}"
+    create: true
+    mode: "0644"
+  loop:
+    - "user-db:user"
+    - "system-db:local"
+  become: true
+
+- name: Set default GNOME display scale
+  ansible.builtin.template:
+    src: 01-display-scale.j2
+    dest: /etc/dconf/db/local.d/01-display-scale
+    mode: "0644"
+  become: true
+  notify: Update dconf database
