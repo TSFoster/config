@@ -1,0 +1,50 @@
+---
+- name: Install ethtool
+  ansible.builtin.package:
+    name: ethtool
+    state: present
+  become: true
+
+- name: Install Wake-on-LAN systemd template unit
+  ansible.builtin.template:
+    src: wol@.service.j2
+    dest: /etc/systemd/system/wol@.service
+    mode: "0644"
+  become: true
+
+- name: Enable and start Wake-on-LAN for {{ wake_on_lan_interface }}
+  ansible.builtin.systemd_service:
+    name: "wol@{{ wake_on_lan_interface }}.service"
+    daemon_reload: true
+    enabled: true
+    state: started
+  become: true
+
+# NetworkManager (typical on Debian/Ubuntu desktop installs) can reassert its
+# own device settings when it brings an interface up/down, which may clobber
+# the ethtool flag set above. Persist the same setting on the connection
+# profile so it's reapplied whenever NetworkManager manages the device.
+- name: Gather service facts
+  ansible.builtin.service_facts:
+
+- name: Persist Wake-on-LAN in NetworkManager
+  when: ansible_facts.services['NetworkManager.service'].state | default('') == 'running'
+  become: true
+  block:
+    - name: Look up the NetworkManager connection for {{ wake_on_lan_interface }}
+      ansible.builtin.command: nmcli -g GENERAL.CONNECTION device show {{ wake_on_lan_interface }}
+      register: wake_on_lan_nm_connection
+      changed_when: false
+
+    - name: Get current NetworkManager Wake-on-LAN setting
+      ansible.builtin.command: nmcli -g 802-3-ethernet.wake-on-lan connection show "{{ wake_on_lan_nm_connection.stdout }}"
+      register: wake_on_lan_nm_current
+      changed_when: false
+      when: wake_on_lan_nm_connection.stdout != "--"
+
+    - name: Set NetworkManager Wake-on-LAN setting to magic packet
+      ansible.builtin.command: nmcli connection modify "{{ wake_on_lan_nm_connection.stdout }}" 802-3-ethernet.wake-on-lan magic
+      when:
+        - wake_on_lan_nm_connection.stdout != "--"
+        - wake_on_lan_nm_current.stdout != "magic"
+      changed_when: true

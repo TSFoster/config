@@ -1,0 +1,2 @@
+---
+wake_on_lan_interface: "{{ ansible_facts['default_ipv4']['interface'] }}"

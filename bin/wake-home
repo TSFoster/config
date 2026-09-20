@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat >&2 <<'EOF'
+Usage: bin/wake-home
+
+Sends a Wake-on-LAN magic packet to the home server (the "home_server" host
+in inventory/hosts.yml), broadcasting on the local subnet. Only works from
+the same LAN, and only powers the machine on from a full shutdown --
+auto-suspend is disabled there, so this shouldn't be needed for everyday
+SSH access.
+
+The target's MAC address is looked up from Ansible's inventory
+(host_vars/home_server, vault-encrypted) rather than hardcoded here.
+EOF
+  exit 1
+}
+
+[ "$#" -eq 0 ] || usage
+
+command -v wakeonlan >/dev/null || {
+  echo "wakeonlan not found; install with: brew install wakeonlan" >&2
+  exit 1
+}
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+mac="$(ansible localhost -c local -m debug \
+  -a "var=hostvars['home_server'].wake_on_lan_mac_address" \
+  | python3 -c 'import json, sys
+raw = sys.stdin.read()
+data = json.loads(raw[raw.index("{"):])
+print(next(iter(data.values())))')"
+
+wakeonlan "$mac"

@@ -79,6 +79,7 @@ dev_tools_packages:
   # Misc dev tools
   - name: direnv
   - brew: basecamp/tap/fizzy
+  - brew: wakeonlan
   - name: shellcheck
   - name: yamllint
   - name: exercism
