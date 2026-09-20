@@ -111,20 +111,13 @@
       loop: "{{ dotfiles_bat_themes }}"
 - name: Add git config
   block:
-    - name: Sync config except credentials
+    - name: Sync config
       ansible.posix.synchronize:
         src: "{{ role_path }}/files/git/"
         dest: "{{ dotfiles_git_config_dir }}/"
         recursive: true
         links: true
         delete: true
-        rsync_opts:
-          - "--exclude=credentials.gitconfig"
-    - name: Add git credentials
-      ansible.builtin.template:
-        src: credentials.gitconfig.j2
-        dest: "{{ dotfiles_git_credentials_path }}"
-        mode: "0600"
 - name: Add editorconfig
   ansible.builtin.copy:
     src: editorconfig
