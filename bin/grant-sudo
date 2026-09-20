@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat >&2 <<'EOF'
+Usage: bin/grant-sudo <user@host> [group]
+
+One-time bootstrap for a brand-new host where <user> exists but isn't in
+the sudo group yet. Logs in as <user> over SSH, then uses `su -` to become
+root (you'll be prompted for root's password) to add <user> to that group
+(default: "sudo"; use "wheel" on RHEL/Fedora-style hosts).
+
+Meant to be run once, before Ansible's `become` can work for <user>, then
+never needed again.
+EOF
+  exit 1
+}
+
+[ "$#" -ge 1 ] || usage
+
+target="$1"
+group="${2:-sudo}"
+user="${target%@*}"
+host="${target#*@}"
+
+[ "$user" != "$target" ] || {
+  echo "Need an explicit user (bin/grant-sudo <user@host>)" >&2
+  exit 1
+}
+
+case "$user" in
+[a-z_][a-z0-9_-]*) ;;
+*)
+  echo "Refusing to use suspicious username: $user" >&2
+  exit 1
+  ;;
+esac
+
+ssh -tt "$target" "su - -c \"usermod -aG '$group' '$user'\""
+
+echo "Added $user to the $group group on $host. Verify with: ssh $target sudo -v" >&2

@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat >&2 <<'EOF'
+Usage: bin/copy-ssh-key <user@host> [1password-item-name]
+
+One-time bootstrap for a brand-new host that only has password
+authentication enabled. Fetches a public key stored in 1Password (the
+Document item "<name>.pub", same convention roles/ssh uses) and installs
+it in <user@host>'s ~/.ssh/authorized_keys via ssh-copy-id, prompting for
+the account password.
+
+Defaults to the "id_ed25519" key if no item name is given.
+
+Once this succeeds, point the ssh role at the host to take over key
+management, then disable PasswordAuthentication on it.
+EOF
+  exit 1
+}
+
+[ "$#" -ge 1 ] || usage
+
+target="$1"
+key_name="${2:-id_ed25519}"
+
+command -v op >/dev/null || {
+  echo "1Password CLI (op) not found" >&2
+  exit 1
+}
+command -v ssh-copy-id >/dev/null || {
+  echo "ssh-copy-id not found" >&2
+  exit 1
+}
+
+eval "$(op signin)"
+
+tmp_dir="$(mktemp -d)"
+trap 'rm -rf "$tmp_dir"' EXIT
+
+pub_key_file="$tmp_dir/${key_name}.pub"
+op item get --fields publicKey "$key_name" >"$pub_key_file"
+
+ssh-copy-id -f -i "$pub_key_file" \
+  -o PreferredAuthentications=password \
+  -o PubkeyAuthentication=no \
+  "$target"
