@@ -1,6 +1,6 @@
 ---
 - name: Configure localhost
-  hosts: localhost
+  hosts: workstations
   roles:
     - role: shells
       tags: ["shells"]
@@ -35,3 +35,13 @@
     - role: alfred
       tags: ["alfred"]
       when: ansible_facts['system'] == 'Darwin'
+
+- name: Configure home servers
+  hosts: servers
+  roles:
+    - role: passwordless_sudo
+      tags: ["passwordless_sudo"]
+    - role: wake_on_lan
+      tags: ["wake_on_lan"]
+    - role: display_scale
+      tags: ["display_scale"]

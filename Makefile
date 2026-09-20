@@ -1,8 +1,7 @@
 .DEFAULT_GOAL := help
 
 PLAYBOOK := main.yml
-INVENTORY := localhost ansible_python_interpreter=$$(command -v python3),
-ANSIBLE := ansible-playbook -i "$(INVENTORY)"
+ANSIBLE := ansible-playbook
 GALAXY := ansible-galaxy collection install --upgrade -r collections/requirements.yml
 LINT := ansible-lint
 TAGS ?=
@@ -10,7 +9,7 @@ EXTRA_ARGS ?=
 # Keep in sync with shells_claude_oauth_token_path in roles/shells/defaults/main.yml
 CLAUDE_OAUTH_TOKEN_PATH := $(HOME)/.local/state/claude-code/oauth_token
 
-.PHONY: help bootstrap collections install run check syntax lint lint-fix nvim_pack_list nvim_pack_update nvim_pack_uninstall claude_token_renew shells shells_env shells_files dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp karabiner
+.PHONY: help bootstrap collections install run check home syntax lint lint-fix nvim_pack_list nvim_pack_update nvim_pack_uninstall claude_token_renew shells shells_env shells_files dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp karabiner passwordless_sudo wake_on_lan
 
 help:
 	@printf '%s\n' \
@@ -18,8 +17,9 @@ help:
 		'  make bootstrap         Run the bootstrap script' \
 		'  make collections       Install Ansible collections' \
 		'  make install           Alias for collections' \
-		'  make run               Run the full playbook' \
-		'  make check             Dry-run the playbook (--check --diff)' \
+		'  make run               Run the full playbook against this Mac (workstations group)' \
+		'  make check             Dry-run the playbook (--check --diff) against this Mac' \
+		'  make home              Run the full playbook against home machines (servers group)' \
 		'  make syntax            Run ansible-playbook syntax check' \
 		'  make lint              Run ansible-lint' \
 		'  make lint-fix          Run ansible-lint --fix' \
@@ -43,10 +43,13 @@ collections install:
 	$(GALAXY)
 
 run:
-	$(ANSIBLE) $(PLAYBOOK) $(if $(TAGS),--tags "$(TAGS)") $(EXTRA_ARGS)
+	$(ANSIBLE) $(PLAYBOOK) --limit workstations $(if $(TAGS),--tags "$(TAGS)") $(EXTRA_ARGS)
 
 check:
-	$(ANSIBLE) $(PLAYBOOK) --check --diff $(if $(TAGS),--tags "$(TAGS)") $(EXTRA_ARGS)
+	$(ANSIBLE) $(PLAYBOOK) --limit workstations --check --diff $(if $(TAGS),--tags "$(TAGS)") $(EXTRA_ARGS)
+
+home:
+	$(ANSIBLE) $(PLAYBOOK) --limit servers $(if $(TAGS),--tags "$(TAGS)") $(EXTRA_ARGS)
 
 syntax:
 	$(ANSIBLE) $(PLAYBOOK) --syntax-check $(EXTRA_ARGS)
@@ -78,3 +81,6 @@ claude_token_renew:
 
 shells shells_env shells_files dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp karabiner:
 	$(MAKE) run TAGS=$@ EXTRA_ARGS="$(EXTRA_ARGS)"
+
+passwordless_sudo wake_on_lan:
+	$(MAKE) home TAGS=$@ EXTRA_ARGS="$(EXTRA_ARGS)"
