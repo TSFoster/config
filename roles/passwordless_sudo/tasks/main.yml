@@ -1,0 +1,10 @@
+---
+- name: Grant passwordless sudo to {{ passwordless_sudo_user }}
+  ansible.builtin.copy:
+    dest: "/etc/sudoers.d/{{ passwordless_sudo_user }}"
+    content: "{{ passwordless_sudo_user }} ALL=(ALL) NOPASSWD:ALL\n"
+    owner: root
+    group: root
+    mode: "0440"
+    validate: "visudo -cf %s"
+  become: true
