@@ -35,11 +35,14 @@ function p
   end
 
   set --query XDG_DATA_HOME; or set XDG_DATA_HOME $HOME/.local/share
-  set --query P_HOME; or set P_HOME $XDG_DATA_HOME/p
-  set --query P_SEARCH; or set P_SEARCH $P_HOME/search
-  set --query P_PROJECTS; or set P_PROJECTS $P_HOME/projects
+  set --query XDG_CONFIG_HOME; or set XDG_CONFIG_HOME $HOME/.config
+  set --query P_DATA; or set P_DATA $XDG_DATA_HOME/p
+  set --query P_CONFIG; or set P_CONFIG $XDG_CONFIG_HOME/p
+  set --query P_SEARCH; or set P_SEARCH $P_CONFIG/search
+  set --query P_PROJECTS; or set P_PROJECTS $P_CONFIG/projects
 
-  mkdir -p $P_HOME
+  mkdir -p $P_DATA
+  mkdir -p $P_CONFIG
   touch $P_SEARCH $P_PROJECTS
 
   set --local separator '////' # '/' is the only character not allowed in a filename for any filesystem
@@ -101,11 +104,11 @@ function p
   # If p is run without arguments
   if not count $argv > /dev/null
     set --local running_projects
-    for sock in $P_HOME/nvim-*.sock
+    for sock in $P_DATA/*.sock
       if test -S "$sock"
-        set --local name (string match --regex 'nvim-(.*)\.sock$' (basename "$sock"))
-        if test -n "$name[2]"
-          set --local unescaped_name (string unescape --style=url "$name[2]")
+        set --local name (basename -s .sock $sock)
+        if test -n "$name"
+          set --local unescaped_name (string unescape --style=url $name)
           if nvim --server "$sock" --remote-expr 'v:servername' >/dev/null 2>&1
             set -a running_projects $unescaped_name
           else
@@ -176,7 +179,7 @@ function p
   else
     pushd $projectDir
     set --local safeProjectName (string escape --style=url "$projectName")
-    set --local sock "$P_HOME/nvim-$safeProjectName.sock"
+    set --local sock "$P_DATA/$safeProjectName.sock"
 
     if test -S "$sock"
       # Check if the daemon is still alive
