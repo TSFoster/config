@@ -1,0 +1,87 @@
+---
+- name: Install dependencies
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: false
+  loop:
+    - ca-certificates
+    - curl
+    - gnupg
+  become: true
+
+- name: Add docker repository to apt
+  ansible.builtin.deb822_repository:
+    name: docker
+    types: deb
+    uris: https://download.docker.com/linux/debian
+    suites: "{{ ansible_facts['distribution_release'] }}"
+    components: stable
+    architectures: "{{ 'arm64' if ansible_facts['architecture'] == 'aarch64' else 'amd64' }}"
+    signed_by: https://download.docker.com/linux/debian/gpg
+    state: present
+  become: true
+
+- name: Install docker
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
+  loop:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+    - docker-compose-plugin
+  become: true
+
+- name: Ensure docker.service drop-in directory exists
+  ansible.builtin.file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+
+- name: Make docker.service hard-depend on base_data being mounted
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/docker.service.d/require-base-data-mount.conf
+    content: |
+      [Unit]
+      RequiresMountsFor={{ base_data }}
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  notify: Reload systemd for docker
+  # RequiresMountsFor pulls in both Requires= and After= on the mount unit,
+  # so docker.service actually blocks on it instead of merely ordering
+  # after it like the implicit local-fs.target dependency does — if the
+  # mount fails, docker.service fails loudly rather than starting against
+  # an empty root-disk directory.
+  #
+  # Requires= only governs *starting* docker.service — it does nothing if
+  # the mount goes away later while docker.service is already running.
+  # That gap used to be closed here with a BindsTo= on the mount unit, but
+  # that stopped the whole daemon (every container, not just ones on
+  # base_data) each time the drive dropped out. base-data-containers.service
+  # (data_mount role) now owns that instead: it BindsTo= the same mount
+  # unit and stops/starts only the containers actually mounting base_data,
+  # leaving docker.service and everything else running throughout.
+
+- name: Start docker
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: true
+  become: true
+
+- name: Add user to docker group
+  ansible.builtin.user:
+    name: "{{ docker_user }}"
+    groups: docker
+    append: true
+    state: present
+  become: true
+  # Lets `docker compose --context home ...` from elsewhere deploy over SSH
+  # without needing root on the remote end.

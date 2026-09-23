@@ -1,0 +1,2 @@
+---
+docker_user: "{{ ansible_facts['user_id'] }}"
