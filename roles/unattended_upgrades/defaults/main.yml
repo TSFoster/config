@@ -1,0 +1,6 @@
+---
+unattended_upgrades_reboot_time: "04:00"
+# healthchecks.io-style ping URL (dead-man's-switch): pinged plain on
+# success, pinged /fail on failure. Empty disables both hooks entirely —
+# no unattended-upgrades behavior changes either way.
+unattended_upgrades_healthcheck_url: ""

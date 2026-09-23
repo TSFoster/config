@@ -1,0 +1,59 @@
+---
+- name: Install unattended-upgrades
+  ansible.builtin.apt:
+    name: unattended-upgrades
+    state: present
+  become: true
+
+- name: Enable periodic apt update + unattended-upgrade
+  ansible.builtin.template:
+    src: 20auto-upgrades.j2
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+
+- name: Configure security-only origins + automatic reboot
+  ansible.builtin.template:
+    src: 52unattended-upgrades-local.j2
+    dest: /etc/apt/apt.conf.d/52unattended-upgrades-local
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+
+- name: Configure healthcheck pings for unattended-upgrades success/failure
+  when: unattended_upgrades_healthcheck_url | length > 0
+  become: true
+  block:
+    - name: Install curl
+      ansible.builtin.apt:
+        name: curl
+        state: present
+
+    - name: Install failure-notification systemd service
+      ansible.builtin.template:
+        src: notify-failure.service.j2
+        dest: /etc/systemd/system/unattended-upgrades-notify-failure.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload systemd for unattended-upgrades
+
+    - name: Ensure apt-daily-upgrade.service drop-in directory exists
+      ansible.builtin.file:
+        path: /etc/systemd/system/apt-daily-upgrade.service.d
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Wire success/failure healthcheck hooks into apt-daily-upgrade.service
+      ansible.builtin.template:
+        src: apt-daily-upgrade-notify.conf.j2
+        dest: /etc/systemd/system/apt-daily-upgrade.service.d/notify.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload systemd for unattended-upgrades

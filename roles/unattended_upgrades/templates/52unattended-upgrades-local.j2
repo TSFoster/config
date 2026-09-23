@@ -1,0 +1,16 @@
+// Managed by Ansible (roles/unattended_upgrades) — local overrides on top of
+// the package's own /etc/apt/apt.conf.d/50unattended-upgrades, which stays
+// untouched since it's a package-owned conffile.
+//
+// #clear then redeclare, rather than relying on 50unattended-upgrades
+// already being security-only by default — this is meant to hold
+// regardless of what that file's own defaults happen to be.
+#clear Unattended-Upgrade::Origins-Pattern;
+Unattended-Upgrade::Origins-Pattern {
+    "origin=Debian,codename=${distro_codename},label=Debian-Security";
+    "origin=Debian,codename=${distro_codename}-security,label=Debian-Security";
+};
+
+Unattended-Upgrade::Automatic-Reboot "true";
+Unattended-Upgrade::Automatic-Reboot-WithUsers "true";
+Unattended-Upgrade::Automatic-Reboot-Time "{{ unattended_upgrades_reboot_time }}";

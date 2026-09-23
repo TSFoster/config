@@ -1,0 +1,8 @@
+[Unit]
+OnFailure=unattended-upgrades-notify-failure.service
+
+[Service]
+# Runs only when ExecStart (the daily upgrade) exits 0; OnFailure= above
+# covers the non-zero case, so together these give the healthcheck a
+# heartbeat on success and an immediate alert on failure.
+ExecStartPost=/usr/bin/curl -fsS --retry 3 {{ unattended_upgrades_healthcheck_url }}
