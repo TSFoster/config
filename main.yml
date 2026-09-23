@@ -41,7 +41,25 @@
   roles:
     - role: passwordless_sudo
       tags: ["passwordless_sudo"]
+    - role: firewall
+      tags: ["firewall"]
+    # - role: data_mount # must precede docker — see docker role's RequiresMountsFor/BindsTo
+    #   tags: ["data_mount"]
+    - role: docker
+      tags: ["docker"]
+    - role: service_data # must follow data_mount — sets group/perms on base_data
+      tags: ["service_data"]
+    - role: unattended_upgrades
+      tags: ["unattended_upgrades"]
+    - role: tailscale
+      tags: ["tailscale"]
+    - role: docktail # must follow docker and tailscale
+      tags: ["docktail"]
+    - role: traefik # must follow docker
+      tags: ["traefik"]
     - role: wake_on_lan
       tags: ["wake_on_lan"]
+    - role: no_suspend
+      tags: ["no_suspend"]
     - role: display_scale
       tags: ["display_scale"]

@@ -9,7 +9,7 @@ EXTRA_ARGS ?=
 # Keep in sync with shells_claude_oauth_token_path in roles/shells/defaults/main.yml
 CLAUDE_OAUTH_TOKEN_PATH := $(HOME)/.local/state/claude-code/oauth_token
 
-.PHONY: help bootstrap collections install run check home syntax lint lint-fix nvim_pack_list nvim_pack_update nvim_pack_uninstall claude_token_renew shells shells_env shells_files dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp karabiner passwordless_sudo wake_on_lan
+.PHONY: help bootstrap collections install run check home syntax lint lint-fix nvim_pack_list nvim_pack_update nvim_pack_uninstall claude_token_renew shells shells_env shells_files dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp karabiner passwordless_sudo wake_on_lan no_suspend display_scale firewall data_mount docker service_data unattended_upgrades tailscale docktail traefik
 
 help:
 	@printf '%s\n' \
@@ -82,5 +82,5 @@ claude_token_renew:
 shells shells_env shells_files dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp karabiner:
 	$(MAKE) run TAGS=$@ EXTRA_ARGS="$(EXTRA_ARGS)"
 
-passwordless_sudo wake_on_lan:
+passwordless_sudo wake_on_lan no_suspend display_scale firewall data_mount docker service_data unattended_upgrades tailscale docktail traefik:
 	$(MAKE) home TAGS=$@ EXTRA_ARGS="$(EXTRA_ARGS)"
