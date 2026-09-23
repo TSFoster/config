@@ -1,0 +1,3 @@
+---
+docktail_dir: /docker/docktail
+docktail_image_tag: latest

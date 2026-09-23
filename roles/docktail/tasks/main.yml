@@ -1,0 +1,30 @@
+---
+- name: Ensure the docktail directory exists
+  ansible.builtin.file:
+    path: "{{ docktail_dir }}"
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: Add docktail compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ docktail_dir }}/docker-compose.yml"
+    mode: "0600"
+  become: true
+
+- name: Run docktail
+  community.docker.docker_compose_v2:
+    project_src: "{{ docktail_dir }}"
+    remove_orphans: true
+    recreate: auto
+    pull: policy
+    build: never
+  become: true
+  # No `tailscale up --advertise-tags` step needed here: this host already
+  # advertises tag:home-server via the tailscale role, and DockTail just
+  # runs under that same identity via the host's tailscaled socket. What
+  # the tailnet ACL does need — tag:container (the tag DockTail applies to
+  # services it creates) and its auto-approval — is a one-time policy
+  # change made out-of-band in the admin console (or policy.hujson, once
+  # that's brought under version control).

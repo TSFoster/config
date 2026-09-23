@@ -1,0 +1,21 @@
+# DockTail is host infrastructure (watches every container's labels via the
+# Docker socket to auto-advertise it as a tailnet Service), not a per-service
+# app — so it stays Ansible-managed here, unlike the services it advertises
+# on behalf of, which each live in their own separately-managed compose
+# project.
+services:
+  docktail:
+    image: ghcr.io/marvinvr/docktail:{{ docktail_image_tag }}
+    container_name: docktail
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/tailscale:/var/run/tailscale
+    environment:
+      - TAILSCALE_OAUTH_CLIENT_ID={{ ts_oauth_client_id }}
+      - TAILSCALE_OAUTH_CLIENT_SECRET={{ ts_oauth_client_secret }}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
