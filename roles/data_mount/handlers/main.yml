@@ -1,0 +1,10 @@
+---
+- name: Reload udev rules
+  ansible.builtin.command: udevadm control --reload-rules
+  become: true
+  changed_when: false
+
+- name: Reload systemd for mount unit
+  ansible.builtin.systemd:
+    daemon_reload: true
+  become: true

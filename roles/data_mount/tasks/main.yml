@@ -1,0 +1,136 @@
+---
+- name: Assert that base_data and base_data_device are set
+  ansible.builtin.assert:
+    that:
+      - base_data is defined
+      - base_data_device is defined
+    fail_msg: >-
+      base_data and base_data_device must be set in host_vars for this host
+      — base_data_device is the internal drive's stable /dev/disk/by-id path.
+
+# `state: present` only edits fstab; it deliberately doesn't force a remount
+# of an already-good live mount. The options below (device timeout, nofail)
+# take effect on the next real mount — reboot, or a manual `mount -o remount
+# {{ base_data }}` — not immediately.
+- name: Add base_data's drive to fstab
+  ansible.posix.mount:
+    path: "{{ base_data }}"
+    src: "{{ base_data_device }}"
+    fstype: auto
+    opts: nosuid,nodev,nofail,x-systemd.device-timeout=30,x-systemd.mount-timeout=30
+    state: present
+  become: true
+  # By-id path (tied to the drive's own serial, from `ls -l
+  # /dev/disk/by-id/`) rather than /dev/sdX, which can reorder across
+  # reboots or controller resets — this holds whether the drive is an
+  # internal SATA/NVMe disk or a USB enclosure.
+  #
+  # `nofail` keeps boot from hanging forever if the drive is ever actually
+  # missing; the two x-systemd.*-timeout options bound how long systemd
+  # waits for enumeration and the mount itself, rather than hanging on the
+  # default (much longer) device timeout.
+  #
+  # nofail only means *this mount's* failure doesn't fail local-fs.target —
+  # it doesn't, by itself, stop Docker from starting against an empty
+  # {{ base_data }} on the root disk if the mount fails. That's handled by
+  # the RequiresMountsFor drop-in in the docker role: it makes
+  # docker.service hard-depend on this mount succeeding, so a failed mount
+  # surfaces as docker.service failing to start (loud, in `systemctl status
+  # docker`) instead of containers silently writing to the wrong place.
+  #
+  # None of the above handles the drive dropping out and coming back while
+  # the host itself never goes down (controller reset, hot-swap bay, a USB
+  # enclosure in particular). The udev rule, mount-unit drop-in, and
+  # base-data-containers.service below close that loop.
+
+- name: Compute base_data's systemd mount unit name
+  ansible.builtin.command: systemd-escape --path --suffix=mount "{{ base_data }}"
+  register: _data_mount_unit
+  changed_when: false
+  # e.g. /srv/data -> srv-data.mount. Needed below to reference the mount
+  # unit (generator-managed from fstab, not a file this repo owns) by name.
+
+- name: Add udev rule to remount base_data if its drive reappears
+  ansible.builtin.copy:
+    dest: /etc/udev/rules.d/99-base-data-remount.rules
+    content: |
+      SUBSYSTEM=="block", ACTION=="add", ENV{DEVLINKS}=="*{{ base_data_device }}*", \
+        TAG+="systemd", ENV{SYSTEMD_WANTS}+="{{ _data_mount_unit.stdout }}"
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  notify: Reload udev rules
+  # SYSTEMD_WANTS is the standard udev-to-systemd hotplug hook — TAG+=
+  # "systemd" is what hands that property to systemd-udevd at all — and
+  # asks systemd to start the mount unit the instant the drive's own by-id
+  # device node reappears, rather than waiting for the next boot. Matches
+  # on the by-id DEVLINKS entry so it's tied to this drive specifically.
+  # Mostly relevant for a USB/hot-swap enclosure — a fixed internal disk
+  # won't usually re-"add" after boot — but harmless to have either way,
+  # and starting an already-mounted unit is a no-op.
+
+- name: Ensure base_data's mount-unit drop-in directory exists
+  ansible.builtin.file:
+    path: "/etc/systemd/system/{{ _data_mount_unit.stdout }}.d"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+
+- name: Remove old daemon-wide restart-on-remount drop-in
+  ansible.builtin.file:
+    path: "/etc/systemd/system/{{ _data_mount_unit.stdout }}.d/restart-docker.conf"
+    state: absent
+  become: true
+  notify: Reload systemd for mount unit
+  # Superseded by the base-data-containers.service drop-in below, which
+  # only touches the containers actually using base_data instead of
+  # restarting every container on the host.
+
+- name: Add base-data-guard script
+  ansible.builtin.copy:
+    src: base-data-guard.sh
+    dest: /usr/local/bin/base-data-guard
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  # Finds containers with a mount source under base_data via `docker
+  # inspect` (compose projects that use base_data are managed outside this
+  # repo, so there's no static list to read here) and stops/starts just
+  # those, instead of the whole Docker daemon.
+
+- name: Add base-data-containers systemd unit
+  ansible.builtin.template:
+    src: base-data-containers.service.j2
+    dest: /etc/systemd/system/base-data-containers.service
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  notify: Reload systemd for mount unit
+
+- name: Manage base_data's containers with its mount unit
+  ansible.builtin.copy:
+    dest: "/etc/systemd/system/{{ _data_mount_unit.stdout }}.d/manage-containers.conf"
+    content: |
+      [Unit]
+      OnSuccess=base-data-containers.service
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  notify: Reload systemd for mount unit
+  # OnSuccess= fires when the unit it's attached to finishes successfully —
+  # the unit that just finished (re)mounting is this one. Fires whether
+  # that happens at boot, via the udev rule above, or from a manual `mount
+  # {{ base_data }}`. base-data-containers.service's BindsTo= on this same
+  # mount unit is what handles the other direction: when the mount drops
+  # (drive pulled, controller reset, or a manual unmount) at any time, not
+  # just at start-up, systemd stops base-data-containers.service too,
+  # running its ExecStop to stop just the affected containers before
+  # anything can write to {{ base_data }} as a plain, now-empty directory
+  # on the root disk. See the docker role for why docker.service itself no
+  # longer needs a BindsTo= of its own for this.
