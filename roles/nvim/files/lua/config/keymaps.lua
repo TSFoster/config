@@ -640,6 +640,28 @@ end
 
 keymap.set({ "n", "t", "i" }, "<M-u>", tools.unfocus, { desc = "Unfocus tool to last used buffer" })
 
+keymap.set({ "n", "t", "i" }, "<M-w>", function()
+  local win = vim.api.nvim_get_current_win()
+  if vim.api.nvim_win_get_config(win).relative == "" then
+    return
+  end
+
+  -- Same place a bare <M-u> would land: leaving/hiding this float naturally
+  -- returns focus to whatever window was current before it, i.e. Neovim's
+  -- own alternate window (the window analog of the alternate *buffer* "#"
+  -- that <M-v>/<M-x> use above).
+  local target = fn.win_getid(fn.winnr("#"))
+  if target == 0 or target == win or not vim.api.nvim_win_is_valid(target) then
+    return
+  end
+
+  local buf = vim.api.nvim_get_current_buf()
+  vim.api.nvim_win_set_buf(target, buf)
+  vim.api.nvim_win_hide(win)
+  vim.api.nvim_set_current_win(target)
+  tools.note_unfloat(buf)
+end, { desc = "Pop the focused floating window into the window <M-u> would return to" })
+
 keymap.set({ "n", "t", "i" }, "<M-i>", function()
   cmd.CodeCompanionChat("Toggle")
 end, { desc = "Toggle CodeCompanion chat" })
