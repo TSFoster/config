@@ -1,0 +1,6 @@
+---
+tailscale_tags: tag:home-server
+tailscale_ssh: true
+tailscale_advertise_routes: []
+tailscale_advertise_connector: false
+tailscale_advertise_exit_node: false

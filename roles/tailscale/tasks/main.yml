@@ -1,0 +1,87 @@
+---
+- name: Add Tailscale's apt signing key
+  ansible.builtin.get_url:
+    url: "https://pkgs.tailscale.com/stable/debian/{{ ansible_facts['distribution_release'] }}.noarmor.gpg"
+    dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
+    mode: "0644"
+  become: true
+
+- name: Add Tailscale apt repository
+  ansible.builtin.get_url:
+    url: "https://pkgs.tailscale.com/stable/debian/{{ ansible_facts['distribution_release'] }}.tailscale-keyring.list"
+    dest: /etc/apt/sources.list.d/tailscale.list
+    mode: "0644"
+  become: true
+  notify: Update apt cache
+
+- name: Flush handlers so the new apt source is visible before installing
+  ansible.builtin.meta: flush_handlers
+
+- name: Install tailscale
+  ansible.builtin.apt:
+    name: tailscale
+    state: present
+  become: true
+
+- name: Start and enable tailscaled
+  ansible.builtin.systemd:
+    name: tailscaled
+    state: started
+    enabled: true
+  become: true
+
+- name: Check current tailscale status
+  ansible.builtin.command: tailscale status --json
+  register: _tailscale_status
+  changed_when: false
+  failed_when: false
+
+- name: Bring the host up on the tailnet
+  ansible.builtin.command: >
+    tailscale up
+    --authkey={{ tailscale_authkey }}
+    --advertise-tags={{ tailscale_tags }}
+    {{ '--ssh' if tailscale_ssh else '' }}
+  become: true
+  when: >-
+    _tailscale_status.rc != 0 or
+    (_tailscale_status.stdout | from_json).BackendState != 'Running'
+  changed_when: true
+  no_log: true
+  # no_log because the auth key is part of the command line here. Always a
+  # real change when it runs — the `when:` above already filters out the
+  # already-up case.
+
+- name: Enable IP forwarding for subnet routing
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: "1"
+    sysctl_set: true
+    state: present
+    reload: true
+  loop:
+    - net.ipv4.ip_forward
+    - net.ipv6.conf.all.forwarding
+  become: true
+  when: (tailscale_advertise_routes | length > 0) or tailscale_advertise_exit_node
+  # Required for the kernel to actually forward packets for the routes
+  # advertised below (and for exit-node traffic) — advertising alone
+  # doesn't enable forwarding.
+
+- name: Configure route, app-connector, and exit-node advertisement
+  ansible.builtin.command: >
+    tailscale set
+    {{ '--advertise-routes=' + (tailscale_advertise_routes | join(',')) if tailscale_advertise_routes else '' }}
+    {{ '--advertise-connector' if tailscale_advertise_connector else '' }}
+    {{ '--advertise-exit-node' if tailscale_advertise_exit_node else '' }}
+  become: true
+  when: (tailscale_advertise_routes | length > 0) or tailscale_advertise_connector or tailscale_advertise_exit_node
+  changed_when: true
+  # `tailscale set` (not `up`) because this only converges mutable settings
+  # on an already-authed node — no authkey/reconnect needed, safe to re-run
+  # every play. Tag-scoped approvals in acl.hujson (autoApprovers, the
+  # use-home app connector) mean this host picks up both roles just by
+  # advertising them under tag:home-server — no per-device admin-console
+  # step for the connector. The subnet route itself still needs a one-time
+  # approval (see managing-tailscale-acl-file.md) since 192.168.68.0/24
+  # isn't in autoApprovers.
