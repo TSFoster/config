@@ -1,0 +1,31 @@
+---
+- name: Ensure the shared service group exists
+  ansible.builtin.group:
+    name: "{{ service_data_group }}"
+    gid: "{{ service_data_group_gid }}"
+    state: present
+  become: true
+
+- name: Add the docker user to the shared service group
+  ansible.builtin.user:
+    name: "{{ docker_user }}"
+    groups:
+      - "{{ service_data_group }}"
+    append: true
+    state: present
+  become: true
+
+- name: Set the shared service group on base_data, setgid so it propagates
+  ansible.builtin.file:
+    path: "{{ base_data }}"
+    state: directory
+    group: "{{ service_data_group }}"
+    mode: "2775"
+  become: true
+  # setgid (the leading 2) means any file or subdirectory a separately-
+  # managed service creates under base_data from now on inherits group
+  # svc automatically — Linux propagates the setgid bit itself to new
+  # subdirectories, so this only needs setting on the root, not
+  # recursively. A service just needs to run its container with
+  # PGID={{ service_data_group_gid }} to read/write here alongside
+  # everything else.

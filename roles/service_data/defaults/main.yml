@@ -1,0 +1,7 @@
+---
+service_data_group: svc
+# Deliberately above 1000: GIDs below 1000 are the system/dynamic range
+# (systemd-sysusers claims them on boot, e.g. systemd-network landed on
+# 998 here), so a fixed low GID risks colliding with a service group
+# that didn't exist yet when this was picked.
+service_data_group_gid: 2000
