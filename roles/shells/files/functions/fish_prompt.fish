@@ -78,11 +78,7 @@ function fish_prompt
   and set sshInfo " $USER@"(hostname)
   set sshinfo_length (string length "$sshInfo")
 
-  set --query DOCKER_MACHINE_NAME
-  and set machineName "[$DOCKER_MACHINE_NAME]"
-  set dockerinfo_length (string length "$machineName")
-
-  set --query DOCKER_CONTEXT
+  set --query --export DOCKER_CONTEXT
   and set dockerContext "[$DOCKER_CONTEXT] "
   set dockercontextinfo_length (string length "$dockerContext")
 
@@ -152,7 +148,7 @@ function fish_prompt
       end
     end
     test "$COLUMNS" -gt 0 2> /dev/null
-    and printf '%-'(expr $COLUMNS - $dockercontextinfo_length - $pathinfo_length - $gitinfo_length - $dockerinfo_length - $sshinfo_length - 1)'s' ' '
+    and printf '%-'(expr $COLUMNS - $dockercontextinfo_length - $pathinfo_length - $gitinfo_length - $sshinfo_length - 1)'s' ' '
     set_color --bold $docker_machine_color
     echo -n "$machineName"
     set_color --bold $sshinfo_color
