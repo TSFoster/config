@@ -66,6 +66,7 @@ if conform then
     javascript = { "prettierd", "prettier" },
     javascriptreact = { "prettierd", "prettier" },
     json = { "prettierd", "prettier" },
+    jsonc = { "prettierd_jsonc", "prettier" },
     lua = { "stylua" },
     markdown = { "prettierd_markdown" },
     scss = { "prettierd", "prettier" },
@@ -83,6 +84,17 @@ if conform then
       prettierd_markdown = {
         command = "prettierd",
         args = { "$FILENAME" },
+      },
+      -- prettierd infers the parser from the filename, and doesn't know
+      -- ".hujson"; force the jsonc parser so comments/trailing commas survive.
+      prettierd_jsonc = {
+        command = "prettierd",
+        args = { "$FILENAME", "--parser=jsonc" },
+      },
+      prettier = {
+        options = {
+          ft_parsers = { jsonc = "jsonc" },
+        },
       },
       par = {
         command = "par",
@@ -188,6 +200,22 @@ vim.lsp.config("yamlls", {
       schemas = {
         ["http://json.schemastore.org/ansible-stable-2.9"] = "/(playbooks|roles|tasks|handlers|defaults|vars|ansible)/*.(yml|yaml)",
       },
+    },
+  },
+})
+
+vim.lsp.config("jsonls", {
+  settings = {
+    json = {
+      schemas = {
+        {
+          fileMatch = { "*.hujson" },
+          schema = {
+            allowTrailingCommas = true,
+          },
+        },
+      },
+      validate = { enable = true },
     },
   },
 })

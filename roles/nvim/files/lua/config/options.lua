@@ -40,6 +40,7 @@ vim.filetype.add({
   extension = {
     gotmpl = "gotmpl",
     hbs = "handlebars",
+    hujson = "jsonc",
     mdx = "markdown.mdx",
   },
   filename = {
