@@ -1,0 +1,4 @@
+---
+traefik_dir: /docker/traefik
+traefik_network: edge
+traefik_image_tag: v3

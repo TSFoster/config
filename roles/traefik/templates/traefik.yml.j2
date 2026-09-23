@@ -1,0 +1,20 @@
+# Managed by Ansible (roles/traefik).
+#
+# No host port is published for the web entrypoint — the only thing that
+# needs to reach Traefik is each public service's own cloudflared
+# container, joining the {{ traefik_network }} network and pointing at
+# http://traefik:80 with a Host header. Cloudflare terminates TLS at its
+# edge; this hop is private east-west traffic on the docker network, so
+# there's no ACME/TLS config here.
+entryPoints:
+  web:
+    address: ":80"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: "{{ traefik_network }}"
+
+log:
+  level: INFO

@@ -1,0 +1,39 @@
+---
+- name: Create the traefik external network
+  community.docker.docker_network:
+    name: "{{ traefik_network }}"
+    state: present
+  become: true
+  # external: true — other, separately-managed service compose projects
+  # join this network by name to be discovered by Traefik's docker
+  # provider and to reach it as http://traefik:80.
+
+- name: Ensure the traefik directory exists
+  ansible.builtin.file:
+    path: "{{ traefik_dir }}"
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: Add traefik static config
+  ansible.builtin.template:
+    src: traefik.yml.j2
+    dest: "{{ traefik_dir }}/traefik.yml"
+    mode: "0644"
+  become: true
+
+- name: Add traefik compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ traefik_dir }}/docker-compose.yml"
+    mode: "0644"
+  become: true
+
+- name: Run traefik
+  community.docker.docker_compose_v2:
+    project_src: "{{ traefik_dir }}"
+    remove_orphans: true
+    recreate: auto
+    pull: policy
+    build: never
+  become: true

@@ -1,0 +1,24 @@
+# Traefik is host infrastructure (the shared front door every public,
+# separately-managed service's cloudflared tunnel points at), so it stays
+# Ansible-managed here rather than living in one of those service repos.
+services:
+  traefik:
+    image: traefik:{{ traefik_image_tag }}
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - --configFile=/etc/traefik/traefik.yml
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - {{ traefik_dir }}/traefik.yml:/etc/traefik/traefik.yml:ro
+    networks:
+      - "{{ traefik_network }}"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  "{{ traefik_network }}":
+    external: true
