@@ -1,0 +1,50 @@
+---
+- name: Install ufw
+  ansible.builtin.package:
+    name: ufw
+    state: present
+  become: true
+
+- name: Set default deny-incoming policy
+  community.general.ufw:
+    direction: incoming
+    policy: deny
+  become: true
+
+- name: Set default allow-outgoing policy
+  community.general.ufw:
+    direction: outgoing
+    policy: allow
+  become: true
+
+- name: Allow SSH
+  community.general.ufw:
+    rule: allow
+    port: "{{ firewall_ssh_port }}"
+    proto: tcp
+  become: true
+
+# Tailscale's kernel-mode networking isn't exempt from ufw's default-deny
+# just because it isn't a normal LAN interface — without this, the tailnet
+# path (SSH over tailscale, DockTail-advertised services) is blocked the
+# same as any other inbound traffic.
+- name: Allow all traffic on the tailscale interface
+  community.general.ufw:
+    rule: allow
+    interface: "{{ firewall_tailscale_interface }}"
+    direction: in
+  become: true
+
+- name: Apply extra allow rules
+  community.general.ufw:
+    rule: allow
+    port: "{{ item.port }}"
+    proto: "{{ item.proto | default('tcp') }}"
+    src: "{{ item.src | default(omit) }}"
+  loop: "{{ firewall_extra_allow_rules }}"
+  become: true
+
+- name: Enable ufw
+  community.general.ufw:
+    state: enabled
+  become: true
