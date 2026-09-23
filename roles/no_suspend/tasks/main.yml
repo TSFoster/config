@@ -1,0 +1,15 @@
+---
+# Masking these at the systemd level blocks suspend/hibernate regardless of
+# what asks for it — GNOME's power daemon, ACPI lid/power button events, or
+# `systemctl suspend` — rather than only disabling GNOME's own idle-suspend
+# trigger, which is one of several paths into the same state.
+- name: Mask systemd sleep targets
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    masked: true
+  become: true
+  loop:
+    - sleep.target
+    - suspend.target
+    - hibernate.target
+    - hybrid-sleep.target
