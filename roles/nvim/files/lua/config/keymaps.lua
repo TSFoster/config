@@ -710,11 +710,25 @@ keymap.set("n", "]ol", util.mk_fn(toggle.location_list, 0), { desc = "Hide locat
 keymap.set("", "[<BS>", "<Plug>(IndentWiseBlockScopeBoundaryBegin)", { desc = "Move to beginning of block" })
 keymap.set("", "]<BS>", "<Plug>(IndentWiseBlockScopeBoundaryEnd)", { desc = "Move to end of block" })
 
+-- vsplit/split onto the alternate file, falling back to an empty buffer
+-- instead of choking (":vsplit #"/":split #" error out, e.g. E23) when there
+-- isn't one yet.
+local function split_alt(split_cmd)
+  local cur = vim.api.nvim_get_current_buf()
+  local alt = fn.bufnr("#")
+  split_cmd()
+  if alt > 0 and alt ~= cur and vim.api.nvim_buf_is_valid(alt) then
+    vim.api.nvim_win_set_buf(0, alt)
+  else
+    vim.api.nvim_win_set_buf(0, vim.api.nvim_create_buf(true, false))
+  end
+end
+
 keymap.set({ "n", "t", "i" }, "<M-v>", function()
-  vim.cmd.vsplit("#")
+  split_alt(vim.cmd.vsplit)
 end, { desc = ":vsplit" })
 keymap.set({ "n", "t", "i" }, "<M-x>", function()
-  vim.cmd.split("#")
+  split_alt(vim.cmd.split)
 end, { desc = ":split" })
 keymap.set({ "n", "t", "i" }, "<M-t>", function()
   local win = vim.api.nvim_get_current_win()
