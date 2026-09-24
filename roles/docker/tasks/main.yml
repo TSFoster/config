@@ -43,28 +43,30 @@
     mode: "0755"
   become: true
 
-- name: Make docker.service hard-depend on external_mounts being mounted
+- name: Make docker.service hard-depend on external_mounts/internal_mounts being mounted
   ansible.builtin.copy:
-    dest: /etc/systemd/system/docker.service.d/require-external-mounts.conf
+    dest: /etc/systemd/system/docker.service.d/require-mounts.conf
     content: |
       [Unit]
-      RequiresMountsFor={{ external_mounts | map(attribute='path') | join(' ') }}
+      RequiresMountsFor={{ ((external_mounts | default([])) + (internal_mounts | default([]))) | map(attribute='path') | join(' ') }}
     owner: root
     group: root
     mode: "0644"
   become: true
   notify: Reload systemd for docker
-  when: external_mounts | default([]) | length > 0
+  when: (external_mounts | default([]) | length > 0) or (internal_mounts | default([]) | length > 0)
   # RequiresMountsFor pulls in both Requires= and After= on the mount
   # unit(s), so docker.service actually blocks on them instead of merely
   # ordering after them like the implicit local-fs.target dependency does —
   # if a mount fails, docker.service fails loudly rather than starting
   # against an empty root-disk directory.
   #
-  # Only covers external_mounts, the removable drives — internal_data_paths
-  # is always-attached storage that this repo doesn't manage as a mount at
-  # all, and everything else lives in Docker named volumes
-  # (/var/lib/docker/volumes), which need no mount dependency of their own.
+  # Covers external_mounts (removable) and internal_mounts (fixed drives
+  # that still need real mount management, e.g. a second internal NVMe) —
+  # internal_data_paths is always-attached storage that this repo doesn't
+  # manage as a mount at all, and everything else lives in Docker named
+  # volumes (/var/lib/docker/volumes), which need no mount dependency of
+  # their own.
   #
   # Requires= only governs *starting* docker.service — it does nothing if a
   # mount goes away later while docker.service is already running, and
@@ -73,7 +75,8 @@
   # drive dropped out. The external_mounts role handles the narrower case
   # instead — restarting just the containers actually mounting a given path
   # once it comes back, while docker.service and everything else keeps
-  # running throughout.
+  # running throughout. internal_mounts has no equivalent (its drives can't
+  # be hot-unplugged), so it doesn't need one either.
 
 - name: Reassert IPv6 forwarding after docker starts
   ansible.builtin.copy:

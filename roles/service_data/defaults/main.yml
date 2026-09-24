@@ -16,9 +16,11 @@ service_data_group_gid: 2000
 #     services should use
 #   - an explicit host path a service bind-mounts instead (e.g. because
 #     more than one service's compose project needs to read/write the same
-#     files) — external_mounts (removable drives, see roles/external_mounts)
-#     and internal_data_paths (always-attached, under /srv — see host_vars
-#     for this host) together
+#     files) — external_mounts (removable drives), internal_mounts (fixed
+#     drives that still need mount management, e.g. a second internal
+#     NVMe — see roles/external_mounts and roles/internal_mounts), and
+#     internal_data_paths (already mounted some other way, under /srv —
+#     see host_vars for this host) together
 #
 # This does widen what group svc's members (i.e. docker_user, who already
 # has root-equivalent access via the docker group) can read on the host —
@@ -27,5 +29,6 @@ service_data_group_gid: 2000
 # for a single-admin box; worth revisiting if that stops being true.
 service_data_paths: >-
   {{ (external_mounts | default([]) | map(attribute='path') | list)
+     + (internal_mounts | default([]) | map(attribute='path') | list)
      + (internal_data_paths | default([]))
      + ['/var/lib/docker/volumes'] }}

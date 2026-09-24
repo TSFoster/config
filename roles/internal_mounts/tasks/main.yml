@@ -1,0 +1,38 @@
+---
+- name: Assert that internal_mounts is set
+  ansible.builtin.assert:
+    that:
+      - internal_mounts is defined
+      - internal_mounts | length > 0
+    fail_msg: >-
+      internal_mounts must be a non-empty list of {path, uuid, subvol} in
+      host_vars for this host — uuid is the filesystem's UUID (`blkid`),
+      subvol the Btrfs subvolume name to mount at path.
+
+- name: Mount each internal drive/subvolume and add it to fstab
+  ansible.posix.mount:
+    path: "{{ item.path }}"
+    src: "UUID={{ item.uuid }}"
+    fstype: btrfs
+    opts: "subvol={{ item.subvol }},nosuid,nodev,noatime,compress=zstd,nofail,x-systemd.device-timeout=10,x-systemd.mount-timeout=30"
+    state: mounted
+  become: true
+  loop: "{{ internal_mounts }}"
+  loop_control:
+    label: "{{ item.path }}"
+  # Unlike external_mounts' `state: present` (which deliberately avoids
+  # forcing a remount of an already-good live mount, since that mount might
+  # already be serving containers), this drive can't be hot-unplugged and
+  # has no udev/guard-service reattach path — so there's no live mount to
+  # disturb the first time this runs, and `state: mounted` just means the
+  # play itself brings the mount up instead of requiring a manual `mount -a`
+  # or reboot afterwards.
+  #
+  # `nofail` + the two x-systemd.*-timeout options mirror external_mounts:
+  # they bound how long boot waits on this device rather than hanging
+  # indefinitely if it's ever actually missing (e.g. failed drive) — the
+  # docker role's RequiresMountsFor drop-in is what turns that into a loud
+  # docker.service failure instead of a silent empty directory.
+  #
+  # compress=zstd is Btrfs's transparent compression — cheap on NVMe, no
+  # downside for the kind of data these subvolumes hold.

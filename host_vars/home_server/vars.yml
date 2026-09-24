@@ -5,11 +5,16 @@ ansible_become_password: "{{ vault_ansible_become_password }}"
 wake_on_lan_mac_address: "{{ vault_wake_on_lan_mac }}"
 
 # external_mounts: removable drives — list of {path, device} (see
-# roles/external_mounts). internal_data_paths: always-attached storage
-# under /srv that services bind-mount explicitly instead of using a plain
-# Docker named volume — no mount management needed, just the shared group
-# (roles/service_data). Actual paths/device ids live in the vault, not here.
+# roles/external_mounts). internal_mounts: fixed/non-removable drives that
+# still need real mount management — list of {path, uuid, subvol} (see
+# roles/internal_mounts); e.g. the second internal NVMe, formatted Btrfs
+# with one subvolume per mount point. internal_data_paths: storage that's
+# already mounted some other way, under /srv, that services bind-mount
+# explicitly instead of using a plain Docker named volume — no mount
+# management needed, just the shared group (roles/service_data). Actual
+# paths/uuids/devices live in the vault, not here.
 external_mounts: "{{ vault_external_mounts }}"
+internal_mounts: "{{ vault_internal_mounts }}"
 internal_data_paths: "{{ vault_internal_data_paths }}"
 
 tailscale_authkey: "{{ vault_tailscale_authkey }}"

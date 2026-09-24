@@ -60,9 +60,11 @@
     # to start. Once the drive's plugged in: uncomment, confirm each
     # device in vault_external_mounts still matches (`ls -l
     # /dev/disk/by-id/`), then re-run with --tags external_mounts,service_data.
+    - role: internal_mounts # must precede docker — see docker role's RequiresMountsFor
+      tags: ["internal_mounts"]
     - role: docker
       tags: ["docker"]
-    - role: service_data # must follow docker (creates /var/lib/docker/volumes) and, once enabled, external_mounts
+    - role: service_data # must follow docker (creates /var/lib/docker/volumes) and internal_mounts/external_mounts
       tags: ["service_data"]
     - role: docktail # must follow docker and tailscale
       tags: ["docktail"]
