@@ -17,17 +17,17 @@
     policy: allow
   become: true
 
-- name: Allow SSH
-  community.general.ufw:
-    rule: allow
-    port: "{{ firewall_ssh_port }}"
-    proto: tcp
-  become: true
-
 # Tailscale's kernel-mode networking isn't exempt from ufw's default-deny
 # just because it isn't a normal LAN interface — without this, the tailnet
 # path (SSH over tailscale, DockTail-advertised services) is blocked the
 # same as any other inbound traffic.
+#
+# This is also the *only* SSH path: there's deliberately no port-based
+# "allow SSH" rule below. SSH is tailscale-only, so the tailscale role runs
+# before this one (see main.yml) and this interface rule is what covers it.
+#
+# Note: there used to be a Allow SSH play here, but it’s been removed.
+# Likely to cause issues if run from scratch again?
 - name: Allow all traffic on the tailscale interface
   community.general.ufw:
     rule: allow

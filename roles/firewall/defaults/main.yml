@@ -1,8 +1,8 @@
 ---
-firewall_ssh_port: "{{ ssh_port | default(22) }}"
 firewall_tailscale_interface: tailscale0
 # Extra rules for anything that genuinely needs a LAN-reachable port (e.g. a
-# client device that isn't and can't be on the tailnet). Empty by default —
-# the public path is all-outbound via cloudflared, so nothing needs to be
-# opened for that.
+# client device that isn't and can't be on the tailnet, like a smart TV
+# hitting Plex directly). Empty by default: SSH is tailscale-only, public
+# access is all-outbound via cloudflared, and internal services are reached
+# over the tailnet via DockTail — none of that needs a rule here.
 firewall_extra_allow_rules: []
