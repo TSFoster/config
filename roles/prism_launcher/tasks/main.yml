@@ -1,0 +1,32 @@
+---
+- name: Install flatpak
+  ansible.builtin.apt:
+    name: flatpak
+    state: present
+  become: true
+
+- name: Add the Flathub remote
+  community.general.flatpak_remote:
+    name: flathub
+    flatpakrepo_url: https://flathub.org/repo/flathub.flatpakrepo
+    state: present
+  become: true
+
+- name: Install Prism Launcher via Flatpak
+  community.general.flatpak:
+    name: org.prismlauncher.PrismLauncher
+    state: present
+  become: true
+  # Minecraft Java Edition isn't sold on Steam — Prism Launcher is the
+  # actual client, installed separately. It's not autostarted like Big
+  # Picture: you want to land in Big Picture and choose to launch it, not
+  # have it fight Big Picture for the foreground on every login.
+  #
+  # Two things this role deliberately doesn't automate:
+  #  - Adding it to Steam as a non-Steam game shortcut. That lives in a
+  #    per-account, SteamID-keyed binary file (shortcuts.vdf) that doesn't
+  #    exist until you've logged into Steam at least once — a one-time
+  #    manual step (Library > Add a Game > Add a Non-Steam Game).
+  #  - The Controlify controller mod, since which build to install depends
+  #    on the Minecraft/Fabric version you settle on (has to match the
+  #    Minecraft server) — set this up once you've picked a version.

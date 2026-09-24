@@ -36,30 +36,51 @@
       tags: ["alfred"]
       when: ansible_facts['system'] == 'Darwin'
 
-- name: Configure home servers
-  hosts: servers
+- name: Configure Debian machines
+  hosts: debian
   roles:
     - role: passwordless_sudo
       tags: ["passwordless_sudo"]
+    - role: tailscale # must precede firewall — SSH is tailscale-only, so the box
+      tags: ["tailscale"] # needs to already be on the tailnet before ufw locks LAN SSH out
     - role: firewall
       tags: ["firewall"]
+    - role: unattended_upgrades
+      tags: ["unattended_upgrades"]
+
+- name: Configure home servers
+  hosts: servers
+  roles:
     # - role: data_mount # must precede docker — see docker role's RequiresMountsFor/BindsTo
     #   tags: ["data_mount"]
+    # ^ Disabled until the drive itself is physically moved from the old
+    # server to this one. Enabling it before then makes docker.service hard-
+    # depend on a mount unit for a drive that isn't attached — the mount
+    # fails, and docker (and everything on top: Traefik, DockTail) refuses
+    # to start. Once the drive's plugged in: uncomment, confirm
+    # base_data_device in host_vars/home_server/vars.yml still matches (`ls
+    # -l /dev/disk/by-id/`), then re-run with --tags data_mount,service_data.
     - role: docker
       tags: ["docker"]
     - role: service_data # must follow data_mount — sets group/perms on base_data
       tags: ["service_data"]
-    - role: unattended_upgrades
-      tags: ["unattended_upgrades"]
-    - role: tailscale
-      tags: ["tailscale"]
     - role: docktail # must follow docker and tailscale
       tags: ["docktail"]
     - role: traefik # must follow docker
       tags: ["traefik"]
+
+- name: Configure TV/gaming machines
+  hosts: tv
+  roles:
     - role: wake_on_lan
       tags: ["wake_on_lan"]
     - role: no_suspend
       tags: ["no_suspend"]
     - role: display_scale
       tags: ["display_scale"]
+    - role: tv_user
+      tags: ["tv_user"]
+    - role: steam_bigpicture # must follow tv_user — needs its home directory
+      tags: ["steam_bigpicture"]
+    - role: prism_launcher
+      tags: ["prism_launcher"]

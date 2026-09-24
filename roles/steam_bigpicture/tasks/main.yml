@@ -1,0 +1,72 @@
+---
+- name: Install flatpak
+  ansible.builtin.apt:
+    name: flatpak
+    state: present
+  become: true
+
+- name: Add the Flathub remote
+  community.general.flatpak_remote:
+    name: flathub
+    flatpakrepo_url: https://flathub.org/repo/flathub.flatpakrepo
+    state: present
+  become: true
+
+- name: Install Steam via Flatpak
+  community.general.flatpak:
+    name: com.valvesoftware.Steam
+    state: present
+  become: true
+  # Flatpak rather than the native .deb: Steam itself is non-free, and this
+  # repo doesn't otherwise touch the host's apt sources components (contrib/
+  # non-free) or i386 multiarch — Flatpak sidesteps both.
+
+- name: Install gamescope
+  ansible.builtin.apt:
+    name: gamescope
+    state: present
+  become: true
+  # For wrapping individual game launches from Steam (per-game Launch
+  # Options: `gamescope -W <width> -H <height> -- %command%`) — not for
+  # Big Picture itself. The tv user's GNOME/Mutter session (autologin
+  # below) already owns the DRM/KMS seat, so a second compositor started
+  # afterward can only run nested inside it rather than take over the
+  # display; there's no upside to wrapping Big Picture itself in it.
+
+- name: Enable GDM autologin for the tv user
+  ansible.builtin.ini_file:
+    path: /etc/gdm3/daemon.conf
+    section: daemon
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: "0644"
+  loop:
+    - { option: AutomaticLoginEnable, value: "true" }
+    - { option: AutomaticLogin, value: "{{ tv_user }}" }
+  become: true
+  # Assumes gdm3 (Debian's default display manager) is already installed —
+  # this repo doesn't install a desktop environment/display manager itself,
+  # only configures one that's already there (see roles/display_scale).
+
+- name: Ensure the tv user's autostart directory exists
+  ansible.builtin.file:
+    path: "/home/{{ tv_user }}/.config/autostart"
+    state: directory
+    owner: "{{ tv_user }}"
+    group: "{{ tv_user }}"
+    mode: "0755"
+  become: true
+
+- name: Autostart Steam Big Picture in the tv user's session
+  ansible.builtin.copy:
+    dest: "/home/{{ tv_user }}/.config/autostart/steam-bigpicture.desktop"
+    content: |
+      [Desktop Entry]
+      Type=Application
+      Name=Steam Big Picture
+      Exec=flatpak run com.valvesoftware.Steam -bigpicture
+      X-GNOME-Autostart-enabled=true
+    owner: "{{ tv_user }}"
+    group: "{{ tv_user }}"
+    mode: "0644"
+  become: true

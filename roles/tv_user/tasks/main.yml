@@ -1,0 +1,14 @@
+---
+- name: Create the tv user
+  ansible.builtin.user:
+    name: "{{ tv_user }}"
+    create_home: true
+    shell: /bin/bash
+    state: present
+  become: true
+  # Deliberately unprivileged: no passwordless_sudo entry, no docker group
+  # either — docker group membership is root-equivalent (unrestricted bind
+  # mounts make it trivial to read/write anything on the host), which would
+  # defeat the point of a separate low-privilege account. This user is just
+  # the GNOME/Steam session GDM auto-logs into for the TV; it has no reason
+  # to touch Docker itself.
