@@ -69,6 +69,26 @@
   # unit and stops/starts only the containers actually mounting base_data,
   # leaving docker.service and everything else running throughout.
 
+- name: Reassert IPv6 forwarding after docker starts
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/docker.service.d/restore-ipv6-forwarding.conf
+    content: |
+      [Service]
+      ExecStartPost=/usr/sbin/sysctl -w net.ipv6.conf.all.forwarding=1
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  notify: Reload systemd for docker
+  when: (tailscale_advertise_routes | default([]) | length > 0) or (tailscale_advertise_exit_node | default(false))
+  # dockerd resets net.ipv6.conf.all.forwarding to 0 on every start (its
+  # default bridge setup disables it unless Docker's own IPv6 networking is
+  # configured), clobbering the tailscale role's sysctl task even though
+  # that task runs first and sets it correctly. Without this, the console
+  # keeps reporting "IP forwarding disabled" for subnet routes / exit-node
+  # relay after every docker restart or reboot, even though ip_forward
+  # (IPv4) stays fine — only the IPv6 flag gets clobbered.
+
 - name: Start docker
   ansible.builtin.systemd:
     name: docker
