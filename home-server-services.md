@@ -1,15 +1,32 @@
 # Deploying a service onto the home server
 
 Services are deliberately **not** managed from this repo — each one is its own separately-managed
-Docker Compose project. This repo only owns the host itself: Docker Engine, the shared data mount,
+Docker Compose project. This repo only owns the host itself: Docker Engine, external drive mounts,
 Tailscale + DockTail, Traefik, and unattended-upgrades (see `roles/`). This doc is the contract a
 service's own compose project needs to follow to plug into that host correctly.
 
-## Shared storage
+## Storage
 
-Bind-mount under `{{ base_data }}` (see `host_vars/home_server/vars.yml`) and give the container
-`group_add: ["2000"]` (the `svc` group set up by `roles/service_data`) so multiple services can
-share write access to common paths without fighting over ownership.
+Default to a plain Docker named volume — most services should just declare one in their own
+compose file, no Ansible-managed path needed. If a service wants to share that volume's data with
+another service (or just wants to write group-shared files without fighting over ownership), add
+`group_add: ["2000"]` (the `svc` group `roles/service_data` sets up, including on
+`/var/lib/docker/volumes` itself) — no extra setup required per service.
+
+The exception is a service that bind-mounts an explicit host path instead of a named volume —
+usually because more than one compose project needs to read/write the same files. These paths come
+in two flavors (see `host_vars/home_server/vars.yml` and the vault; actual paths deliberately aren't
+written down in this repo):
+
+- **External mounts** (`external_mounts`, under `/mnt`) live on removable drives that can go away
+  and come back. `roles/external_mounts` restarts whatever's mounting one once it reconnects, but
+  nothing stops those containers while it's gone — don't assume the mount is always present at
+  runtime, and design the service to tolerate the path being temporarily empty or stale.
+- **Internal data paths** (`internal_data_paths`, under `/srv`) are always-attached — same
+  contract as a named volume otherwise, just at a fixed path instead of one Docker picks.
+
+Either way, group `svc` is already set on the path (`roles/service_data`); a service just needs
+`group_add: ["2000"]` like any other shared path.
 
 ## Internal (tailnet-only) access
 
