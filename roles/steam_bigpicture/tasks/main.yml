@@ -21,10 +21,37 @@
   # repo doesn't otherwise touch the host's apt sources components (contrib/
   # non-free) or i386 multiarch — Flatpak sidesteps both.
 
+- name: Add the Debian backports repository
+  ansible.builtin.deb822_repository:
+    name: debian-backports
+    types: deb
+    uris: http://deb.debian.org/debian
+    suites: "{{ ansible_facts['distribution_release'] }}-backports"
+    components: [main, contrib, non-free-firmware]
+    state: present
+  become: true
+  # gamescope isn't packaged in trixie's regular suites at all — only in
+  # trixie-backports, and there only in contrib (hence enabling it here,
+  # despite the note above about the primary apt sources avoiding contrib).
+  # Same archive/signing key as the main sources, so no separate keyring
+  # is needed.
+
+- name: Update apt cache after adding the backports repository
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+  # Must run as its own task, before the gamescope install below. The apt
+  # module validates default_release against the on-disk cache *before*
+  # its own update_cache step runs, so a newly-added suite always looks
+  # invalid to a task that tries to refresh the cache and use
+  # default_release in the same step — the cache has to already be fresh
+  # by the time that task starts.
+
 - name: Install gamescope
   ansible.builtin.apt:
     name: gamescope
     state: present
+    default_release: "{{ ansible_facts['distribution_release'] }}-backports"
   become: true
   # For wrapping individual game launches from Steam (per-game Launch
   # Options: `gamescope -W <width> -H <height> -- %command%`) — not for
