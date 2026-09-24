@@ -43,31 +43,37 @@
     mode: "0755"
   become: true
 
-- name: Make docker.service hard-depend on base_data being mounted
+- name: Make docker.service hard-depend on external_mounts being mounted
   ansible.builtin.copy:
-    dest: /etc/systemd/system/docker.service.d/require-base-data-mount.conf
+    dest: /etc/systemd/system/docker.service.d/require-external-mounts.conf
     content: |
       [Unit]
-      RequiresMountsFor={{ base_data }}
+      RequiresMountsFor={{ external_mounts | map(attribute='path') | join(' ') }}
     owner: root
     group: root
     mode: "0644"
   become: true
   notify: Reload systemd for docker
-  # RequiresMountsFor pulls in both Requires= and After= on the mount unit,
-  # so docker.service actually blocks on it instead of merely ordering
-  # after it like the implicit local-fs.target dependency does — if the
-  # mount fails, docker.service fails loudly rather than starting against
-  # an empty root-disk directory.
+  when: external_mounts | default([]) | length > 0
+  # RequiresMountsFor pulls in both Requires= and After= on the mount
+  # unit(s), so docker.service actually blocks on them instead of merely
+  # ordering after them like the implicit local-fs.target dependency does —
+  # if a mount fails, docker.service fails loudly rather than starting
+  # against an empty root-disk directory.
   #
-  # Requires= only governs *starting* docker.service — it does nothing if
-  # the mount goes away later while docker.service is already running.
-  # That gap used to be closed here with a BindsTo= on the mount unit, but
-  # that stopped the whole daemon (every container, not just ones on
-  # base_data) each time the drive dropped out. base-data-containers.service
-  # (data_mount role) now owns that instead: it BindsTo= the same mount
-  # unit and stops/starts only the containers actually mounting base_data,
-  # leaving docker.service and everything else running throughout.
+  # Only covers external_mounts, the removable drives — internal_data_paths
+  # is always-attached storage that this repo doesn't manage as a mount at
+  # all, and everything else lives in Docker named volumes
+  # (/var/lib/docker/volumes), which need no mount dependency of their own.
+  #
+  # Requires= only governs *starting* docker.service — it does nothing if a
+  # mount goes away later while docker.service is already running, and
+  # deliberately isn't backed by a BindsTo= here: that would stop the whole
+  # daemon (every container, not just ones on that mount) each time a
+  # drive dropped out. The external_mounts role handles the narrower case
+  # instead — restarting just the containers actually mounting a given path
+  # once it comes back, while docker.service and everything else keeps
+  # running throughout.
 
 - name: Reassert IPv6 forwarding after docker starts
   ansible.builtin.copy:

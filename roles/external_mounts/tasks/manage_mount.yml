@@ -1,0 +1,109 @@
+---
+# `state: present` only edits fstab; it deliberately doesn't force a remount
+# of an already-good live mount. The options below (device timeout, nofail)
+# take effect on the next real mount — reboot, or a manual `mount -o remount
+# {{ mount.path }}` — not immediately.
+- name: Add this mount to fstab
+  ansible.posix.mount:
+    path: "{{ mount.path }}"
+    src: "{{ mount.device }}"
+    fstype: auto
+    opts: nosuid,nodev,nofail,x-systemd.device-timeout=30,x-systemd.mount-timeout=30
+    state: present
+  become: true
+  # By-id path (tied to the drive's own serial, from `ls -l
+  # /dev/disk/by-id/`) rather than /dev/sdX, which can reorder across
+  # reboots or controller resets.
+  #
+  # `nofail` keeps boot from hanging forever if the drive is ever actually
+  # missing; the two x-systemd.*-timeout options bound how long systemd
+  # waits for enumeration and the mount itself, rather than hanging on the
+  # default (much longer) device timeout.
+  #
+  # nofail only means *this mount's* failure doesn't fail local-fs.target —
+  # it doesn't, by itself, stop Docker from starting against an empty
+  # {{ mount.path }} on the root disk if the mount fails. That's handled by
+  # the RequiresMountsFor drop-in in the docker role: it makes
+  # docker.service hard-depend on every external mount succeeding, so a
+  # failed mount surfaces as docker.service failing to start (loud, in
+  # `systemctl status docker`) instead of containers silently writing to
+  # the wrong place.
+  #
+  # None of the above handles the drive dropping out and coming back while
+  # the host itself never goes down (controller reset, hot-swap bay, a USB
+  # enclosure in particular). The udev rule and mount-unit drop-in below
+  # close that loop.
+
+- name: Compute this mount's systemd mount unit name
+  ansible.builtin.command: systemd-escape --path --suffix=mount "{{ mount.path }}"
+  register: _external_mounts_unit
+  changed_when: false
+  # e.g. /mnt/media -> mnt-media.mount. Needed below to reference the mount
+  # unit (generator-managed from fstab, not a file this repo owns) by name.
+
+- name: Set this mount's unit and guard-service names
+  ansible.builtin.set_fact:
+    _external_mounts_unit_name: "{{ _external_mounts_unit.stdout }}"
+    _external_mounts_guard_service: "external-mount-guard-{{ _external_mounts_unit.stdout | replace('.mount', '') }}.service"
+
+- name: Add udev rule to remount this mount if its drive reappears
+  ansible.builtin.copy:
+    dest: "/etc/udev/rules.d/99-{{ _external_mounts_unit.stdout | replace('.mount', '') }}-remount.rules"
+    content: |
+      SUBSYSTEM=="block", ACTION=="add", ENV{DEVLINKS}=="*{{ mount.device }}*", \
+        TAG+="systemd", ENV{SYSTEMD_WANTS}+="{{ _external_mounts_unit_name }}"
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  notify: Reload udev rules
+  # SYSTEMD_WANTS is the standard udev-to-systemd hotplug hook — TAG+=
+  # "systemd" is what hands that property to systemd-udevd at all — and
+  # asks systemd to start the mount unit the instant the drive's own by-id
+  # device node reappears, rather than waiting for the next boot. Matches
+  # on the by-id DEVLINKS entry so it's tied to this drive specifically.
+  # Harmless either way — starting an already-mounted unit is a no-op.
+
+- name: Ensure this mount's mount-unit drop-in directory exists
+  ansible.builtin.file:
+    path: "/etc/systemd/system/{{ _external_mounts_unit_name }}.d"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+
+- name: Add restart-containers unit for this mount
+  ansible.builtin.template:
+    src: mount-containers.service.j2
+    dest: "/etc/systemd/system/{{ _external_mounts_guard_service }}"
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  notify: Reload systemd for mount unit
+
+- name: Restart this mount's containers whenever it (re)mounts
+  ansible.builtin.copy:
+    dest: "/etc/systemd/system/{{ _external_mounts_unit_name }}.d/manage-containers.conf"
+    content: |
+      [Unit]
+      OnSuccess={{ _external_mounts_guard_service }}
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  notify: Reload systemd for mount unit
+  # OnSuccess= fires when the mount unit finishes successfully — at boot,
+  # via the udev rule above, or from a manual `mount {{ mount.path }}`.
+  # The guard service then restarts whatever containers are currently
+  # mounting this path, so they pick up a fresh bind mount instead of
+  # continuing to reference the drive that was there before it cycled out
+  # — Linux doesn't refresh a live bind mount just because the backing
+  # device came back.
+  #
+  # Deliberately one-directional: nothing here stops those containers when
+  # the drive *drops*. A service with data on more than one mount should
+  # keep running off what's still attached rather than going down
+  # entirely — it just won't see this mount's contents again until this
+  # fires on reconnect.

@@ -1,0 +1,30 @@
+---
+- name: Assert that external_mounts is set
+  ansible.builtin.assert:
+    that:
+      - external_mounts is defined
+      - external_mounts | length > 0
+    fail_msg: >-
+      external_mounts must be a non-empty list of {path, device} in
+      host_vars for this host — device is the drive's stable
+      /dev/disk/by-id path.
+
+- name: Add external-mount-guard script
+  ansible.builtin.copy:
+    src: external-mount-guard.sh
+    dest: /usr/local/bin/external-mount-guard
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  # Shared by every mount below — finds containers with a mount source
+  # under the given path (compose projects using these mounts are managed
+  # outside this repo, so there's no static list to read here) and
+  # restarts just those, instead of the whole Docker daemon.
+
+- name: Manage each external mount
+  ansible.builtin.include_tasks: manage_mount.yml
+  loop: "{{ external_mounts }}"
+  loop_control:
+    loop_var: mount
+    label: "{{ mount.path }}"

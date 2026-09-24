@@ -51,18 +51,18 @@
 - name: Configure home servers
   hosts: servers
   roles:
-    # - role: data_mount # must precede docker — see docker role's RequiresMountsFor/BindsTo
-    #   tags: ["data_mount"]
+    # - role: external_mounts # must precede docker — see docker role's RequiresMountsFor
+    #   tags: ["external_mounts"]
     # ^ Disabled until the drive itself is physically moved from the old
     # server to this one. Enabling it before then makes docker.service hard-
     # depend on a mount unit for a drive that isn't attached — the mount
     # fails, and docker (and everything on top: Traefik, DockTail) refuses
-    # to start. Once the drive's plugged in: uncomment, confirm
-    # base_data_device in host_vars/home_server/vars.yml still matches (`ls
-    # -l /dev/disk/by-id/`), then re-run with --tags data_mount,service_data.
+    # to start. Once the drive's plugged in: uncomment, confirm each
+    # device in vault_external_mounts still matches (`ls -l
+    # /dev/disk/by-id/`), then re-run with --tags external_mounts,service_data.
     - role: docker
       tags: ["docker"]
-    - role: service_data # must follow data_mount — sets group/perms on base_data
+    - role: service_data # must follow docker (creates /var/lib/docker/volumes) and, once enabled, external_mounts
       tags: ["service_data"]
     - role: docktail # must follow docker and tailscale
       tags: ["docktail"]

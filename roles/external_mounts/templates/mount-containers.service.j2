@@ -1,0 +1,6 @@
+[Unit]
+Description=Restart containers mounting {{ mount.path }} when its mount unit (re)mounts
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/external-mount-guard restart {{ mount.path }}
