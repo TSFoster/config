@@ -11,7 +11,6 @@ shells_path_entries_interactive:
   - bin
   - node_modules/.bin
 shells_path_entries:
-  - "{{ shells_op_plugin_bin_dir }}"
   - "{{ ansible_facts['env']['HOME'] }}/.asdf/shims"
   - "{{ ansible_facts['env']['HOME'] }}/.local/share/go/bin"
   - "{{ ansible_facts['env']['HOME'] }}/.local/bin"
@@ -132,9 +131,6 @@ shells_fish_universal_variables:
     value_multiple: "{{ shells_uv.shell_path_entries }}"
     export: true
     path: true
-shells_op_plugins:
-  - gh
-  - glab
 shells_fish_completions:
   - cmd: fclones
     generate: fclones complete fish

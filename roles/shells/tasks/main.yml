@@ -136,14 +136,6 @@
   loop: "{{ shells_abbreviations }}"
   tags:
     - vars_debug
-- name: Remove fish abbreviations replaced by op plugin functions
-  ansible.builtin.lineinfile:
-    path: "{{ shells_fish_variables_path }}"
-    regexp: "^SETUVAR _fish_abbr_{{ item }}:"
-    state: absent
-  loop: "{{ shells_op_plugins }}"
-  tags:
-    - vars_debug
 - name: Copy fish config
   tags:
     - shells_files
@@ -182,38 +174,6 @@
   changed_when: "'changed' in shells_completion_result.stdout"
   tags:
     - shells_files
-- name: Manage op plugin wrapper executables
-  tags:
-    - shells_files
-  block:
-    - name: Ensure op plugin bin dir exists
-      ansible.builtin.file:
-        path: "{{ shells_op_plugin_bin_dir }}"
-        state: directory
-        mode: "0755"
-    - name: Make op plugin wrapper executables
-      ansible.builtin.template:
-        src: "op_plugin.sh.j2"
-        dest: "{{ shells_op_plugin_bin_dir }}/{{ item }}"
-        mode: "0755"
-      loop: "{{ shells_op_plugins }}"
-    - name: Find existing op plugin wrapper executables
-      ansible.builtin.find:
-        paths: "{{ shells_op_plugin_bin_dir }}"
-        file_type: file
-      register: shells_op_plugin_bin_existing
-      tags:
-        - vars_debug
-    - name: Remove op plugin wrapper executables no longer in use
-      ansible.builtin.file:
-        path: "{{ item.path }}"
-        state: absent
-      loop: "{{ shells_op_plugin_bin_existing.files }}"
-      loop_control:
-        label: "{{ item.path | basename }}"
-      when: (item.path | basename) not in shells_op_plugins
-      tags:
-        - vars_debug
 - name: Make conf.d dir
   ansible.builtin.file:
     path: "{{ shells_fish_conf_d_dir }}"
