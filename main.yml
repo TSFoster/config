@@ -2,6 +2,8 @@
 - name: Configure localhost
   hosts: workstations
   roles:
+    - role: wrapped_tools # provides the shim dir shells puts on PATH — must precede shells
+      tags: ["wrapped_tools"]
     - role: shells
       tags: ["shells"]
     - role: dotfiles

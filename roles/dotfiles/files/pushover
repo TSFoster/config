@@ -1,34 +1,20 @@
 #!/bin/bash
 # pushover <message> [title]
-# Sends a notification via Pushover API
+# Sends a notification via Pushover API. Wrapped by wrapped_tools — see
+# roles/wrapped_tools — which injects PUSHOVER_TOKEN and PUSHOVER_USER.
 set -euo pipefail
 
 message="${1:?usage: pushover <message> [title]}"
 title="${2:-Notification}"
 
-token_file="${PUSHOVER_TOKEN_FILE:-$HOME/.config/pushover/token}"
-user_file="${PUSHOVER_USER_FILE:-$HOME/.config/pushover/user}"
-
-token=""
-user=""
-
-if [[ -n "${PUSHOVER_TOKEN:-}" ]]; then
-  token="$PUSHOVER_TOKEN"
-elif [[ -f "$token_file" ]]; then
-  token="$(cat "$token_file" | tr -d '\r\n')"
-fi
-
-if [[ -n "${PUSHOVER_USER:-}" ]]; then
-  user="$PUSHOVER_USER"
-elif [[ -f "$user_file" ]]; then
-  user="$(cat "$user_file" | tr -d '\r\n')"
-fi
-
-if [[ -z "$token" || -z "$user" ]]; then
-  echo "Error: Pushover credentials not configured." >&2
-  echo "Please set PUSHOVER_TOKEN and PUSHOVER_USER, or populate $token_file and $user_file." >&2
+if [[ -z "${PUSHOVER_TOKEN:-}" || -z "${PUSHOVER_USER:-}" ]]; then
+  echo "Error: PUSHOVER_TOKEN and/or PUSHOVER_USER not set." >&2
+  echo "Run 'token_renew Pushover' / 'token_renew \"Automation Pushover App\"' to populate them." >&2
   exit 1
 fi
+
+token="$PUSHOVER_TOKEN"
+user="$PUSHOVER_USER"
 
 curl -s \
   --form-string "token=$token" \

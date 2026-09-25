@@ -1,0 +1,9 @@
+# roles/wrapped_tools/defaults/main.yml
+---
+wrapped_tools_state_dir: "{{ ansible_facts['env']['HOME'] }}/.local/state/wrapped-tools"
+# Ahead of everything else on PATH (see shells_path_entries) so these shims
+# are what actually run when a wrapped tool's name is invoked — including by
+# non-interactive shells or other tools, not just interactive fish sessions.
+wrapped_tools_shims_dir: "{{ wrapped_tools_state_dir }}/shims"
+wrapped_tools_tokens_dir: "{{ wrapped_tools_state_dir }}/tokens"
+wrapped_tools_bin_dir: "{{ ansible_facts['env']['HOME'] }}/.local/bin"

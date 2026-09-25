@@ -143,25 +143,13 @@
     src: direnv.toml
     dest: "{{ dotfiles_direnv_config_dir }}/direnv.toml"
     mode: preserve
-- name: Add pushover credentials
-  block:
-    - name: Ensure pushover config directory exists
-      ansible.builtin.file:
-        state: directory
-        dest: "{{ dotfiles_pushover_config_dir }}"
-        mode: "0700"
-    - name: Add pushover user key
-      ansible.builtin.copy:
-        content: "{{ dotfiles_pushover_user }}"
-        dest: "{{ dotfiles_pushover_config_dir }}/user"
-        mode: "0600"
-      when: dotfiles_pushover_user != ""
-    - name: Add pushover token
-      ansible.builtin.copy:
-        content: "{{ dotfiles_pushover_token }}"
-        dest: "{{ dotfiles_pushover_config_dir }}/token"
-        mode: "0600"
-      when: dotfiles_pushover_token != ""
+- name: Remove legacy pushover credential files
+  # Superseded by roles/wrapped_tools — PUSHOVER_USER/PUSHOVER_TOKEN are
+  # injected into the pushover wrapper's own process env now, sourced from
+  # 1Password, instead of being written to disk here.
+  ansible.builtin.file:
+    path: "{{ config_dir }}/pushover"
+    state: absent
 
 - name: Add agent notification support (terminal-notifier is macOS only)
   when: ansible_facts["system"] == "Darwin"

@@ -11,6 +11,7 @@ shells_path_entries_interactive:
   - bin
   - node_modules/.bin
 shells_path_entries:
+  - "{{ wrapped_tools_shims_dir }}"
   - "{{ ansible_facts['env']['HOME'] }}/.asdf/shims"
   - "{{ ansible_facts['env']['HOME'] }}/.local/share/go/bin"
   - "{{ ansible_facts['env']['HOME'] }}/.local/bin"
@@ -97,9 +98,6 @@ shells_variables_base:
   - name: CLAUDE_CODE_DISABLE_TERMINAL_TITLE
     export: true
     value: "1"
-  - name: CLAUDE_CODE_OAUTH_TOKEN
-    export: true
-    value: "{{ lookup('file', shells_claude_oauth_token_path, errors='ignore') | default('', true) | trim }}"
 shells_variables_darwin:
   - name: ANDROID_HOME
     value: "{{ ansible_facts['env']['HOME'] }}/Library/Android/sdk"

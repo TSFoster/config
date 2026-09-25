@@ -1,0 +1,100 @@
+#!/bin/bash
+# token_renew [<name>] — sync a wrapped-tool secret from 1Password into its
+# local cache. With no argument, lists every wrapped var and whether it's
+# currently cached. <name> matches a var name, tool name/command, or
+# 1Password item title (case-insensitive); on a match it prints that item's
+# notes (if any), then re-reads the secret from 1Password into its cache
+# file. See roles/wrapped_tools. Kept /bin/bash (3.2)-compatible on purpose —
+# don't rely on bash 4+ features like mapfile or ${var,,}.
+set -euo pipefail
+
+state_dir="$HOME/.local/state/wrapped-tools"
+manifest="$state_dir/manifest.json"
+tokens_dir="$state_dir/tokens"
+
+if [ ! -f "$manifest" ]; then
+  echo "token_renew: no manifest at $manifest (run the wrapped_tools playbook role first)" >&2
+  exit 1
+fi
+
+lower() { tr '[:upper:]' '[:lower:]'; }
+
+# tool_display<TAB>tool_bin<TAB>var_name<TAB>op_ref, one row per wrapped var.
+entries="$(jq -r '.[] | . as $t | .vars[] | [$t.name, $t.tool, .name, .op_ref] | @tsv' "$manifest")"
+
+parse_op_ref() {
+  # op://<vault>/<item>/<field> -> sets vault, item, field
+  local rest="${1#op://}"
+  vault="${rest%%/*}"
+  rest="${rest#*/}"
+  item="${rest%%/*}"
+  field="${rest#*/}"
+}
+
+list_names() {
+  while IFS=$'\t' read -r tool_display tool_bin var_name op_ref; do
+    parse_op_ref "$op_ref"
+    printf '%s\n' "$tool_display" "$tool_bin" "$var_name" "$item"
+  done <<<"$entries"
+}
+
+if [ "${1:-}" = "--list-names" ]; then
+  list_names | sort -u
+  exit 0
+fi
+
+if [ $# -eq 0 ]; then
+  printf '%-14s %-8s %-24s %s\n' TOOL CMD VAR CACHED
+  while IFS=$'\t' read -r tool_display tool_bin var_name op_ref; do
+    if [ -s "$tokens_dir/$var_name" ]; then
+      cached=yes
+    else
+      cached=no
+    fi
+    printf '%-14s %-8s %-24s %s\n' "$tool_display" "$tool_bin" "$var_name" "$cached"
+  done <<<"$entries"
+  exit 0
+fi
+
+query_lc="$(printf '%s' "$1" | lower)"
+matches=()
+while IFS=$'\t' read -r tool_display tool_bin var_name op_ref; do
+  parse_op_ref "$op_ref"
+  for candidate in "$tool_display" "$tool_bin" "$var_name" "$item"; do
+    if [ "$(printf '%s' "$candidate" | lower)" = "$query_lc" ]; then
+      matches+=("$tool_display"$'\t'"$tool_bin"$'\t'"$var_name"$'\t'"$op_ref")
+      break
+    fi
+  done
+done <<<"$entries"
+
+if [ "${#matches[@]}" -eq 0 ]; then
+  echo "token_renew: no match for '$1'. Known names:" >&2
+  list_names | sort -u | sed 's/^/  /' >&2
+  exit 1
+fi
+
+if [ "${#matches[@]}" -gt 1 ]; then
+  echo "token_renew: '$1' is ambiguous, matches:" >&2
+  printf '%s\n' "${matches[@]}" | cut -f3 | sort -u | sed 's/^/  /' >&2
+  exit 1
+fi
+
+IFS=$'\t' read -r tool_display tool_bin var_name op_ref <<<"${matches[0]}"
+parse_op_ref "$op_ref"
+
+notes="$(op item get "$item" --vault "$vault" --fields notesPlain 2>/dev/null || true)"
+if [ -n "$notes" ]; then
+  echo "Renewal notes for '$item':"
+  printf '%s\n' "$notes" | sed 's/^/  /'
+  echo
+fi
+
+mkdir -p "$tokens_dir"
+dest="$tokens_dir/$var_name"
+tmp="$dest.tmp.$$"
+trap 'rm -f "$tmp"' EXIT
+(umask 077 && op read "$op_ref" --no-newline >"$tmp")
+mv "$tmp" "$dest"
+trap - EXIT
+echo "Synced $var_name (for $tool_bin) from '$item' -> $dest"

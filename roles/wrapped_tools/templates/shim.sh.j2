@@ -1,0 +1,30 @@
+#!/bin/sh
+# Managed by Ansible; do not edit directly.
+#
+# Wraps {{ item.tool }}, injecting secrets cached locally (by `token_renew`,
+# sourced from 1Password) as environment variables, without exporting them
+# into the parent shell. A variable already set in the environment — e.g. by
+# direnv in a project directory — is left alone, so per-directory overrides
+# keep working.
+#
+# This directory sits ahead of the real {{ item.tool }} on PATH, so it must
+# be stripped back out before we exec, or `exec {{ item.tool }}` would just
+# find this wrapper again and recurse forever.
+wrapper_dir="{{ wrapped_tools_shims_dir }}"
+new_path=
+old_ifs=$IFS
+IFS=:
+for dir in $PATH; do
+  [ "$dir" = "$wrapper_dir" ] && continue
+  new_path="${new_path:+$new_path:}$dir"
+done
+IFS=$old_ifs
+PATH=$new_path
+export PATH
+{% for v in item.vars %}
+if ! printenv {{ v.name }} >/dev/null 2>&1; then
+    {{ v.name }}="$(cat "{{ wrapped_tools_tokens_dir }}/{{ v.name }}" 2>/dev/null)"
+    export {{ v.name }}
+fi
+{% endfor %}
+exec {{ item.tool }} "$@"

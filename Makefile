@@ -6,10 +6,8 @@ GALAXY := ansible-galaxy collection install --upgrade -r collections/requirement
 LINT := ansible-lint
 TAGS ?=
 EXTRA_ARGS ?=
-# Keep in sync with shells_claude_oauth_token_path in roles/shells/defaults/main.yml
-CLAUDE_OAUTH_TOKEN_PATH := $(HOME)/.local/state/claude-code/oauth_token
 
-.PHONY: help bootstrap collections install run check home syntax lint lint-fix nvim_pack_list nvim_pack_update nvim_pack_uninstall claude_token_renew shells shells_env shells_files dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp karabiner passwordless_sudo wake_on_lan no_suspend display_scale firewall external_mounts docker service_data unattended_upgrades tailscale docktail traefik
+.PHONY: help bootstrap collections install run check home syntax lint lint-fix nvim_pack_list nvim_pack_update nvim_pack_uninstall wrapped_tools shells shells_env shells_files dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp karabiner passwordless_sudo wake_on_lan no_suspend display_scale firewall external_mounts docker service_data unattended_upgrades tailscale docktail traefik
 
 help:
 	@printf '%s\n' \
@@ -27,9 +25,8 @@ help:
 		'  make nvim_pack_update  Run Neovim vim.pack updates through Ansible' \
 		'  make nvim_pack_uninstall PACKAGES=<name1,name2>' \
 		'                         Remove one or more vim.pack packages' \
-		'  make claude_token_renew' \
-		'                         Regenerate the Claude Code OAuth token; then run make shells_env' \
 		'  make <tag>             Run only that tagged role (for example: make nvim)' \
+		'  token_renew [<name>]  Sync a wrapped-tool secret (gh, claude, ...) from 1Password' \
 		'' \
 		'Overrides:' \
 		'  TAGS=<tags>            Comma-separated tags for make run/check' \
@@ -70,16 +67,7 @@ nvim_pack_uninstall:
 	@test -n "$(strip $(PACKAGES))" || { printf '%s\n' "Set PACKAGES=<name1,name2>"; exit 1; }
 	$(ANSIBLE) $(PLAYBOOK) --tags nvim_pack_uninstall -e 'packages_to_uninstall=$(PACKAGES)' $(EXTRA_ARGS)
 
-claude_token_renew:
-	@mkdir -p "$(dir $(CLAUDE_OAUTH_TOKEN_PATH))"
-	claude setup-token
-	@read -s -p "Paste the token printed above: " token; echo; \
-	  test -n "$$token" || { echo "No token entered, aborting." >&2; exit 1; }; \
-	  ( umask 077; printf '%s' "$$token" > "$(CLAUDE_OAUTH_TOKEN_PATH)" ); \
-	  echo "Stored token at $(CLAUDE_OAUTH_TOKEN_PATH)"; \
-	  echo "Run 'make shells_env' to deploy it to your shells."
-
-shells shells_env shells_files dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp karabiner:
+wrapped_tools shells shells_env shells_files dotfiles ssh asdf dev_tools macos nvim nvim_files hammerspoon macos_navigation fonts dictionaries macos_apps alfred nvim_lsp karabiner:
 	$(MAKE) run TAGS=$@ EXTRA_ARGS="$(EXTRA_ARGS)"
 
 passwordless_sudo wake_on_lan no_suspend display_scale firewall external_mounts docker service_data unattended_upgrades tailscale docktail traefik:

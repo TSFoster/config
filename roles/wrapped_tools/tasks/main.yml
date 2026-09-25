@@ -1,0 +1,55 @@
+# roles/wrapped_tools/tasks/main.yml
+---
+- name: Ensure wrapped-tools directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ wrapped_tools_state_dir }}"
+    - "{{ wrapped_tools_shims_dir }}"
+    - "{{ wrapped_tools_tokens_dir }}"
+    - "{{ wrapped_tools_bin_dir }}"
+    - "{{ config_dir }}/fish/completions"
+
+- name: Render wrapped-tools manifest
+  ansible.builtin.template:
+    src: manifest.json.j2
+    dest: "{{ wrapped_tools_state_dir }}/manifest.json"
+    mode: "0644"
+
+- name: Make wrapper shims
+  ansible.builtin.template:
+    src: shim.sh.j2
+    dest: "{{ wrapped_tools_shims_dir }}/{{ item.tool }}"
+    mode: "0755"
+  loop: "{{ wrapped_tools_list }}"
+  loop_control:
+    label: "{{ item.tool }}"
+
+- name: Find existing wrapper shims
+  ansible.builtin.find:
+    paths: "{{ wrapped_tools_shims_dir }}"
+    file_type: file
+  register: wrapped_tools_shims_existing
+
+- name: Remove wrapper shims no longer in use
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ wrapped_tools_shims_existing.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+  when: (item.path | basename) not in (wrapped_tools_list | map(attribute='tool') | list)
+
+- name: Install token_renew
+  ansible.builtin.copy:
+    src: bin/token_renew
+    dest: "{{ wrapped_tools_bin_dir }}/token_renew"
+    mode: "0755"
+
+- name: Install token_renew fish completion
+  ansible.builtin.copy:
+    src: completions/token_renew.fish
+    dest: "{{ config_dir }}/fish/completions/token_renew.fish"
+    mode: "0644"

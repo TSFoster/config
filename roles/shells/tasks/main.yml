@@ -65,6 +65,16 @@
   tags:
     - shells_env
     - vars_debug
+- name: Remove CLAUDE_CODE_OAUTH_TOKEN universal variable
+  # Superseded by roles/wrapped_tools — the token is injected only into the
+  # claude wrapper's own process env now, not exported into every shell.
+  ansible.builtin.lineinfile:
+    path: "{{ shells_fish_variables_path }}"
+    regexp: "^SETUVAR( +--export)?( +--path)? +CLAUDE_CODE_OAUTH_TOKEN:"
+    state: absent
+  tags:
+    - shells_env
+    - vars_debug
 - name: Set fish universal shell variables
   ansible.builtin.lineinfile:
     path: "{{ shells_fish_variables_path }}"

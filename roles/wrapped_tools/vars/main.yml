@@ -1,0 +1,27 @@
+# roles/wrapped_tools/vars/main.yml
+#
+# CLI tools that get secrets injected as environment variables from
+# 1Password, without those variables ever being exported into the shell
+# itself. Each var's op_ref is a 1Password secret reference (in the 1Password
+# app: right-click a field -> Copy Secret Reference), and its value is
+# refreshed locally by running `token_renew`, never fetched from op on every
+# invocation of the wrapped tool.
+---
+wrapped_tools_list:
+  - name: Claude Code
+    tool: claude
+    vars:
+      - name: CLAUDE_CODE_OAUTH_TOKEN
+        op_ref: "op://Personal/Claude Code OAuth Token/credential"
+  - name: GitHub CLI
+    tool: gh
+    vars:
+      - name: GH_TOKEN
+        op_ref: "op://Personal/GitHub Personal Access Token/credential"
+  - name: Pushover
+    tool: pushover
+    vars:
+      - name: PUSHOVER_USER
+        op_ref: "op://Personal/Pushover/user key"
+      - name: PUSHOVER_TOKEN
+        op_ref: "op://Personal/Automation Pushover App/credential"
