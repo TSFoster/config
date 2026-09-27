@@ -7,6 +7,35 @@ ssh_op_command: op
 # Skip 1Password "SSH Key" items tagged with this — their public key won't
 # be fetched into ~/.ssh or added to authorized_keys.
 ssh_exclude_pub_tag: exclude-pub
+# 1Password "Server" items tagged with this are host entries for
+# config.d/hosts — title is the Host alias, fields are ssh config keywords
+# (Server's built-in "URL"/"username" fields map to HostName/User; the rest
+# are custom fields named after the ssh keyword directly).
+ssh_host_tag: ssh-host
+# 1Password field label -> ssh config keyword, emitted in this order when present.
+ssh_host_config_fields:
+  - field: URL
+    keyword: HostName
+  - field: username
+    keyword: User
+  - field: Port
+    keyword: Port
+  - field: IdentityFile
+    keyword: IdentityFile
+  - field: IdentitiesOnly
+    keyword: IdentitiesOnly
+  - field: PreferredAuthentications
+    keyword: PreferredAuthentications
+  - field: ProxyJump
+    keyword: ProxyJump
+  - field: ProxyCommand
+    keyword: ProxyCommand
+  - field: ForwardAgent
+    keyword: ForwardAgent
+  - field: LocalForward
+    keyword: LocalForward
+  - field: RemoteForward
+    keyword: RemoteForward
 ssh_identity_agent_darwin_dir: >-
   {{ ansible_facts['env']['HOME'] }}/Library/Group Containers/2BUA8C4S2C.com.1password/t
 ssh_identity_agent_linux_dir: "{{ ansible_facts['env']['HOME'] }}/.1password"

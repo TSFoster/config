@@ -44,8 +44,41 @@
     path: "{{ ssh_config_dir }}"
     state: directory
     mode: "0700"
+- name: List SSH host items in 1Password
+  ansible.builtin.command:
+    cmd: "{{ ssh_op_command }} item list --tags={{ ssh_host_tag }} --format=json"
+  register: ssh_op_host_list
+  changed_when: false
+- name: Fetch full details for each SSH host item
+  ansible.builtin.command:
+    cmd: "{{ ssh_op_command }} item get {{ op_item.id }} --format=json"
+  register: ssh_op_host_details
+  changed_when: false
+  loop: "{{ ssh_op_host_list.stdout | from_json }}"
+  loop_control:
+    loop_var: op_item
+    label: "{{ op_item.title }}"
+- name: Build SSH host config entries
+  ansible.builtin.set_fact:
+    ssh_host_entries: >-
+      {{
+        ssh_host_entries | default([]) + [{
+          'title': op_host.title,
+          'fields': op_host.fields | selectattr('value', 'defined') | list | items2dict(key_name='label', value_name='value')
+        }]
+      }}
+  loop: "{{ ssh_op_host_details.results | map(attribute='stdout') | map('from_json') | list }}"
+  loop_control:
+    loop_var: op_host
+    label: "{{ op_host.title }}"
 - name: Copy SSH config
   ansible.builtin.template:
     src: "config.j2"
     dest: "{{ ssh_config_path }}"
     mode: "0600"
+- name: Copy SSH host config
+  ansible.builtin.template:
+    src: "hosts.j2"
+    dest: "{{ ssh_config_dir }}/hosts"
+    mode: "0600"
+    backup: true
