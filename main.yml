@@ -43,6 +43,8 @@
   roles:
     - role: passwordless_sudo
       tags: ["passwordless_sudo"]
+    - role: sshd
+      tags: ["sshd"]
     - role: tailscale # must precede firewall — SSH is tailscale-only, so the box
       tags: ["tailscale"] # needs to already be on the tailnet before ufw locks LAN SSH out
     - role: firewall

@@ -1,0 +1,12 @@
+# Managed by Ansible (roles/sshd) — do not edit by hand.
+
+# Disable password and keyboard-interactive authentication
+PasswordAuthentication {{ 'yes' if sshd_password_authentication else 'no' }}
+KbdInteractiveAuthentication {{ 'yes' if sshd_kbd_interactive_authentication else 'no' }}
+PermitEmptyPasswords {{ 'yes' if sshd_permit_empty_passwords else 'no' }}
+
+# Disable direct root login
+PermitRootLogin {{ sshd_permit_root_login }}
+
+# Require public key authentication
+PubkeyAuthentication {{ 'yes' if sshd_pubkey_authentication else 'no' }}
