@@ -60,10 +60,36 @@ end, { expr = true, desc = "Expand current file's relative path" })
 
 keymap.set("n", "<Leader>w", cmd.write, { desc = "Write buffer" })
 keymap.set("n", "<Leader><Leader>w", cmd.wall, { desc = "Write all buffers" })
-keymap.set("n", "<Leader>q", cmd.quit, { desc = "Quit window" })
-keymap.set("n", "<Leader><Leader>q", cmd.qall, { desc = "Quit all windows" })
-keymap.set("n", "<Leader>x", cmd.xit, { desc = "Write and quit window" })
-keymap.set("n", "<Leader><Leader>x", cmd.xall, { desc = "Write and quit all windows" })
+
+-- Closing the last window in the last tab is really a quit: <Leader>q
+-- refuses it outright (below) rather than exiting Neovim on a single
+-- keypress, and <Leader>x gets the same running-tools check as
+-- <Leader><Leader>q/x below. Closing any other window doesn't exit Neovim at
+-- all, so it's left unchecked in both cases.
+local function is_last_window()
+  return #vim.api.nvim_list_tabpages() == 1 and #vim.api.nvim_tabpage_list_wins(0) == 1
+end
+
+keymap.set("n", "<Leader>q", function()
+  if is_last_window() then
+    vim.notify("Last window -- use <Leader><Leader>q to quit Neovim", vim.log.levels.WARN)
+  else
+    cmd.quit()
+  end
+end, { desc = "Quit window" })
+keymap.set("n", "<Leader><Leader>q", function()
+  tools.confirm_quit(cmd.qall)
+end, { desc = "Quit all windows" })
+keymap.set("n", "<Leader>x", function()
+  if is_last_window() then
+    tools.confirm_quit(cmd.xit)
+  else
+    cmd.xit()
+  end
+end, { desc = "Write and quit window" })
+keymap.set("n", "<Leader><Leader>x", function()
+  tools.confirm_quit(cmd.xall)
+end, { desc = "Write and quit all windows" })
 
 keymap.set("n", "<Leader>s", ":%s//g<Left><Left>", { desc = "Global substitution of whole buffer" })
 keymap.set("v", "<Leader>s", ":s//g<Left><Left>", { desc = "Global substitution of selection" })

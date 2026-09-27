@@ -19,18 +19,30 @@ local pager_set = {}
 -- "terminal" (see config/options.lua), and it doesn't include "globals"
 -- either -- that's never been added, and it isn't Neovim's default -- so
 -- there's no way to smuggle `tool_buffers` itself across via a saved global.
--- A restart just forgets every tool outright: tool_buffers comes back empty,
--- and each one gets a genuinely fresh buffer/job (new pid) the next time
--- M.focus is called for it, same as if it had never been opened.
+-- A restart forgets tool_buffers outright: it comes back empty, and each
+-- tool gets a genuinely fresh buffer/job (new pid) the next time M.focus is
+-- called for it, same as if it had never been opened. What survives is the
+-- underlying process itself: every tool job is `zmx attach` rather than the
+-- tool's own command (see zmx_session_name below), so the fresh job just
+-- reattaches to the same zmx session and its still-running process/scrollback
+-- instead of starting over. This relies on v:servername being stable across
+-- `:restart` (same `--listen`ing socket path, re-execed) -- a plain `nvim
+-- file` with no --listen gets a fresh v:servername each launch, so its zmx
+-- sessions won't be found again and it'll fall back to spawning anew.
 --
 -- Excluding "terminal" from 'sessionoptions' still matters even though
 -- nothing is being restored: without it, Neovim's own session-restore would
 -- try to auto-respawn each terminal buffer itself from its saved name
 -- (`term://{cwd}//{pid}:{cmd}`, per :h terminal-start) -- and since that name
 -- only encodes a list-form command's argv[1], a tool started with args (e.g.
--- the `direnv exec <cwd> claude` this module launches non-shell tools with)
--- would come back running plain `direnv` with no arguments at all. Better to
--- skip that and let M.focus relaunch it properly instead.
+-- the `zmx attach <session> direnv exec <cwd> claude` this module launches
+-- non-shell tools with) would come back running plain `direnv` with no
+-- arguments at all. Better to skip that and let M.focus relaunch it properly
+-- instead.
+--
+-- zmx ("session persistence for terminal processes") is what actually keeps
+-- a tool's process alive independent of the Neovim terminal buffer/job that
+-- happens to be attached to it -- see zmx_session_name below.
 
 local function is_tool_buf(bufnr)
   if pager_set[bufnr] then
@@ -48,6 +60,60 @@ M.is_tool_buf = is_tool_buf
 
 local function is_shell_slot_name(name)
   return name:match("^shell_%d+$") ~= nil
+end
+
+-- Mirrors the `if [ "$NVIM" ]` EDITOR/PAGER override in
+-- roles/shells/templates/config.fish.j2. That override only ever runs when a
+-- fish process actually starts up, but non-shell tools are launched via
+-- `direnv exec <cwd> <cmd>` with no shell in between (see the
+-- is_shell_slot_name check below) -- so without this, they just inherit
+-- Neovim's own (pre-$NVIM, stale) EDITOR/PAGER instead of the nvr-wrapped
+-- versions. Shell slots don't need this: fish is their direct cmd, so it
+-- applies its own override on startup.
+local NVIM_TOOL_ENV = {
+  EDITOR = "nvr --remote-tab-wait",
+  PAGER = "nvr +PagerInit --remote-wait -",
+}
+
+-- The zmx session backing `tool_name`'s process, unique per Neovim instance
+-- (v:servername -- always set, see :h v:servername -- rather than $NVIM: the
+-- latter is only present in a *child* process Neovim spawns, e.g. inside one
+-- of these very terminal buffers, whereas this runs in the instance itself).
+--
+-- Session names are socket filenames, so zmx caps them well below the usual
+-- Unix socket path limit (observed: 46 bytes under this machine's $TMPDIR-
+-- derived socket dir) -- and v:servername itself can already be most of that
+-- budget (e.g. a `--listen`ing macOS temp-dir socket path), before even
+-- adding a tool name. Hashing it down to a fixed 12 hex chars keeps every
+-- session name short regardless of how deep the socket dir or the instance's
+-- own socket path happens to be, at the cost of the name no longer being
+-- human-readable on its own -- zmx_attach_labels below compensates by
+-- labelling the session with the real path and tool name for `zmx list`/`get`.
+--
+-- Keying by instance means the same tool name (e.g. "claude") in two
+-- different `--listen`ing projects gets two independent zmx sessions rather
+-- than fighting over one; keying by tool name means switching projects in
+-- the *same* instance still gets its own "claude" session per tool slot.
+local function zmx_instance_key()
+  return vim.fn.sha256(vim.v.servername):sub(1, 12)
+end
+
+local function zmx_session_name(tool_name)
+  return "nvim:" .. zmx_instance_key() .. ":" .. tool_name
+end
+
+-- `--labels` value for `zmx attach` when creating tool_name's session (a
+-- single "k=v k=v" string -- see `zmx help`), so the opaque hashed name above
+-- is still identifiable via `zmx list`/`zmx get`. Only takes effect the
+-- moment the session is actually created; harmless to pass on every attach.
+--
+-- zmx label values are restricted to [a-zA-Z0-9_.-], which v:servername
+-- (a path) doesn't satisfy on its own -- every other character is replaced
+-- with "_", same idea as zmx_session_name's hash: not reversible to an exact
+-- path, but enough to recognize which instance a session belongs to.
+local function zmx_attach_labels(tool_name)
+  local instance = vim.v.servername:gsub("[^%w%.%-]", "_")
+  return "nvim=" .. instance .. " tool=" .. tool_name
 end
 
 -- If `buf` is already loaded in a window, switch to that window (preferring
@@ -101,10 +167,11 @@ end
 -- resumable tool from a dead one.
 -- Trusting it as "already open" would silently reuse a stale/ghost buffer
 -- instead of prompting to relaunch: for a list-argv tool (e.g. the
--- `direnv exec <cwd> claude` this module launches non-shell tools with),
--- reviving an unloaded term:// buffer by name also loses every arg but the
--- first, since Neovim only encodes argv[1] in a list-form terminal's buffer
--- name -- so a lazily-respawned one runs `direnv` with no arguments at all.
+-- `zmx attach <session> direnv exec <cwd> claude` this module launches
+-- non-shell tools with), reviving an unloaded term:// buffer by name also
+-- loses every arg but the first, since Neovim only encodes argv[1] in a
+-- list-form terminal's buffer name -- so a lazily-respawned one runs plain
+-- `zmx` with no arguments at all.
 local function is_live_tool_buf(buf)
   if not (buf and vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buftype == "terminal") then
     return false
@@ -170,13 +237,30 @@ function M.focus(tool_name, cmd)
     -- tool's own title (which e.g. claude rewrites continuously).
     vim.b[buf].shell_cwd = cwd
     local cmd_list = type(cmd) == "table" and cmd or { cmd }
+    local env
     -- Shells already do their own direnv hooking on startup; wrapping them
     -- in `direnv exec` too is redundant, and fights an interactive shell's
     -- own env/prompt handling.
     if not is_shell_slot_name(tool_name) then
       cmd_list = vim.list_extend({ "direnv", "exec", cwd }, cmd_list)
+      env = NVIM_TOOL_ENV
     end
-    vim.fn.jobstart(cmd_list, { cwd = cwd, term = true })
+    -- Wrap in zmx so the tool's actual process outlives this terminal
+    -- buffer/job -- see zmx_session_name above and the top-of-file comment
+    -- on `:restart`. Strip $ZMX_SESSION first via `env -u`: if this Neovim
+    -- instance is itself running inside a zmx session, that var would
+    -- otherwise leak into this `zmx attach` child and (per `zmx help`) make
+    -- it switch/reuse *that* session instead of independently creating
+    -- tool_name's own nested one. jobstart()'s own `env` option can't do
+    -- this -- it only ever adds/overrides keys on top of the inherited
+    -- environment, never removes one -- so this has to happen in the
+    -- spawned argv itself, ahead of the rest of the (otherwise fully
+    -- inherited) environment.
+    cmd_list = vim.list_extend(
+      { "env", "-u", "ZMX_SESSION", "zmx", "attach", "--labels", zmx_attach_labels(tool_name), zmx_session_name(tool_name) },
+      cmd_list
+    )
+    vim.fn.jobstart(cmd_list, { cwd = cwd, term = true, env = env })
     -- If this was placed via window_placement.apply's "f" case, that
     -- already made the float current and wired up its auto-hide-on-blur --
     -- nothing more to do here.
@@ -384,10 +468,17 @@ function M.focus_background(tool_name, cmd)
   vim.b[buf].shell_cwd = cwd
 
   local cmd_list = type(cmd) == "table" and cmd or { cmd }
+  local env
   if not is_shell_slot_name(tool_name) then
     cmd_list = vim.list_extend({ "direnv", "exec", cwd }, cmd_list)
+    env = NVIM_TOOL_ENV
   end
-  vim.fn.jobstart(cmd_list, { cwd = cwd, term = true })
+  -- See the matching comment in M.focus.
+  cmd_list = vim.list_extend(
+    { "env", "-u", "ZMX_SESSION", "zmx", "attach", "--labels", zmx_attach_labels(tool_name), zmx_session_name(tool_name) },
+    cmd_list
+  )
+  vim.fn.jobstart(cmd_list, { cwd = cwd, term = true, env = env })
 
   vim.api.nvim_win_set_buf(win, orig_buf)
   vim.cmd.stopinsert()
@@ -463,6 +554,78 @@ function M.cycle_shell(delta, cmd)
 
   local new_idx = ((idx - 1 + delta) % #bufs) + 1
   show_buffer(bufs[new_idx])
+end
+
+-- Every tool with a currently-live buffer/job, i.e. one that zmx would keep
+-- running in the background if this Neovim instance quit without an
+-- explicit kill (see zmx_session_name above). Used by M.confirm_quit.
+--
+-- Can under-report a shell slot that reconcile_shells() adopted from a bare
+-- `:terminal` rather than one this module itself launched: that job was
+-- never wrapped in `zmx attach`, so it has no zmx session to kill (and dies
+-- with Neovim regardless of the user's choice) even though it'll show up
+-- here as "still running".
+local function live_sessions()
+  local sessions = {}
+  for tool_name, buf in pairs(tool_buffers) do
+    if is_live_tool_buf(buf) then
+      table.insert(sessions, { tool_name = tool_name, session = zmx_session_name(tool_name) })
+    end
+  end
+  return sessions
+end
+
+M.live_sessions = live_sessions
+
+-- Kill the zmx session backing every currently-live tool (or just `sessions`,
+-- if given -- e.g. a list M.confirm_quit already computed).
+function M.kill_all_sessions(sessions)
+  sessions = sessions or live_sessions()
+  if #sessions == 0 then
+    return
+  end
+
+  local cmd_list = { "zmx", "kill" }
+  for _, s in ipairs(sessions) do
+    table.insert(cmd_list, s.session)
+  end
+  table.insert(cmd_list, "--force")
+  vim.fn.system(cmd_list)
+end
+
+-- Run `quit_fn` (a vim.cmd.* quit variant), but first warn if doing so would
+-- leave tool processes running in the background via zmx, and let the user
+-- choose what happens to them instead of finding out later. "Leave all
+-- running" is a legitimate choice, not a trap -- that's the entire point of
+-- wrapping tools in zmx (see the top-of-file comment on `:restart`) -- this
+-- just makes it a decision instead of a surprise.
+--
+-- Skips the prompt entirely when nothing is running, so quitting with no
+-- live tools stays exactly as fast as it was before this existed.
+function M.confirm_quit(quit_fn)
+  local sessions = live_sessions()
+  if #sessions == 0 then
+    quit_fn()
+    return
+  end
+
+  local names = {}
+  for _, s in ipairs(sessions) do
+    table.insert(names, s.tool_name)
+  end
+  table.sort(names)
+
+  local prompt =
+    string.format("%d tool%s still running (%s).", #sessions, #sessions == 1 and "" or "s", table.concat(names, ", "))
+  local choice = vim.fn.confirm(prompt, "&Cancel\n&Kill all\n&Leave all running", 1)
+
+  if choice == 2 then
+    M.kill_all_sessions(sessions)
+    quit_fn()
+  elseif choice == 3 then
+    quit_fn()
+  end
+  -- choice == 1, or 0 for <Esc>/<C-c>: cancel, do nothing.
 end
 
 return M
