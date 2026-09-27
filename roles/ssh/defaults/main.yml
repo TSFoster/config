@@ -5,8 +5,14 @@ ssh_config_path: "{{ ssh_dir }}/config"
 ssh_user: "{{ ansible_facts['env']['USER'] }}"
 ssh_op_command: op
 # Skip 1Password "SSH Key" items tagged with this — their public key won't
-# be fetched into ~/.ssh or added to authorized_keys.
+# be fetched into ~/.ssh.
 ssh_exclude_pub_tag: exclude-pub
+# 1Password "SSH Key" items tagged with this make up authorized_keys —
+# ansible owns that file exclusively, so untagging/deleting a key here
+# removes it from authorized_keys too. A key can carry this tag alongside
+# "{{ ssh_exclude_pub_tag }}" (authorized to log in here, but its public key
+# still shouldn't be written under ~/.ssh).
+ssh_authorized_keys_tag: authorized-keys
 # 1Password "Server" items tagged with this are host entries for
 # config.d/hosts — title is the Host alias, fields are ssh config keywords
 # (Server's built-in "URL"/"username" fields map to HostName/User; the rest

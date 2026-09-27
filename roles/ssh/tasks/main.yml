@@ -30,15 +30,41 @@
   loop_control:
     loop_var: op_item
     label: "{{ op_item.title }}"
-- name: Add fetched public keys to authorized_keys
-  ansible.posix.authorized_key:
-    user: "{{ ssh_user }}"
-    state: present
-    key: "{{ lookup('file', ssh_dir ~ '/' ~ (op_item.title | regex_replace('[^A-Za-z0-9_.-]', '_')) ~ '.pub') }}"
-  loop: "{{ ssh_pub_key_items | default([]) }}"
+- name: Select SSH Key items tagged "{{ ssh_authorized_keys_tag }}"
+  ansible.builtin.set_fact:
+    ssh_authorized_key_items: "{{ ssh_authorized_key_items | default([]) + [op_item] }}"
+  loop: "{{ ssh_op_item_list.stdout | from_json }}"
   loop_control:
     loop_var: op_item
     label: "{{ op_item.title }}"
+  when: ssh_authorized_keys_tag in (op_item.tags | default([]))
+- name: Fail if no SSH Key items are tagged "{{ ssh_authorized_keys_tag }}"
+  # authorized_keys below is exclusive — an empty list would wipe it and
+  # could lock this account out, so refuse to proceed instead.
+  ansible.builtin.assert:
+    that: (ssh_authorized_key_items | default([]) | length) > 0
+    fail_msg: >-
+      No 1Password "SSH Key" items are tagged "{{ ssh_authorized_keys_tag }}";
+      refusing to clear authorized_keys.
+- name: Fetch public keys for authorized_keys
+  # Fetched directly (not read off disk) since a key here may also carry
+  # "{{ ssh_exclude_pub_tag }}" and so was never written under {{ ssh_dir }}.
+  ansible.builtin.command:
+    cmd: >-
+      {{ ssh_op_command }} read
+      "op://{{ op_item.vault.id }}/{{ op_item.id }}/public key"
+  register: ssh_op_authorized_key_fetch
+  changed_when: false
+  loop: "{{ ssh_authorized_key_items }}"
+  loop_control:
+    loop_var: op_item
+    label: "{{ op_item.title }}"
+- name: Set authorized_keys to exactly the fetched keys
+  ansible.posix.authorized_key:
+    user: "{{ ssh_user }}"
+    state: present
+    exclusive: true
+    key: "{{ ssh_op_authorized_key_fetch.results | map(attribute='stdout') | join('\n') }}"
 - name: Make .ssh/config.d dir
   ansible.builtin.file:
     path: "{{ ssh_config_dir }}"
