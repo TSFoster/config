@@ -68,6 +68,12 @@
   # advertised below (and for exit-node traffic) — advertising alone
   # doesn't enable forwarding.
 
+- name: Read current tailscale preferences
+  ansible.builtin.command: tailscale debug prefs
+  register: _tailscale_prefs
+  become: true
+  changed_when: false
+
 - name: Configure route, app-connector, and exit-node advertisement
   ansible.builtin.command: >
     tailscale set
@@ -75,8 +81,15 @@
     {{ '--advertise-connector' if tailscale_advertise_connector else '' }}
     {{ '--advertise-exit-node' if tailscale_advertise_exit_node else '' }}
   become: true
+  vars:
+    _current_prefs: "{{ _tailscale_prefs.stdout | from_json }}"
+    _current_routes: "{{ (_current_prefs.AdvertiseRoutes | default([])) | sort }}"
+    _desired_routes: >-
+      {{ (tailscale_advertise_routes + (['0.0.0.0/0', '::/0'] if tailscale_advertise_exit_node else [])) | sort }}
   when: (tailscale_advertise_routes | length > 0) or tailscale_advertise_connector or tailscale_advertise_exit_node
-  changed_when: true
+  changed_when: >-
+    _current_routes != _desired_routes or
+    (_current_prefs.AppConnector.Advertise | default(false)) != tailscale_advertise_connector
   # `tailscale set` (not `up`) because this only converges mutable settings
   # on an already-authed node — no authkey/reconnect needed, safe to re-run
   # every play. Tag-scoped approvals in acl.hujson (autoApprovers, the
@@ -85,3 +98,8 @@
   # step for the connector. The subnet route itself still needs a one-time
   # approval (see managing-tailscale-acl-file.md) since 192.168.68.0/24
   # isn't in autoApprovers.
+  #
+  # changed_when compares against `tailscale debug prefs` (the local Prefs
+  # struct) rather than `tailscale status`, since that's what `set` actually
+  # mutates — exit-node advertisement has no dedicated field, it's just
+  # 0.0.0.0/0 + ::/0 appended to AdvertiseRoutes.
