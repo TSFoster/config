@@ -7,24 +7,29 @@
 # direnv in a project directory — is left alone, so per-directory overrides
 # keep working.
 #
-# This directory sits ahead of the real {{ item.tool }} on PATH, so it must
-# be stripped back out before we exec, or `exec {{ item.tool }}` would just
-# find this wrapper again and recurse forever.
+# This directory sits ahead of the real {{ item.tool }} on PATH, so it is
+# stripped out only while looking up the real binary (or `exec {{ item.tool }}`
+# would find this wrapper again and recurse forever). The original PATH is
+# kept for the exec itself, so that anything the wrapped tool spawns — e.g.
+# Bash commands run by Claude Code — still resolves other wrapped tools to
+# their shims.
 wrapper_dir="{{ wrapped_tools_shims_dir }}"
-new_path=
+lookup_path=
 old_ifs=$IFS
 IFS=:
 for dir in $PATH; do
   [ "$dir" = "$wrapper_dir" ] && continue
-  new_path="${new_path:+$new_path:}$dir"
+  lookup_path="${lookup_path:+$lookup_path:}$dir"
 done
 IFS=$old_ifs
-PATH=$new_path
-export PATH
+real_tool="$(PATH=$lookup_path command -v {{ item.tool }})" || {
+  echo "{{ item.tool }}: real executable not found on PATH" >&2
+  exit 127
+}
 {% for v in item.vars %}
 if ! printenv {{ v.name }} >/dev/null 2>&1; then
     {{ v.name }}="$(cat "{{ wrapped_tools_tokens_dir }}/{{ v.name }}" 2>/dev/null)"
     export {{ v.name }}
 fi
 {% endfor %}
-exec {{ item.tool }} "$@"
+exec "$real_tool" "$@"
