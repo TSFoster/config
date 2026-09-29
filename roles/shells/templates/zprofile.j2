@@ -6,6 +6,13 @@ if [ -x "{{ homebrew_brew_bin_path }}/brew" ]; then
   eval "$({{ homebrew_brew_bin_path }}/brew shellenv zsh)"
 fi
 
+path_prepend() {
+  case ":$PATH:" in
+    *":$1:"*) ;;
+    *) PATH="$1${PATH:+:$PATH}" ;;
+  esac
+}
+
 path_append() {
   case ":$PATH:" in
     *":$1:"*) ;;
@@ -13,8 +20,8 @@ path_append() {
   esac
 }
 
-{% for entry in shells_uv.shell_path_entries %}
-path_append "{{ entry }}"
+{% for entry in shells_uv.shell_path_entries | reverse %}
+path_prepend "{{ entry }}"
 {% endfor %}
 
 if [[ -o interactive ]]; then
@@ -26,5 +33,5 @@ if [[ -o interactive ]]; then
   fi
 fi
 
-unset -f path_append
+unset -f path_prepend path_append
 export PATH
