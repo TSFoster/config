@@ -11,6 +11,7 @@ dev_tools_packages:
   - name: git
   - name: gh # GitHub CLI — available via apt on Ubuntu 22.04+
   - name: glab # GitLab CLI
+  - brew: forgejo-cli
   - name: tig # git TUI
   - name: icdiff
   - name: git-filter-repo
