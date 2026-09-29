@@ -1,10 +1,9 @@
 # Managed by Ansible (roles/ssh) — do not edit by hand.
-# Generated from 1Password "Server" items tagged "{{ ssh_host_tag }}".
+# Generated from 1Password "Server" item "{{ host.title }}" tagged "{{ ssh_host_tag }}".
 {% set ssh_key_paths = {} %}
 {% for key_item in ssh_pub_key_items | default([]) %}
 {% set _ = ssh_key_paths.update({key_item.title: ssh_dir ~ '/' ~ (key_item.title | regex_replace('[^A-Za-z0-9_.-]', '_')) ~ '.pub'}) %}
 {% endfor %}
-{% for host in ssh_host_entries | default([]) | sort(attribute='title') %}
 Host {{ host.title }}
 {% for entry in ssh_host_config_fields %}
 {% if entry.field in host.fields %}
@@ -14,5 +13,4 @@ Host {{ host.title }}
 	{{ entry.keyword }} {{ host.fields[entry.field] }}
 {% endif %}
 {% endif %}
-{% endfor %}
 {% endfor %}

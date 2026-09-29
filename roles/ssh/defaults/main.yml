@@ -13,10 +13,11 @@ ssh_exclude_pub_tag: exclude-pub
 # "{{ ssh_exclude_pub_tag }}" (authorized to log in here, but its public key
 # still shouldn't be written under ~/.ssh).
 ssh_authorized_keys_tag: authorized-keys
-# 1Password "Server" items tagged with this are host entries for
-# config.d/hosts — title is the Host alias, fields are ssh config keywords
-# (Server's built-in "URL"/"username" fields map to HostName/User; the rest
-# are custom fields named after the ssh keyword directly).
+# 1Password "Server" items tagged with this are host entries, each rendered
+# to its own config.d/hosts-NAME file — title is the Host alias, fields are
+# ssh config keywords (Server's built-in "URL"/"username" fields map to
+# HostName/User; the rest are custom fields named after the ssh keyword
+# directly).
 ssh_host_tag: ssh-host
 # 1Password field label -> ssh config keyword, emitted in this order when present.
 ssh_host_config_fields:

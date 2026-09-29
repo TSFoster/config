@@ -84,27 +84,54 @@
   loop_control:
     loop_var: op_item
     label: "{{ op_item.title }}"
-- name: Build SSH host config entries
-  ansible.builtin.set_fact:
-    ssh_host_entries: >-
-      {{
-        ssh_host_entries | default([]) + [{
-          'title': op_host.title,
-          'fields': op_host.fields | selectattr('value', 'defined') | list | items2dict(key_name='label', value_name='value')
-        }]
-      }}
-  loop: "{{ ssh_op_host_details.results | map(attribute='stdout') | map('from_json') | list }}"
-  loop_control:
-    loop_var: op_host
-    label: "{{ op_host.title }}"
 - name: Copy SSH config
   ansible.builtin.template:
     src: "config.j2"
     dest: "{{ ssh_config_path }}"
     mode: "0600"
-- name: Copy SSH host config
+- name: Copy per-host SSH config files
+  # No backup:true — "Include config.d/*" below globs every file in this
+  # dir, so a leftover *.PID.timestamp~ backup would get parsed as SSH
+  # config too. 1Password is the source of truth if a render needs undoing.
   ansible.builtin.template:
-    src: "hosts.j2"
-    dest: "{{ ssh_config_dir }}/hosts"
+    src: "host.j2"
+    dest: "{{ ssh_config_dir }}/hosts-{{ op_host.title | regex_replace('[^A-Za-z0-9_.-]', '_') }}"
     mode: "0600"
-    backup: true
+  vars:
+    host:
+      title: "{{ op_host.title }}"
+      fields: "{{ op_host.fields | selectattr('value', 'defined') | list | items2dict(key_name='label', value_name='value') }}"
+  loop: "{{ ssh_op_host_details.results | map(attribute='stdout') | map('from_json') | list }}"
+  loop_control:
+    loop_var: op_host
+    label: "{{ op_host.title }}"
+- name: Remove old single-file SSH host config
+  # Superseded by the per-host hosts-NAME files above.
+  ansible.builtin.file:
+    path: "{{ ssh_config_dir }}/hosts"
+    state: absent
+- name: Find existing per-host SSH config files
+  ansible.builtin.find:
+    paths: "{{ ssh_config_dir }}"
+    patterns: "hosts-*"
+  register: ssh_existing_host_files
+- name: Remove stale per-host SSH config files
+  # A host removed or renamed in 1Password otherwise leaves its old
+  # hosts-NAME file behind, since each host now templates to its own file
+  # instead of one file being fully regenerated each run.
+  ansible.builtin.file:
+    path: "{{ stale_host_file }}"
+    state: absent
+  loop: >-
+    {{
+      ssh_existing_host_files.files | map(attribute='path') | list
+      | difference(
+          ssh_op_host_details.results
+          | map(attribute='stdout') | map('from_json') | map(attribute='title')
+          | map('regex_replace', '[^A-Za-z0-9_.-]', '_')
+          | map('regex_replace', '^(.*)$', ssh_config_dir ~ '/hosts-\1')
+          | list
+        )
+    }}
+  loop_control:
+    loop_var: stale_host_file
