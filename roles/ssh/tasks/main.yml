@@ -4,9 +4,13 @@
     path: "{{ ssh_dir }}"
     state: directory
     mode: "0700"
-- name: List SSH Key items in 1Password
+- name: List all items in 1Password
+  # Unfiltered (not --categories/--tags) so this one call covers both SSH
+  # Key and SSH host items below — each 1Password-calling task here costs
+  # one 1Password approval prompt, so fewer/broader tasks means fewer
+  # prompts per playbook run.
   ansible.builtin.command:
-    cmd: "{{ ssh_op_command }} item list --categories='SSH Key' --format=json"
+    cmd: "{{ ssh_op_command }} item list --format=json"
   register: ssh_op_item_list
   changed_when: false
 - name: Select SSH Key items not tagged "{{ ssh_exclude_pub_tag }}"
@@ -16,20 +20,9 @@
   loop_control:
     loop_var: op_item
     label: "{{ op_item.title }}"
-  when: ssh_exclude_pub_tag not in (op_item.tags | default([]))
-- name: Fetch public keys from 1Password
-  # Only the public half ever touches disk — the private key stays in the
-  # 1Password SSH agent, which IdentityAgent below points ssh at.
-  ansible.builtin.shell:
-    cmd: >-
-      {{ ssh_op_command }} read
-      "op://{{ op_item.vault.id }}/{{ op_item.id }}/public key"
-      > {{ ssh_dir }}/{{ op_item.title | regex_replace('[^A-Za-z0-9_.-]', '_') }}.pub
-    creates: "{{ ssh_dir }}/{{ op_item.title | regex_replace('[^A-Za-z0-9_.-]', '_') }}.pub"
-  loop: "{{ ssh_pub_key_items | default([]) }}"
-  loop_control:
-    loop_var: op_item
-    label: "{{ op_item.title }}"
+  when: >-
+    op_item.category == 'SSH_KEY' and
+    ssh_exclude_pub_tag not in (op_item.tags | default([]))
 - name: Select SSH Key items tagged "{{ ssh_authorized_keys_tag }}"
   ansible.builtin.set_fact:
     ssh_authorized_key_items: "{{ ssh_authorized_key_items | default([]) + [op_item] }}"
@@ -37,7 +30,9 @@
   loop_control:
     loop_var: op_item
     label: "{{ op_item.title }}"
-  when: ssh_authorized_keys_tag in (op_item.tags | default([]))
+  when: >-
+    op_item.category == 'SSH_KEY' and
+    ssh_authorized_keys_tag in (op_item.tags | default([]))
 - name: Fail if no SSH Key items are tagged "{{ ssh_authorized_keys_tag }}"
   # authorized_keys below is exclusive — an empty list would wipe it and
   # could lock this account out, so refuse to proceed instead.
@@ -46,16 +41,40 @@
     fail_msg: >-
       No 1Password "SSH Key" items are tagged "{{ ssh_authorized_keys_tag }}";
       refusing to clear authorized_keys.
-- name: Fetch public keys for authorized_keys
-  # Fetched directly (not read off disk) since a key here may also carry
-  # "{{ ssh_exclude_pub_tag }}" and so was never written under {{ ssh_dir }}.
+- name: Fetch public keys for items needing one
+  # Only the public half ever touches disk/facts — the private key stays
+  # in the 1Password SSH agent, which IdentityAgent below points ssh at.
+  # One task fetches for both ssh_pub_key_items (written to {{ ssh_dir }})
+  # and ssh_authorized_key_items (folded into authorized_keys below) since
+  # the two lists can overlap and each is otherwise its own 1Password
+  # approval prompt.
   ansible.builtin.command:
     cmd: >-
       {{ ssh_op_command }} read
       "op://{{ op_item.vault.id }}/{{ op_item.id }}/public key"
-  register: ssh_op_authorized_key_fetch
+  register: ssh_op_pub_key_fetch
   changed_when: false
-  loop: "{{ ssh_authorized_key_items }}"
+  loop: >-
+    {{
+      ((ssh_pub_key_items | default([])) + (ssh_authorized_key_items | default([])))
+      | unique(attribute='id')
+    }}
+  loop_control:
+    loop_var: op_item
+    label: "{{ op_item.title }}"
+- name: Build public key lookup by item ID
+  ansible.builtin.set_fact:
+    ssh_pub_key_by_id: "{{ ssh_pub_key_by_id | default({}) | combine({op_result.op_item.id: op_result.stdout}) }}"
+  loop: "{{ ssh_op_pub_key_fetch.results }}"
+  loop_control:
+    loop_var: op_result
+    label: "{{ op_result.op_item.title }}"
+- name: Write public keys fetched from 1Password
+  ansible.builtin.copy:
+    content: "{{ ssh_pub_key_by_id[op_item.id] }}\n"
+    dest: "{{ ssh_dir }}/{{ op_item.title | regex_replace('[^A-Za-z0-9_.-]', '_') }}.pub"
+    mode: "0644"
+  loop: "{{ ssh_pub_key_items | default([]) }}"
   loop_control:
     loop_var: op_item
     label: "{{ op_item.title }}"
@@ -64,23 +83,32 @@
     user: "{{ ssh_user }}"
     state: present
     exclusive: true
-    key: "{{ ssh_op_authorized_key_fetch.results | map(attribute='stdout') | join('\n') }}"
+    key: >-
+      {{
+        ssh_authorized_key_items
+        | map(attribute='id')
+        | map('extract', ssh_pub_key_by_id)
+        | join('\n')
+      }}
 - name: Make .ssh/config.d dir
   ansible.builtin.file:
     path: "{{ ssh_config_dir }}"
     state: directory
     mode: "0700"
-- name: List SSH host items in 1Password
-  ansible.builtin.command:
-    cmd: "{{ ssh_op_command }} item list --tags={{ ssh_host_tag }} --format=json"
-  register: ssh_op_host_list
-  changed_when: false
+- name: Select SSH host items
+  ansible.builtin.set_fact:
+    ssh_host_items: "{{ ssh_host_items | default([]) + [op_item] }}"
+  loop: "{{ ssh_op_item_list.stdout | from_json }}"
+  loop_control:
+    loop_var: op_item
+    label: "{{ op_item.title }}"
+  when: ssh_host_tag in (op_item.tags | default([]))
 - name: Fetch full details for each SSH host item
   ansible.builtin.command:
     cmd: "{{ ssh_op_command }} item get {{ op_item.id }} --format=json"
   register: ssh_op_host_details
   changed_when: false
-  loop: "{{ ssh_op_host_list.stdout | from_json }}"
+  loop: "{{ ssh_host_items | default([]) }}"
   loop_control:
     loop_var: op_item
     label: "{{ op_item.title }}"
