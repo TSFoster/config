@@ -95,9 +95,11 @@
   # every play. Tag-scoped approvals in acl.hujson (autoApprovers, the
   # use-home app connector) mean this host picks up both roles just by
   # advertising them under tag:home-server — no per-device admin-console
-  # step for the connector. The subnet route itself still needs a one-time
-  # approval (see managing-tailscale-acl-file.md) since 192.168.68.0/24
-  # isn't in autoApprovers.
+  # step for the connector. The printer route (192.168.68.86/32) is also in
+  # autoApprovers; any other subnet route would still need a one-time
+  # approval (see managing-tailscale-acl-file.md). Don't advertise the whole
+  # LAN (/24): it's more specific than a client's own /22 and pulls
+  # same-LAN traffic into the tunnel.
   #
   # changed_when compares against `tailscale debug prefs` (the local Prefs
   # struct) rather than `tailscale status`, since that's what `set` actually

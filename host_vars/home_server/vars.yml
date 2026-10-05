@@ -19,7 +19,7 @@ internal_data_paths: "{{ vault_internal_data_paths }}"
 
 tailscale_authkey: "{{ vault_tailscale_authkey }}"
 tailscale_advertise_routes:
-  - 192.168.68.0/24
+  - 192.168.68.86/32
 tailscale_advertise_connector: true
 tailscale_advertise_exit_node: true
 
