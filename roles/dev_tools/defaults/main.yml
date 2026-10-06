@@ -71,6 +71,7 @@ dev_tools_packages:
   - name: skopeo
   - brew: dive # Docker image explorer — no standard apt package
   - brew: diffoci
+  - brew: dtop
 
   # Language-adjacent tooling
   - brew: openjdk
@@ -78,6 +79,7 @@ dev_tools_packages:
   - name: python3
 
   # Misc dev tools
+  - brew: b2-tools
   - name: direnv
   - brew: basecamp/tap/fizzy
   - brew: wakeonlan
