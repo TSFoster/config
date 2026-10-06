@@ -20,6 +20,7 @@ shells_path_entries:
   - /usr/local/bin
 shells_path_entries_darwin:
   - "{{ homebrew_prefix }}/bin"
+  - "{{ homebrew_prefix }}/opt/rustup/bin"
   - "{{ homebrew_prefix }}/sbin"
   - "{{ homebrew_cask_appdir }}/opt/openjdk/bin"
   - /Applications/Setapp/Soulver.app/Contents/MacOS/CLI
