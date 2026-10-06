@@ -98,6 +98,20 @@
   # relay after every docker restart or reboot, even though ip_forward
   # (IPv4) stays fine — only the IPv6 flag gets clobbered.
 
+- name: Configure docker daemon defaults
+  ansible.builtin.copy:
+    dest: /etc/docker/daemon.json
+    content: "{{ {'log-driver': docker_daemon_log_driver, 'log-opts': docker_daemon_log_opts} | to_nice_json }}\n"
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  notify: Restart docker
+  # Without a default cap, json-file logs grow unbounded for any container
+  # that doesn't set its own `logging:` block. Only applies to containers
+  # created after the daemon restarts — existing ones keep their old config
+  # until recreated.
+
 - name: Start docker
   ansible.builtin.systemd:
     name: docker

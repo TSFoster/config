@@ -10,3 +10,11 @@ asdf_runtime_path: "{{ ansible_facts['env']['HOME'] }}/.asdf/shims:{{ asdf_runti
 asdf_runtime_environment:
   GOPATH: "{{ asdf_runtime_gopath }}"
   PATH: "{{ asdf_runtime_path }}"
+
+# Default container log rotation, applied daemon-wide (docker role on Linux,
+# OrbStack's docker.json on macOS) so containers without their own `logging:`
+# block can't grow json-file logs without bound.
+docker_daemon_log_driver: json-file
+docker_daemon_log_opts:
+  max-size: "10m"
+  max-file: "3"

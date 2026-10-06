@@ -19,6 +19,24 @@
       loop: "{{ macos_apps_mas }}"
       failed_when: false
 
+    - name: Ensure OrbStack docker config directory exists
+      ansible.builtin.file:
+        path: ~/.orbstack/config
+        state: directory
+        mode: "0755"
+      tags:
+        - orbstack
+
+    - name: Configure OrbStack docker daemon defaults
+      ansible.builtin.copy:
+        dest: ~/.orbstack/config/docker.json
+        content: "{{ {'log-driver': docker_daemon_log_driver, 'log-opts': docker_daemon_log_opts} | to_nice_json }}\n"
+        mode: "0644"
+      tags:
+        - orbstack
+      # Takes effect on the next engine restart (`orbctl restart docker`) and
+      # only for containers created afterwards.
+
     - name: Ensure Karabiner config directory exists
       ansible.builtin.file:
         dest: "{{ macos_apps_karabiner_config_dir }}"
