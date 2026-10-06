@@ -85,17 +85,29 @@ function p
   end
 
   if set -q _flag_delete
-    if [ (count $argv) -eq 0 ]; and not set -q _flag_force
+    if [ (count $argv) -eq 0 ]
+      set -q _flag_force; and return 0
       echo 'No project names given!' >&2
       return 1
     end
     set --local sedCmd
+    set --local deleted
     for i in $definedIndexes
-      contains $projectNames[$i] $argv
-      and set sedCmd $sedCmd$i'd;'
-      and echo Deleting $projectNames[$i] >&2
+      if contains -- $projectNames[$i] $argv
+        set sedCmd $sedCmd$i'd;'
+        set deleted $deleted $projectNames[$i]
+        echo Deleting $projectNames[$i] >&2
+      end
     end
-    sed -i bak $sedCmd $P_PROJECTS
+    set --local deleteStatus 0
+    for name in $argv
+      if not contains -- $name $deleted; and not set -q _flag_force
+        echo "Project '$name' does not exist" >&2
+        set deleteStatus 1
+      end
+    end
+    test -n "$sedCmd"; and sed -i bak $sedCmd $P_PROJECTS
+    return $deleteStatus
   end
 
   set --local projectName $argv[1]
@@ -141,6 +153,11 @@ function p
   and set --local projectDefined
 
   test -n "$projectDir"; and set --local dirGiven
+
+  not set --query dirGiven
+  and not set --query projectExists
+  and echo "Project '$projectName' does not exist. Give a path to create it." >&2
+  and return 1
 
   not set --query dirGiven
   and set --query projectExists
